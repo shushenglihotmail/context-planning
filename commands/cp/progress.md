@@ -11,110 +11,137 @@ You are running `cp-progress`. This is a **read-only** diagnostic: tell the
 user exactly where they are in the project and what the obvious next action
 is. Do not modify any files.
 
-## Step 1 — Verify state
+## TL;DR — use the `cp status` CLI wrapper
 
-- Read `.planning/PROJECT.md`, `.planning/ROADMAP.md`, `.planning/STATE.md`.
-- If any are missing, stop and tell the user to run `/cp-new-project` or
-  `cp init`.
+The `cp status` CLI command does almost everything this command needs.
+Run it, format the output for the user, and add any extras (project name
+from PROJECT.md, continue-here notice).
 
-## Step 2 — Parse ROADMAP
+```bash
+cp status --json
+```
 
-Use `lib/roadmap.listPhases(content)` to get every phase + its plans + their
-done state. For each phase compute:
+Returns:
 
-- `total` = plans.length
-- `done`  = plans filtered by `.done`
-- `status` = `Not started` (0/total), `In progress` (0<done<total),
-  `Complete` (done==total), `Planned` (total==0)
+```json
+{
+  "ok": true,
+  "milestone": "v0.1 MVP",
+  "milestoneStatus": "in-progress",
+  "phases": [
+    { "num": "1", "name": "Foundation", "done": 2, "total": 2 },
+    { "num": "2", "name": "Search",     "done": 0, "total": 1 }
+  ],
+  "nextPlan": {
+    "phaseNum": "2",
+    "phaseName": "Search",
+    "planId": "02-01",
+    "desc": "search command"
+  },
+  "stateContentPresent": true
+}
+```
 
-Then compute project-wide totals:
-- `totalPlans` = sum of plans.length across all phases that have at least 1 plan
-- `donePlans`  = sum of done plans
-- `pct`        = round(donePlans / totalPlans * 100)
+If `cp` isn't on PATH, fall back to the manual procedure in the
+["Fallback"](#fallback--manual-implementation) section.
 
-## Step 3 — Locate "you are here"
+## Step 1 — Read project name
 
-Pick the **current** phase = the lowest-numbered phase whose status is
-`In progress`. If none, pick the lowest with status `Not started`. If all are
-`Complete`, the milestone (or project) is done — say so.
+Read the first `# heading` of `.planning/PROJECT.md` for the project name
+(or fall back to the repo dir basename). This is the only thing
+`cp status` doesn't surface.
 
-Pick the **next plan** = within that phase, the first plan whose `done` is
-false. If none in that phase, look at the next phase in `lib/roadmap.listPhases`
-order.
+## Step 2 — Run `cp status`
 
-## Step 4 — Read STATE.md cross-check
+```bash
+cp status --json
+```
 
-Extract these labelled lines from `## Current Position`:
-- `Phase: ...`
-- `Plan: ...`
-- `Status: ...`
-- `Last activity: ...`
+If `ok: false`, surface the error message verbatim and suggest
+`/cp-new-project` or `cp init`.
 
-If STATE.md disagrees with ROADMAP (e.g. STATE says Phase 4 but ROADMAP shows
-Phase 4 has no plans yet), surface the mismatch as a warning but trust
-ROADMAP for the "next" recommendation.
+## Step 3 — Detect continue-here
 
-## Step 5 — Detect a current milestone
+Check whether `.planning/.continue-here.md` (or
+`.planning/phases/{NN-slug}/.continue-here.md`) exists. If so, you'll add a
+suffix to the output.
 
-Read `.planning/MILESTONE-CONTEXT.md` if present (GSD-shape: transient
-milestone spec). Extract its name + status. If absent, look at the most
-recent `🚧 ` (in-progress) entry in the `## Milestones` section of
-ROADMAP.md.
+## Step 4 — Render the report
 
-## Step 6 — Print the report
-
-Print exactly this layout (substitute values):
+Format like this (substitute values from the JSON):
 
 ```
 cp progress
 ───────────
 
-Project:    {project name from PROJECT.md heading}
-Milestone:  {milestone name from MILESTONE-CONTEXT.md or ROADMAP Milestones bullet, or "(none)"}
+Project:    {project name}
+Milestone:  {milestone or "(none in progress)"}
 
 You are here:
-  Phase {N}: {name}   ({done}/{total} plans complete — {phaseStatus})
-  Plan  {next plan id}: {next plan desc}    ← next action
+  Phase {num}: {name}   ({done}/{total} plans complete)
+  Plan  {nextPlan.planId}: {nextPlan.desc}    ← next action
 
-Overall:    {donePlans}/{totalPlans} plans complete   {progressBar(pct)}
-
-Recent:     {Last activity from STATE.md}
+Overall:    {sum done}/{sum total} plans complete   {progress bar — see below}
 
 Phase breakdown:
   ✓ Phase 1: Foundation                 (2/2 — Complete)
-  ✓ Phase 2: Core Todos                 (2/2 — Complete)
-  ▶ Phase 3: Sharing                    (1/2 — In progress)
-    Phase 3.1: Token expiry hotfix      (0/1 — Not started)
-    Phase 4: Export                     (0/1 — Not started)
+  ▶ Phase 2: Search                     (0/1 — In progress)
 
 Suggested next:
-  /cp-execute-phase {next-phase-num}     # if next phase already has a PLAN.md
-  /cp-plan-phase    {next-phase-num}     # otherwise, plan it first
+  /cp-execute-phase {nextPlan.phaseNum}     # PLAN exists for nextPlan? (see step 5)
+  /cp-plan-phase    {nextPlan.phaseNum}     # if not
 ```
 
-Phase legend:
-- `✓` Complete
-- `▶` In progress (the one "you are here")
-- ` ` Not started / Planned
+**Progress bar** — match `lib/state.progressBar(pct)` exactly so STATE.md
+edits agree: `[██████░░░░] 60%` style (10-char bar of `█`/`░`).
 
-To decide between suggesting `/cp-execute-phase` vs `/cp-plan-phase` for the
-next-action line: use `lib/paths.findPhaseDir(num)` — if it returns a real
-dir AND that dir contains a `{phase}-{plan}-PLAN.md` for the next plan id,
-suggest `execute-phase`. Otherwise suggest `plan-phase`.
+**Phase legend:**
+- `✓` Complete (done == total > 0)
+- `▶` In progress (the one "you are here", or 0 < done < total)
+- ` ` Not started (done == 0, total > 0)
+- `?` Planned (total == 0 — no plan file yet)
 
-## Step 7 — If `.continue-here.md` exists
+## Step 5 — Decide the suggested next command
 
-If `.planning/.continue-here.md` is present, add a note at the very bottom:
+Check `lib/paths.findPhaseDir(nextPlan.phaseNum)` — if it returns a real
+dir AND that dir contains `{nextPlan.planId}-PLAN.md`, suggest
+`/cp-execute-phase`. Otherwise suggest `/cp-plan-phase`.
+
+(Simpler heuristic: if `phases[i].total > 0` in the JSON, suggest execute;
+else suggest plan.)
+
+## Step 6 — Continue-here notice (if Step 3 found one)
 
 ```
 ↩ A continue-here.md is waiting. Run /cp-resume to restore mid-task context.
 ```
 
+## Step 7 — Edge cases
+
+- **No milestone in progress:** print "Milestone: (none in progress)" and
+  suggest `/cp-new-milestone "<name>"`.
+- **All plans across all phases done:** suggest `/cp-complete-milestone`.
+- **STATE.md disagrees with ROADMAP (e.g. STATE says Phase 4 but ROADMAP
+  shows Phase 4 has no plans yet):** surface as a warning line but trust
+  ROADMAP (which is what `cp status` reads from).
+
+## Fallback — manual implementation
+
+If `cp` isn't on PATH, replicate `lib/lifecycle.statusReport(root)`:
+- `roadmap.listPhases(content)` → phases array with `{num, name, plans[]}`
+- Find the in-progress milestone heading (`### 🚧 {name} (In Progress)`
+  or just `(In Progress)` in the heading)
+- Filter `listPhases` results to those whose `num` is in
+  `findMilestoneInRoadmap(content, name).phases`
+- nextPlan = first phase × first plan where `!plan.done`
+
+Then render as above.
+
 ## Notes
 
 - This command MUST NOT write any file. It only reads.
 - Keep output compact; the user runs this often.
-- If a phase has zero plans, label it `Planned` (not `Not started`) so it's
-  obvious the next step is `/cp-plan-phase N`, not `/cp-execute-phase N`.
 - The progress bar should match `lib/state.progressBar(pct)` exactly so
   downstream STATE.md edits agree.
+- `cp status` already handles the milestone/phase/next-plan logic with
+  394-test coverage; prefer it over re-implementing.
