@@ -10,6 +10,35 @@ requires: [cp-execute-phase]
 You are running `cp-plan-phase`. Your job is to take a phase that exists in
 ROADMAP.md and turn it into a concrete `PLAN.md` ready for execution.
 
+## TL;DR — use the v0.3 `cp` CLI wrapper
+
+If the phase doesn't yet exist in ROADMAP (e.g. the user jumped here from
+`/cp-new-milestone` without scaffolding the phases yet), create the phase
+shell first:
+
+```
+cp scaffold-phase {N} --name "{phase name}" --plans {initial-plan-count}
+```
+
+Output:
+```
+✓ .planning/ROADMAP.md
+✓ .planning/phases/{NN-slug}/PLAN.md
+Phase {N} added to milestone "{active milestone}" ({M} plans: {NN-01}, ...)
+committed <hash>
+```
+
+The wrapper inserts the `### Phase N: {name}` heading under the active
+milestone in ROADMAP, creates `.planning/phases/{NN-slug}/PLAN.md` from the
+`templates/phase-PLAN.md` template, pre-fills `- [ ] NN-MM: TBD` checkboxes
+for the requested plan count, and auto-commits. Use `--dry-run` to preview,
+`--milestone <name>` to target a non-active milestone, `--no-commit` to skip
+the commit.
+
+After the wrapper runs (or if the phase already exists), proceed below to
+fill in the per-plan details (objectives, tasks, success criteria) by
+delegating to the provider's plan skill.
+
 ## Step 1 — Resolve the phase
 
 - `PHASE_NUM` = `$ARGUMENTS` (sanitize: must match `^[\d]+(\.\d+)?$`).

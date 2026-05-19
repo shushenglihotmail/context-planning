@@ -11,6 +11,31 @@ You are running `cp-new-milestone`. The project already exists. Your job is
 to add a new milestone on top — gather its goals (delegated to the provider's
 brainstorm skill), break it into phases, and update the state layer.
 
+## TL;DR — use the v0.3 `cp` CLI wrapper
+
+After brainstorming the milestone name + goals with the user (Steps 1–3
+below), you can produce the ROADMAP shape the parser expects with a single
+shell call instead of hand-editing `## Phases`:
+
+```
+cp scaffold-milestone "v1.1 Notifications"
+```
+
+Output:
+```
+✓ .planning/ROADMAP.md
+Milestone:   v1.1 Notifications [in-progress]
+committed <hash>
+```
+
+This appends `### 🚧 v1.1 Notifications (In Progress)` inside `## Phases` and
+auto-commits. Refuses if a milestone of that name already exists. Use
+`--planned` for `### 📋 ... (Planned)` if you're queueing milestones rather
+than starting one now. Use `--dry-run` to preview without writing.
+
+Then for each phase the brainstorm identified, call `cp scaffold-phase`
+(see `/cp-plan-phase` for details) — no need to hand-edit ROADMAP anywhere.
+
 ## Step 1 — Validate state
 
 - Read `.planning/PROJECT.md`. If it doesn't exist, stop and tell the user to
@@ -54,11 +79,23 @@ Propose 2–6 phases for this milestone based on the spec. For each:
 - Heading: `### Phase N: {Name}`
 - Goal, Depends on, Success Criteria, plans list (start with 1 plan each).
 
-Confirm with the user, then append each phase block to `.planning/ROADMAP.md`
-(use `lib/roadmap.appendPhaseBlock`). Then rebuild the Progress table.
+Confirm with the user, then append each phase block to `.planning/ROADMAP.md`.
 
-Also add a milestone bullet to the `## Milestones` section:
-`- 🚧 **{milestone name}** — Phases {first}-{last} (in progress)`
+**Preferred (v0.3)** — for each phase, call:
+```
+cp scaffold-phase {N} --name "{phase name}" --plans {initial-plan-count}
+```
+This inserts `### Phase N: {name}` under the active milestone, creates
+`.planning/phases/{NN-slug}/PLAN.md` from the phase-PLAN template, and
+auto-commits. Pre-fills `- [ ] NN-MM: TBD` checkboxes for the requested
+plan count. Refuses if the phase number already exists.
+
+**Fallback (manual)** — if `cp` CLI is unavailable, edit ROADMAP.md by hand
+using `lib/roadmap.appendPhaseBlock`. Then rebuild the Progress table.
+
+Skip the "milestone bullet under `## Milestones`" step — the v0.3 template
+no longer has that section; the H3 milestone heading inside `## Phases` is
+the source of truth.
 
 ## Step 6 — Update STATE.md
 

@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-394%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-429%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -148,6 +148,16 @@ cp gsd-import [--root <dir>] [--json] [--apply]
                                 # Read-only audit of any planning project (cp or GSD).
                                 # exit 0 = clean, 1 = errors, 2 = changes pending
 cp status [--json]              # "You are here": current milestone, phase, next plan
+cp scaffold-milestone <name> [--planned] [--no-commit] [--dry-run]
+                                # Add `### 🚧 <name> (In Progress)` heading to
+                                # ROADMAP `## Phases` section. Refuses duplicates.
+                                # Use --planned for `### 📋 <name> (Planned)`.
+cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>] [--no-commit] [--dry-run]
+                                # Add `### Phase N: <name>` under the active
+                                # milestone in ROADMAP + create
+                                # .planning/phases/{NN-slug}/PLAN.md from
+                                # template. --plans pre-fills N empty
+                                # `- [ ] NN-MM` checkboxes.
 cp tick <plan-id> [--undo] [--no-commit] [--dry-run]
                                 # Mark a plan done in ROADMAP + phase PLAN.md.
                                 # Idempotent. Commits unless --no-commit.
@@ -323,11 +333,14 @@ manual provider with 11 inline role prompts.
 and external scripts never touch the lib contracts directly. 394 tests,
 end-to-end smoke tested on the `linkmark` demo + `cp-cli-smoke` fixture.
 
-**v0.3** — `/cp-capture` for inbox triage; status-line hook; optional
-Superpowers worktree integration.
+**v0.3 (shipped)** — Scaffolding wrappers (`cp scaffold-milestone`,
+`cp scaffold-phase`) that produce the exact ROADMAP shape the parser
+expects, eliminating the H3-vs-bullet template gotcha. Fresh
+`cp init` → `cp scaffold-milestone` → `cp scaffold-phase` → `cp tick` →
+`cp complete-milestone` round-trips without any hand-editing. 429 tests.
 
-**v0.4** — multi-workspace support; `/cp-doctor` markdown command; Cursor
-and Aider installers.
+**v0.4** — `/cp-capture` for inbox triage; status-line hook; optional
+Superpowers worktree integration; multi-workspace; Cursor and Aider installers.
 
 ## Credits
 

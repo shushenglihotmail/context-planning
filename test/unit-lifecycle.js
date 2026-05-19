@@ -316,6 +316,164 @@ section('completeMilestone w/ git commit');
   ok('commit message starts with "cp: /cp-complete-milestone"', log.startsWith('cp: /cp-complete-milestone'));
 }
 
-console.log(`\nPassed: ${passed}   Failed: ${failed}`);
+// ---------- scaffoldMilestone ----------
+
+section('scaffoldMilestone');
+{
+  const root = freshProject('sm-base');
+  // Clear out the seeded milestone so we can scaffold a fresh one.
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n## Progress\n\n');
+  const r = lifecycle.scaffoldMilestone(root, 'v0.2 Greet v2');
+  ok('ok=true on first add', r.ok);
+  ok('milestone name preserved', r.milestone === 'v0.2 Greet v2');
+  ok('status defaults to in-progress', r.status === 'in-progress');
+  ok('one action emitted', r.actions.length === 1);
+  const content = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('heading injected with 🚧 emoji + (In Progress) suffix',
+    content.includes('### 🚧 v0.2 Greet v2 (In Progress)'));
+  // Round-trip: lib/milestone parser sees it.
+  const found = milestone.findMilestoneInRoadmap(content, 'v0.2 Greet v2');
+  ok('round-trip via findMilestoneInRoadmap', found && found.status === 'in-progress');
+}
+
+section('scaffoldMilestone refuses duplicate');
+{
+  const root = freshProject('sm-dup');
+  // freshProject already has "v0.1 Hi" in-progress.
+  const r = lifecycle.scaffoldMilestone(root, 'v0.1 Hi');
+  ok('ok=false with reason:milestone-exists', !r.ok && r.reason === 'milestone-exists');
+  ok('returns existing milestone meta', r.milestone === 'v0.1 Hi' && r.status === 'in-progress');
+}
+
+section('scaffoldMilestone --planned');
+{
+  const root = freshProject('sm-planned');
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n');
+  const r = lifecycle.scaffoldMilestone(root, 'v0.5 Future', { status: 'planned' });
+  ok('planned status accepted', r.ok && r.status === 'planned');
+  const content = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('emoji is 📋 with (Planned) suffix',
+    content.includes('### 📋 v0.5 Future (Planned)'));
+}
+
+section('scaffoldMilestone --dry-run');
+{
+  const root = freshProject('sm-dry');
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n');
+  const r = lifecycle.scaffoldMilestone(root, 'v0.3', { dryRun: true });
+  ok('dryRun ok=true', r.ok && r.dryRun);
+  const content = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('disk unchanged in dry-run', !content.includes('v0.3'));
+}
+
+section('scaffoldMilestone errors on missing ## Phases');
+{
+  const root = freshProject('sm-no-phases');
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'), '# demo\n\nno phases section\n');
+  let threw = false;
+  try { lifecycle.scaffoldMilestone(root, 'v1'); } catch (e) { threw = /no\s+`## Phases`/.test(e.message); }
+  ok('throws with clear message when ## Phases missing', threw);
+}
+
+// ---------- scaffoldPhase ----------
+
+section('scaffoldPhase happy path');
+{
+  const root = freshProject('sp-base');
+  // Remove the seeded phase 1 dir so we can scaffold a phase 2.
+  const r = lifecycle.scaffoldPhase(root, '2', { name: 'Ship It', plans: 3 });
+  ok('ok=true', r.ok);
+  ok('phaseNum echoed', r.phaseNum === '2');
+  ok('milestone resolved to active', r.milestone === 'v0.1 Hi');
+  ok('plans list returned', JSON.stringify(r.plans) === '["02-01","02-02","02-03"]');
+  ok('phase dir created', fs.existsSync(r.phaseDir) && r.phaseDir.endsWith('02-ship-it'));
+  ok('PLAN.md created', fs.existsSync(path.join(r.phaseDir, 'PLAN.md')));
+  const planContent = fs.readFileSync(path.join(r.phaseDir, 'PLAN.md'), 'utf8');
+  ok('PLAN.md frontmatter has phase + milestone',
+    planContent.includes('phase: "2"') && planContent.includes('milestone: v0.1 Hi'));
+  ok('PLAN.md lists generated plans',
+    planContent.includes('- [ ] 02-01:') && planContent.includes('- [ ] 02-03:'));
+  // ROADMAP got the phase heading + checkboxes.
+  const rmap = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('ROADMAP has new ### Phase 2: heading', rmap.includes('### Phase 2: Ship It'));
+  ok('ROADMAP has 02-01..02-03 checkboxes',
+    rmap.includes('- [ ] 02-01: TBD') && rmap.includes('- [ ] 02-03: TBD'));
+}
+
+section('scaffoldPhase decimal phase number');
+{
+  const root = freshProject('sp-decimal');
+  const r = lifecycle.scaffoldPhase(root, '1.5', { name: 'Hotfix', plans: 1 });
+  ok('ok=true for decimal', r.ok);
+  ok('plan id uses decimal phase', r.plans[0] === '1.5-01');
+  ok('dir name preserves decimal', path.basename(r.phaseDir) === '1.5-hotfix');
+}
+
+section('scaffoldPhase refuses duplicate phase number');
+{
+  const root = freshProject('sp-dup');
+  // Phase 1 dir already exists in fixture.
+  const r = lifecycle.scaffoldPhase(root, '1', { name: 'Greet again' });
+  ok('ok=false with reason:phase-exists', !r.ok && r.reason === 'phase-exists');
+}
+
+section('scaffoldPhase fails when no active milestone');
+{
+  const root = freshProject('sp-no-ms');
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n## Progress\n\n');
+  // Use a fresh phase number (the seeded 01-greet would trigger phase-exists first).
+  const r = lifecycle.scaffoldPhase(root, '9', { name: 'X' });
+  ok('reason:no-active-milestone', !r.ok && r.reason === 'no-active-milestone');
+}
+
+section('scaffoldPhase --milestone selects by name');
+{
+  const root = freshProject('sp-target');
+  // Add a second planned milestone.
+  lifecycle.scaffoldMilestone(root, 'v0.2 Later', { status: 'planned' });
+  const r = lifecycle.scaffoldPhase(root, '5', { name: 'Future', milestone: 'v0.2', plans: 1 });
+  ok('targets the named milestone, not the active one',
+    r.ok && r.milestone === 'v0.2 Later');
+}
+
+section('scaffoldPhase --dry-run');
+{
+  const root = freshProject('sp-dry');
+  const r = lifecycle.scaffoldPhase(root, '7', { name: 'D', plans: 1, dryRun: true });
+  ok('dryRun ok=true', r.ok && r.dryRun);
+  ok('phase dir NOT created in dry-run', !fs.existsSync(r.phaseDir));
+  const rmap = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('ROADMAP unchanged in dry-run', !rmap.includes('### Phase 7:'));
+}
+
+section('scaffold + tick + complete round-trip');
+{
+  const root = freshProject('sp-roundtrip');
+  // Replace seeded ROADMAP with an empty Phases shape, then scaffold from scratch.
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n## Progress\n\n');
+  // Remove seeded phase dir
+  fs.rmSync(path.join(root, '.planning', 'phases', '01-greet'), { recursive: true, force: true });
+  // Scaffold
+  let r = lifecycle.scaffoldMilestone(root, 'v0.1 Round');
+  ok('scaffold milestone ok', r.ok);
+  r = lifecycle.scaffoldPhase(root, '1', { name: 'Only', plans: 1 });
+  ok('scaffold phase ok', r.ok);
+  // Tick the only plan
+  lifecycle.tickPlan(root, '01-01', { noCommit: true });
+  // Write a SUMMARY so complete-milestone passes verification
+  lifecycle.writeSummary(root, '01-01', { subsystem: 'only' });
+  // Complete
+  const cm = lifecycle.completeMilestone(root, { noCommit: true });
+  ok('complete-milestone succeeds on scaffolded shape', cm.ok);
+}
+
+// ---------- end scaffolding tests ----------
+
+
 if (failed > 0) process.exit(1);
 console.log('All lifecycle checks passed.');

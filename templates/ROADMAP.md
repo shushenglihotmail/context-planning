@@ -4,23 +4,25 @@
 
 <!-- One paragraph: the journey from here to shipped. -->
 
-## Milestones
-
-- 🚧 **{{MILESTONE_NAME}}** — Phases {{PHASE_RANGE}} (in progress)
-
 ## Phases
 
-### Phase 1: {Name}
-**Goal**: {What this phase delivers}
-**Depends on**: Nothing (first phase)
-**Requirements**: []
-**Success Criteria** (what must be TRUE):
-  1. {Observable behavior from user perspective}
-  2. {Observable behavior from user perspective}
-**Plans**: 1 plan
+<!--
+  Milestone heading shape (parsed by lib/milestone.js findMilestoneInRoadmap):
+    ### 🚧 v0.1 — name (In Progress)     (active)
+    ### 📋 v0.2 — name (Planned)          (queued)
+    ### ✅ v0.1 — name (Shipped YYYY-MM-DD) — wraps a <details> block after close-out
 
-Plans:
-- [ ] 01-01: {Brief description}
+  Phase heading shape (must follow a milestone heading):
+    ### Phase 1: name
+    ### Phase 2.1: name    (decimal = urgent insert between integers)
+
+  After /cp-complete-milestone the milestone heading is replaced with a collapsed
+  <details><summary>...</summary>...</details> block; phase headings remain inside.
+
+  Start your first milestone with:
+    cp scaffold-milestone "v0.1 — <your milestone name>"
+    cp scaffold-phase 1 --name "<phase name>" --plans <count>
+-->
 
 ## Progress
 
@@ -29,4 +31,4 @@ Phases execute in numeric order (decimal phases like 2.1 are urgent inserts betw
 
 | Phase | Milestone | Plans Complete | Status | Completed |
 |-------|-----------|----------------|--------|-----------|
-| 1. {Name} | {{MILESTONE_NAME}} | 0/1 | Not started | - |
+| *(none yet — run `cp scaffold-phase 1 --name <name> --plans <count>`)* | | | | |
