@@ -27,6 +27,7 @@ const {
 const provider = require('../lib/provider');
 const compat = require('../lib/gsd-compat');
 const importer = require('../lib/import');
+const lifecycle = require('../lib/lifecycle');
 
 function usage() {
   console.log(`cp v${pkg.version} — context-planning CLI
@@ -38,8 +39,18 @@ Usage:
                                   Read-only audit of any planning project
                                   (--apply runs \`cp init\` after the audit)
   cp doctor                       Show resolved config, provider status, GSD compat
+  cp status [--json]              Show "you are here": current milestone, phase, next plan
+  cp tick <plan-id> [--undo] [--no-commit]
+                                  Mark a plan done in ROADMAP + phase PLAN.md
+                                  (idempotent; commits unless --no-commit)
+  cp write-summary <plan-id> --from <json-file> [--body <md-file>] [--overwrite]
+                                  Write {NN-MM}-SUMMARY.md with validated frontmatter
+                                  (normalises snake_case -> kebab-case aliases)
+  cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
+                                  Full milestone close-out (verify, aggregate digest,
+                                  collapse in ROADMAP, clear context, reset STATE, commit)
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
-  cp config set <key> <value>     Update a cp.<key> value (top-level GSD keys: use cp config set without 'cp.' prefix — we'll resolve)
+  cp config set <key> <value>     Update a cp.<key> value
   cp version                      Print version
   cp help                         Show this message
 `);
@@ -296,6 +307,176 @@ function cmdInstall(args) {
   installer.install({ pluginRoot: pluginRoot(), repoRoot: repoRoot() });
 }
 
+// ---------- lifecycle commands ----------
+
+function cmdStatus(args) {
+  const root = repoRoot();
+  const json = args.includes('--json');
+  const r = lifecycle.statusReport(root);
+  if (json) {
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(r.ok ? 0 : 1);
+    return;
+  }
+  if (!r.ok) {
+    console.error(r.error);
+    process.exit(1);
+  }
+  console.log(`cp v${pkg.version}`);
+  console.log(`Repo:        ${root}`);
+  console.log(`Milestone:   ${r.milestone || '(none in-progress)'}${r.milestoneStatus ? ` [${r.milestoneStatus}]` : ''}`);
+  if (r.phases.length === 0) {
+    console.log('Phases:      (none yet — run `/cp-plan-phase 1`)');
+  } else {
+    console.log('Phases:');
+    for (const p of r.phases) {
+      const bar = p.total > 0 ? `${p.done}/${p.total}` : '0/0';
+      const mark = p.total > 0 && p.done === p.total ? '✓' : '·';
+      console.log(`  ${mark} Phase ${p.num} ${p.name}: ${bar} plans done`);
+    }
+  }
+  if (r.nextPlan) {
+    console.log(`\nNext plan:   ${r.nextPlan.planId} (Phase ${r.nextPlan.phaseNum}: ${r.nextPlan.phaseName})`);
+    console.log(`             ${r.nextPlan.desc}`);
+    console.log(`\nDo:          /cp-execute-phase ${r.nextPlan.phaseNum}`);
+  } else if (r.milestone) {
+    console.log(`\nAll plans done. Run \`cp complete-milestone\` (or \`/cp-complete-milestone\`).`);
+  }
+}
+
+function cmdTick(args) {
+  const root = repoRoot();
+  let planId = null;
+  let undo = false;
+  let noCommit = false;
+  let dryRun = false;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--undo') undo = true;
+    else if (a === '--no-commit') noCommit = true;
+    else if (a === '--dry-run') dryRun = true;
+    else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
+    else if (!planId) planId = a;
+    else { console.error(`unexpected arg: ${a}`); process.exit(2); }
+  }
+  if (!planId) { console.error('Usage: cp tick <plan-id> [--undo] [--no-commit] [--dry-run]'); process.exit(2); }
+
+  let result;
+  try {
+    result = lifecycle.tickPlan(root, planId, { dryRun, done: !undo });
+  } catch (e) {
+    console.error(`tick: ${e.message}`);
+    process.exit(1);
+  }
+  for (const a of result.actions) {
+    const rel = path.relative(root, a.path);
+    console.log(`${dryRun ? '·' : '✓'} ${rel}`);
+  }
+  if (result.actions.length === 0) {
+    console.log(`(no change — plan ${planId} already ${undo ? 'unticked' : 'ticked'})`);
+    return;
+  }
+  if (dryRun) return;
+  if (!noCommit) {
+    const verb = undo ? 'untick' : 'tick';
+    const commit = lifecycle.gitCommit(root, `cp: ${verb} plan ${planId}`);
+    if (commit) console.log(`committed ${commit}`);
+  }
+}
+
+function cmdWriteSummary(args) {
+  const root = repoRoot();
+  let planId = null;
+  let fromPath = null;
+  let bodyPath = null;
+  let overwrite = false;
+  let dryRun = false;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--from') fromPath = args[++i];
+    else if (a === '--body') bodyPath = args[++i];
+    else if (a === '--overwrite') overwrite = true;
+    else if (a === '--dry-run') dryRun = true;
+    else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
+    else if (!planId) planId = a;
+    else { console.error(`unexpected arg: ${a}`); process.exit(2); }
+  }
+  if (!planId || !fromPath) {
+    console.error('Usage: cp write-summary <plan-id> --from <json> [--body <md>] [--overwrite] [--dry-run]');
+    process.exit(2);
+  }
+  let data;
+  try {
+    data = JSON.parse(fs.readFileSync(fromPath, 'utf8'));
+  } catch (e) {
+    console.error(`failed to read JSON from ${fromPath}: ${e.message}`);
+    process.exit(1);
+  }
+  const body = bodyPath ? fs.readFileSync(bodyPath, 'utf8') : undefined;
+  let r;
+  try {
+    r = lifecycle.writeSummary(root, planId, data, { dryRun, body, overwrite });
+  } catch (e) {
+    console.error(`write-summary: ${e.message}`);
+    process.exit(1);
+  }
+  console.log(`${dryRun ? '·' : '✓'} ${path.relative(root, r.path)}`);
+  if (dryRun) {
+    console.log('--- normalised frontmatter ---');
+    console.log(JSON.stringify(r.fm, null, 2));
+  }
+}
+
+function cmdCompleteMilestone(args) {
+  const root = repoRoot();
+  let name = null;
+  let dryRun = false;
+  let noCommit = false;
+  let json = false;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--dry-run') dryRun = true;
+    else if (a === '--no-commit') noCommit = true;
+    else if (a === '--json') json = true;
+    else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
+    else if (!name) name = a;
+    else { console.error(`unexpected arg: ${a}`); process.exit(2); }
+  }
+
+  const r = lifecycle.completeMilestone(root, { name, dryRun, noCommit });
+
+  if (json) {
+    console.log(JSON.stringify(r, null, 2));
+    process.exit(r.ok ? 0 : 1);
+    return;
+  }
+
+  if (!r.ok) {
+    console.error(`complete-milestone: ${r.reason}`);
+    if (r.reason === 'incomplete') {
+      console.error(`\nMilestone "${r.milestone}" still has work to do:`);
+      for (const rep of r.verify.reports.filter(x => !x.ok)) {
+        console.error(`  Phase ${rep.phaseNum} ${rep.name}: plans ${rep.plansDone}/${rep.plansTotal} done; missing SUMMARY: ${rep.summariesMissing.join(', ') || '—'}`);
+      }
+    } else if (r.hint) {
+      console.error(r.hint);
+    }
+    process.exit(1);
+  }
+
+  console.log(`Milestone:   ${r.milestone}`);
+  console.log(`Phases:      ${r.phases.join(', ')}`);
+  console.log(`Subsystems:  ${r.agg.subsystems.join(', ') || '—'}`);
+  console.log(`Files:       ${r.agg.filesCreated.length} created, ${r.agg.filesModified.length} modified`);
+  console.log(`\nActions${dryRun ? ' (dry-run)' : ''}:`);
+  for (const a of r.actions) {
+    const rel = path.relative(root, a.path);
+    const mark = a.kind === 'write' ? '✓' : a.kind === 'delete' ? '✗' : '·';
+    console.log(`  ${mark} ${a.kind.padEnd(6)} ${rel}${a.reason ? '  (' + a.reason + ')' : ''}`);
+  }
+  if (!dryRun && r.commit) console.log(`\nCommitted:   ${r.commit}`);
+}
+
 function available(name) {
   return fs.existsSync(path.join(pluginRoot(), 'install', `${name}.js`));
 }
@@ -318,6 +499,10 @@ function main(argv) {
     case 'init': return cmdInit();
     case 'gsd-import': return cmdGsdImport(rest);
     case 'doctor': return cmdDoctor();
+    case 'status': return cmdStatus(rest);
+    case 'tick': return cmdTick(rest);
+    case 'write-summary': return cmdWriteSummary(rest);
+    case 'complete-milestone': return cmdCompleteMilestone(rest);
     case 'config': return cmdConfig(rest);
     case 'version':
     case '--version':

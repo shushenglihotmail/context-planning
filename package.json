@@ -31,7 +31,7 @@
     "install:copilot": "node bin/cp.js install copilot",
     "install:claude": "node bin/cp.js install claude",
     "doctor": "node bin/cp.js doctor",
-    "test": "node test/roundtrip-gsd.js && node test/dryrun-progress.js && node test/dryrun-complete-milestone.js && node test/dryrun-gsd-import.js && node test/dryrun-resume.js && node test/unit-libs.js"
+    "test": "node test/roundtrip-gsd.js && node test/dryrun-progress.js && node test/dryrun-complete-milestone.js && node test/dryrun-gsd-import.js && node test/dryrun-resume.js && node test/unit-libs.js && node test/unit-lifecycle.js"
   },
   "dependencies": {
     "yaml": "^2.9.0"

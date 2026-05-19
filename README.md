@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-328%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-394%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -147,11 +147,33 @@ cp doctor                       # Show resolved config, provider status, GSD com
 cp gsd-import [--root <dir>] [--json] [--apply]
                                 # Read-only audit of any planning project (cp or GSD).
                                 # exit 0 = clean, 1 = errors, 2 = changes pending
+cp status [--json]              # "You are here": current milestone, phase, next plan
+cp tick <plan-id> [--undo] [--no-commit] [--dry-run]
+                                # Mark a plan done in ROADMAP + phase PLAN.md.
+                                # Idempotent. Commits unless --no-commit.
+cp write-summary <plan-id> --from <json> [--body <md>] [--overwrite] [--dry-run]
+                                # Write {NN-MM}-SUMMARY.md with validated/normalised
+                                # frontmatter. Accepts kebab-case OR snake_case keys
+                                # and normalises to the canonical kebab-case names
+                                # aggregateSummaries reads.
+cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
+                                # Full close-out: verify all phases done → aggregate
+                                # SUMMARYs → render digest → append to MILESTONES.md
+                                # → collapse milestone in ROADMAP → clear
+                                # MILESTONE-CONTEXT.md → reset STATE → commit.
+                                # Use --dry-run to preview the actions list.
 cp config get [<key>]           # Print a cp config value (or the whole cp block)
 cp config set <key> <value>     # Update cp.<key>
 cp version                      # Print version
 cp help                         # Show command summary
 ```
+
+The lifecycle wrappers (`status`, `tick`, `write-summary`,
+`complete-milestone`) exist so that the LLM-driven slash commands and your
+own scripts never have to learn the underlying lib contracts (SUMMARY
+filename format, frontmatter aliases, descriptor-object return shapes,
+etc.). See [Troubleshooting](#troubleshooting) for the contract details
+they hide.
 
 ## State layer
 
@@ -291,15 +313,20 @@ to `.continue-here.md` inside the phase dir, not the project root.
 
 ## Roadmap
 
-**v0.1 (current)** — vertical slice for GitHub Copilot CLI: `new-project`,
-`new-milestone`, `plan-phase`, `execute-phase`, `quick`, `progress`,
-`resume`, `complete-milestone`. Claude installer + manual provider shipped.
+**v0.1 (current)** — vertical slice for GitHub Copilot CLI: 9 slash commands
+(`new-project`, `new-milestone`, `plan-phase`, `execute-phase`, `quick`,
+`progress`, `resume`, `complete-milestone`, `config`), Claude installer,
+manual provider with 11 inline role prompts.
 
-**v0.2** — `cp execute-phase` / `cp complete-milestone` CLI wrappers (so you
-don't have to remember the lib contracts); `/cp-capture` for inbox triage;
-status-line hook; optional Superpowers worktree integration.
+**v0.2 (shipped)** — CLI lifecycle wrappers (`cp status`, `cp tick`,
+`cp write-summary`, `cp complete-milestone`) so slash-command implementations
+and external scripts never touch the lib contracts directly. 394 tests,
+end-to-end smoke tested on the `linkmark` demo + `cp-cli-smoke` fixture.
 
-**v0.3** — multi-workspace support; `/cp-doctor` markdown command; Cursor
+**v0.3** — `/cp-capture` for inbox triage; status-line hook; optional
+Superpowers worktree integration.
+
+**v0.4** — multi-workspace support; `/cp-doctor` markdown command; Cursor
 and Aider installers.
 
 ## Credits
