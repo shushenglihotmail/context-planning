@@ -1,0 +1,18 @@
+node_modules/
+*.log
+.DS_Store
+.idea/
+.vscode/
+
+# OS / editor noise
+Thumbs.db
+*.swp
+
+# Local scratch — keep these out of the cp repo itself; they're meant to live
+# inside cp-managed *projects*, not inside the cp plugin source.
+.planning/
+.claude/
+.copilot/
+
+# Test scratch
+test/__tmp_*

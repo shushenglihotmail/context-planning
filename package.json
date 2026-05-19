@@ -1,0 +1,39 @@
+{
+  "name": "context-planning",
+  "version": "0.1.0",
+  "description": "Lightweight stateful context-management plugin that delegates dev workflow to Superpowers (or any compatible provider).",
+  "bin": {
+    "cp": "bin/cp.js"
+  },
+  "files": [
+    "bin",
+    "commands",
+    "install",
+    "lib",
+    "templates",
+    "docs",
+    "README.md"
+  ],
+  "keywords": [
+    "ai",
+    "context",
+    "planning",
+    "milestone",
+    "superpowers",
+    "copilot-cli",
+    "claude-code"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "install:copilot": "node bin/cp.js install copilot",
+    "install:claude": "node bin/cp.js install claude",
+    "doctor": "node bin/cp.js doctor",
+    "test": "node test/roundtrip-gsd.js && node test/dryrun-progress.js && node test/dryrun-complete-milestone.js && node test/dryrun-gsd-import.js && node test/dryrun-resume.js"
+  },
+  "dependencies": {
+    "yaml": "^2.9.0"
+  }
+}
