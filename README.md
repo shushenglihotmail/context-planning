@@ -1,108 +1,210 @@
 # context-planning (`cp`)
 
-A lightweight, **stateful context-management plugin** for AI coding agents.
+> **GSD's brain. Superpowers' hands.**
+> A lightweight, harness-agnostic plugin that keeps long-lived AI development
+> work — milestones, phases, plans, summaries — coherent across sessions, while
+> handing the actual "how do I write this code" workflow to whatever
+> coding-agent skill set you already use.
 
-`cp` owns the *planning state* (milestones → phases → tasks, all recorded in markdown
-files inside `.planning/`) but delegates the actual *development workflow* to a
-configurable provider — by default, [Superpowers](https://github.com/obra/superpowers).
+[![tests](https://img.shields.io/badge/tests-328%20passing-brightgreen)]()
+[![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
+[![license](https://img.shields.io/badge/license-MIT-blue)]()
 
-> Think of it as: **GSD's brain (state docs), Superpowers' hands (workflow skills)**.
+---
+
+## TL;DR
+
+```text
+You      ──▶  /cp-new-milestone "v0.2 Auth"   (state layer: cp)
+              ├─▶ /cp-plan-phase 1            (workflow: superpowers/brainstorming + writing-plans)
+              ├─▶ /cp-execute-phase 1         (workflow: superpowers/subagent-driven-development)
+              └─▶ /cp-complete-milestone      (state layer: cp aggregates, archives, resets)
+```
+
+`cp` owns the *project state docs* in `.planning/` (PROJECT.md / ROADMAP.md /
+STATE.md / phase dirs / MILESTONES.md). It delegates the *workflow* — how to
+brainstorm, plan, code, review, test — to a configurable provider, defaulting
+to **[Superpowers](https://github.com/obra/superpowers)**. Falls back to a
+built-in `manual` provider if Superpowers isn't installed.
 
 ## Why?
 
-- **GSD** has excellent stateful context management — `PROJECT.md`, `ROADMAP.md`,
-  `STATE.md`, phase directories — that makes work resumable across sessions and
-  keeps stateless LLMs grounded. But its workflow pipeline is heavy: 60+ commands,
-  30+ specialized subagents, multi-stage gated pipelines.
-- **Superpowers** has a tight, fast workflow: brainstorm → plan → execute (with
-  subagent-driven development and TDD enforcement) → review → ship. But it
-  doesn't track multi-week project state.
-- **`cp`** stitches them together: small command surface (~8 commands), the same
-  beloved `.planning/` state docs, and every "do the work" step hands off to
-  whatever workflow provider you have installed.
+| Pain | Existing tool | What `cp` does |
+|---|---|---|
+| **GSD** has great stateful context management but its workflow pipeline is heavy (60+ commands, 30+ subagents, multi-stage gates). | [get-shit-done](https://github.com/gsd-build/get-shit-done) | Keeps GSD's `.planning/` shapes; throws away everything else. |
+| **Superpowers** has a fast brainstorm → plan → TDD-execute → review → ship loop but doesn't track multi-week project state. | [obra/superpowers](https://github.com/obra/superpowers) | Stitches in superpowers skills as the workflow engine, called by *role*, not by name. |
+| Restarting an LLM session loses everything you were working on. | — | Reads `STATE.md` + `.continue-here.md` → `/cp-resume` picks up exactly where you were. |
 
-## Quickstart
+**Net result:** ~8 commands, the markdown state docs you already love, and
+every "do the work" step hands off to whatever skill set you have installed.
+
+## Install
+
+### Node CLI
 
 ```bash
-# 1. Install cp into your AI harness of choice
-cp install copilot     # GitHub Copilot CLI    (.github/skills/cp/)
-cp install claude      # Claude Code            (.claude/commands/cp/, .claude/agents/)
-
-# 2. Make sure Superpowers (or another provider) is installed in the same harness.
-#    See https://github.com/obra/superpowers
-
-# 3. In your project, start a new project or milestone
-/cp-new-project                    # greenfield
-/cp-new-milestone "v1.1 Notifications"   # brownfield
-
-# 4. Drive each phase
-/cp-plan-phase 1
-/cp-execute-phase 1
-
-# 5. Or one-off tasks
-/cp-quick "fix the flaky login test"
+git clone https://github.com/yourname/context-planning
+cd context-planning
+npm install         # only dep: yaml
+npm test            # 328 assertions; should all pass
+npm link            # exposes `cp` on PATH (or use: node bin/cp.js ...)
 ```
 
-## Command Surface
+### Into an AI harness
 
-| Command | What it does |
-|---|---|
-| `/cp-new-project`        | Scaffold `.planning/`, hand off to provider's `brainstorm` skill to fill PROJECT.md, then break into phases |
-| `/cp-new-milestone <name>` | Same flow for a new milestone on top of an existing project |
-| `/cp-plan-phase <N>`     | Create the phase dir, call provider's `plan` skill, save `PLAN.md` |
-| `/cp-execute-phase <N>`  | Hand `PLAN.md` to provider's `execute` skill; on success, tick ROADMAP, write `SUMMARY.md`, update STATE.md |
-| `/cp-quick <task>`       | Lightweight ad-hoc task with PLAN + SUMMARY but no phase/roadmap baggage |
-| `/cp-progress`           | "You are here — next is X" |
-| `/cp-resume`             | Restore from `.continue-here.md` + STATE.md |
-| `/cp-complete-milestone` | Archive, collapse the milestone in ROADMAP.md |
+```bash
+cd <your-project>
+cp install copilot   # writes .github/skills/cp/*.md + .github/agents/*.md
+cp install claude    # writes .claude/commands/cp/*.md + .claude/agents/*.md + CLAUDE.md merge
+```
 
-## State Layer
+Then ensure your provider is available in the same harness:
+
+- **Superpowers** (recommended): see https://github.com/obra/superpowers
+- **Manual** (no extra install): cp ships full inline prompts for every role.
+
+### Initialise a project
+
+```bash
+cd <your-project>
+cp init              # idempotent — adds .planning/{PROJECT,ROADMAP,STATE,MILESTONES,config}.json
+```
+
+If the dir is already a GSD project, `cp init` is purely additive: it writes a
+`cp:` block into the existing `config.json` and leaves every GSD file alone.
+
+## Worked example — the **linkmark** demo
+
+The repo ships a driver script (`drive-cp.js`, not committed) that walks a
+fresh project through a full milestone lifecycle, simulating every slash
+command by calling `cp` lib functions directly. Here's what it produces:
+
+```text
+.planning/
+├── PROJECT.md                   # linkmark vision + constraints (cp-new-project)
+├── ROADMAP.md                   # v0.1 MVP with 2 phases, 3 plans, all ticked done
+├── STATE.md                     # "Idle, ready for v0.2" after close-out
+├── MILESTONES.md                # auto-generated digest of shipped milestone
+├── config.json                  # cp block + provider config
+└── phases/
+    ├── 01-foundation/
+    │   ├── PLAN.md              # phase plan
+    │   ├── 01-01-storage.md     # per-plan files
+    │   ├── 01-01-SUMMARY.md     # written on execute completion
+    │   ├── 01-02-list.md
+    │   └── 01-02-SUMMARY.md
+    └── 02-search/
+        ├── PLAN.md
+        ├── 02-01-search.md
+        └── 02-01-SUMMARY.md
+```
+
+After `/cp-complete-milestone` runs, `ROADMAP.md` collapses the milestone into
+a `<details>` block:
+
+```markdown
+## Phases
+
+<details>
+<summary>✅ v0.1 MVP (Phases 1-2) — SHIPPED 2026-05-19</summary>
+
+Goal: ship a usable CLI that can add, list, and search bookmarks.
+
+### Phase 1: Foundation
+- [x] 01-01: storage + add
+- [x] 01-02: list command
+
+### Phase 2: Search
+- [x] 02-01: search command
+
+</details>
+```
+
+…and `MILESTONES.md` gets an auto-generated digest with subsystems,
+decisions, patterns, and files touched — aggregated across every SUMMARY.md.
+
+## Command surface
+
+### Slash commands (live inside your AI harness)
+
+| Command | Stateful work cp does | Workflow handoff |
+|---|---|---|
+| `/cp-new-project`        | Scaffold `.planning/`, seed PROJECT.md/ROADMAP.md/STATE.md | `brainstorm` → fill in vision/constraints |
+| `/cp-new-milestone <name>` | Append milestone shell to ROADMAP, write MILESTONE-CONTEXT.md | `brainstorm` → spec the milestone → break into phases |
+| `/cp-plan-phase <N>`     | Create `phases/{NN-slug}/`, scaffold `PLAN.md` | `plan` → produce per-plan files |
+| `/cp-execute-phase <N>`  | For each plan: hand off, on success tick ROADMAP, write SUMMARY.md, update STATE.md | `execute` → write & verify code |
+| `/cp-quick <task>`       | Create `quick/{YYYYMMDD-slug}/PLAN.md`, atomic-commit on done | `execute_simple` → quick fix |
+| `/cp-progress`           | Read STATE + ROADMAP → "you are here, next is X" | — |
+| `/cp-resume`             | Restore from `.continue-here.md` + STATE | `execute` or whatever role was paused |
+| `/cp-complete-milestone` | Verify all phases done, aggregate SUMMARY frontmatter, append digest to MILESTONES.md, collapse milestone in ROADMAP, clear MILESTONE-CONTEXT.md, reset STATE | — |
+
+### Node CLI (operational tooling — not used inside the AI loop)
+
+```bash
+cp install <copilot|claude>     # Install slash-commands + agents into a harness
+cp init                         # Scaffold .planning/ (idempotent; safe over GSD projects)
+cp doctor                       # Show resolved config, provider status, GSD compat report
+cp gsd-import [--root <dir>] [--json] [--apply]
+                                # Read-only audit of any planning project (cp or GSD).
+                                # exit 0 = clean, 1 = errors, 2 = changes pending
+cp config get [<key>]           # Print a cp config value (or the whole cp block)
+cp config set <key> <value>     # Update cp.<key>
+cp version                      # Print version
+cp help                         # Show command summary
+```
+
+## State layer
 
 ```
 .planning/
-├── PROJECT.md                       # Living what/why/requirements/constraints/decisions
-├── ROADMAP.md                       # Milestones → phases → plans tree with checkboxes
-├── STATE.md                         # <100-line "you are here" digest
-├── MILESTONES.md                    # Archive of shipped milestones (GSD-compatible)
-├── MILESTONE-CONTEXT.md             # Transient: current milestone spec (deleted on close)
-├── config.json                      # Shared GSD+cp config (cp settings under `cp:` key)
+├── PROJECT.md                   # Living what/why/requirements/constraints/decisions
+├── ROADMAP.md                   # Milestones → phases → plans tree (checkboxes)
+├── STATE.md                     # <120-line "you are here" digest
+├── MILESTONES.md                # Archive of shipped milestones (GSD-compatible)
+├── MILESTONE-CONTEXT.md         # Transient: current milestone spec (deleted on close)
+├── config.json                  # Shared GSD+cp config (cp settings under `cp:` key)
 ├── phases/
 │   └── 01-foundation/
-│       ├── 01-01-PLAN.md            # GSD-shape: {phase}-{plan}-PLAN.md
-│       └── 01-01-SUMMARY.md
-├── quick/
-│   └── 20260519-fix-login-test/
-│       ├── PLAN.md
-│       └── SUMMARY.md
-└── .continue-here.md                # written when work pauses (inside phase dir)
+│       ├── PLAN.md              # Phase-level plan (cp-friendly short form)
+│       ├── 01-01-PLAN.md        # GSD-shape per-plan file: {phase}-{plan}-PLAN.md
+│       └── 01-01-SUMMARY.md     # written on execute completion
+└── quick/
+    └── 20260519-fix-login-test/
+        ├── PLAN.md
+        └── SUMMARY.md
 ```
 
-## Provider Abstraction
+`.continue-here.md` is written inside the active phase dir when work is
+paused (`/cp-pause` or LLM session ends mid-execute). `/cp-resume` reads it.
 
-`cp` calls workflow providers by **role**, not by name. The default
-`.planning/config.json` includes both GSD's settings AND a `cp:` block:
+## Provider abstraction
 
-```json
+`cp` calls workflow providers by **role**, not by name, so users can swap
+implementations without touching `cp` itself.
+
+```jsonc
+// .planning/config.json — cp block
 {
-  "mode": "interactive",
-  "granularity": "standard",
-  "workflow": { ... },               // GSD-compatible top-level keys
-  "gates": { ... },
-  "cp": {                            // cp-specific island
+  // ... GSD-compatible top-level keys (mode, workflow, gates, ...) ...
+  "cp": {
     "workflow_provider": "superpowers",
     "providers": {
       "superpowers": {
         "skills": {
-          "brainstorm": "brainstorming",
-          "plan":       "writing-plans",
-          "execute":    "subagent-driven-development",
-          "review":     "requesting-code-review",
-          "finish":     "finishing-a-development-branch",
-          "worktree":   "using-git-worktrees",
-          "tdd":        "test-driven-development"
+          "brainstorm":     "brainstorming",
+          "plan":           "writing-plans",
+          "execute":        "subagent-driven-development",
+          "execute_simple": "executing-plans",
+          "review":         "requesting-code-review",
+          "receive_review": "receiving-code-review",
+          "finish":         "finishing-a-development-branch",
+          "worktree":       "using-git-worktrees",
+          "tdd":            "test-driven-development",
+          "debug":          "systematic-debugging",
+          "verify":         "verification-before-completion"
         }
       },
-      "manual": { "skills": {} }
+      "manual": { "skills": { /* full inline prompts for each role */ } }
     },
     "behavior": {
       "atomic_commits": true,
@@ -113,37 +215,92 @@ cp install claude      # Claude Code            (.claude/commands/cp/, .claude/a
 }
 ```
 
-Swap providers with `cp config set workflow_provider <name>`. Missing skills
-→ `cp` warns and falls back to the inline `manual` provider.
+Swap providers with `cp config set workflow_provider <name>`. Missing skill?
+`cp doctor` flags it, and at runtime `cp` warns and falls back to `manual`.
 
-See [docs/writing-providers.md](docs/writing-providers.md) for the contract.
+Want to write your own? See [`docs/writing-providers.md`](docs/writing-providers.md).
 
 ## GSD compatibility
 
-`cp` is a **drop-in superset** of [get-shit-done](https://github.com/gsd-build/get-shit-done):
+`cp` is a **drop-in superset** of [get-shit-done](https://github.com/gsd-build/get-shit-done).
 
-- **Same filenames** — `PROJECT.md`, `ROADMAP.md`, `STATE.md`, `MILESTONES.md`,
-  `MILESTONE-CONTEXT.md`, `phases/{NN-slug}/{phase}-{plan}-PLAN.md` and
-  `-SUMMARY.md`, `quick/{YYYYMMDD-slug}/PLAN.md`.
-- **Same frontmatter** — PLAN.md has `wave`, `depends_on`, `requirements`,
-  `must_haves.*`; SUMMARY.md has the dependency graph (`requires` /
-  `provides` / `affects`), `subsystem`, `tags`, `tech-stack`, `key-files`.
-- **Same config file** — `.planning/config.json`. cp keys live under the
-  top-level `cp:` block; GSD ignores unknown keys, so both tools coexist.
-- **You can switch back to GSD at any time.** `cp` only ADDS to `.planning/`
-  (config block, milestone bullets, ticked checkboxes). It never rewrites
-  GSD-shaped files in incompatible ways.
-- Run `cp doctor` to see the compatibility report for the current repo.
+| Concern | What cp does |
+|---|---|
+| **Filenames** | Same: `PROJECT.md`, `ROADMAP.md`, `STATE.md`, `MILESTONES.md`, `MILESTONE-CONTEXT.md`, `phases/{NN-slug}/{phase}-{plan}-PLAN.md`, `quick/{YYYYMMDD-slug}/PLAN.md`. |
+| **Frontmatter** | Same field names: `wave`, `depends_on`, `requirements`, `must_haves.*` for PLAN; `requires`/`provides`/`affects`, `subsystem`, `tags`, `tech-stack`, `key-files`, `key-decisions`, `patterns-established`, `requirements-completed` for SUMMARY. |
+| **Config** | Same file (`.planning/config.json`). cp keys live under the `cp:` top-level block; GSD ignores unknown keys. |
+| **Round-trip** | `cp` only ADDS to `.planning/` (new cp block, milestone bullets, ticked checkboxes). It never rewrites GSD-shape files in incompatible ways. |
+| **Audit** | `cp gsd-import` classifies any project (none / pure-GSD / cp-aware / cp-aware-GSD-superset) and reports exactly what `cp init` would change. Read-only by default. |
 
-> **Status:** while cp is under active development, format parity with GSD
-> is a hard contract. Long-term, cp may evolve its own conventions, but
+You can switch back to GSD at any time. Run `cp doctor` to see the live
+compatibility report.
+
+> **Status:** format parity with GSD is a hard contract while cp is in
+> active development. Long-term, cp may evolve its own conventions, but
 > only after we've documented a migration path.
 
-## Status
+## Architecture
 
-**v0.1.0 — early alpha.** Vertical slice for GitHub Copilot CLI:
-`new-project`, `new-milestone`, `plan-phase`, `execute-phase`, `quick`.
-Claude Code installer, full command set, and `manual` provider follow.
+```
+bin/cp.js            # CLI entry: install / init / doctor / config / gsd-import
+install/
+  copilot.js         # writes .github/skills/cp/*.md + .github/agents/*.md
+  claude.js          # writes .claude/commands/cp/*.md + idempotent CLAUDE.md merge
+commands/cp/         # harness-agnostic slash-command markdown (9 commands)
+lib/
+  frontmatter.js     # YAML frontmatter read/write (yaml dep, parseError on bad input)
+  roadmap.js         # ROADMAP traversal: listPhases, setPlanDone, appendPhaseBlock
+  state.js           # STATE.md "Current Position" updater
+  paths.js           # phase dir / SUMMARY filename resolution (GSD conventions)
+  milestone.js       # close-out: verify, aggregate, render digest, collapse milestone
+  provider.js        # role → skill resolution with installed-check + fallback
+  gsd-compat.js      # detect/classify pure-GSD vs cp-aware vs GSD-superset
+  import.js          # read-only auditor (74-test fixture suite)
+templates/           # PROJECT/ROADMAP/STATE/MILESTONES seeds
+test/                # 6 test files, 328 assertions, plain Node (no test runner)
+docs/
+  architecture.md
+  writing-providers.md
+```
+
+## Troubleshooting
+
+**`cp doctor` says provider not installed.**
+Either install Superpowers in the same harness, or `cp config set
+workflow_provider manual` to use the built-in inline prompts.
+
+**`cp gsd-import` returns exit code 1 (errors).**
+Frontmatter parse failure or required GSD/cp file missing. Run with
+`--json` to see the structured report; the offending file is listed under
+`issues[*].file`.
+
+**`/cp-complete-milestone` fails with `summariesMissing: ['01-01']`.**
+`cp` looks for `{NN-MM}-SUMMARY.md` in each phase dir (e.g.
+`01-01-SUMMARY.md`). If your executor writes `01-01-storage-SUMMARY.md`
+(slug in the middle), rename without the slug.
+
+**`fs.writeFileSync` `ERR_INVALID_ARG_TYPE` when calling lib functions.**
+Several lib functions return `{content, changed, reason}` descriptor
+objects, not raw strings. Always use `.content` before writing:
+`fs.writeFileSync(p, milestone.collapseMilestoneInRoadmap(...).content)`.
+
+**`/cp-resume` jumps to the wrong plan.**
+Check STATE.md's "Session Continuity" section — `Resume file:` should point
+to `.continue-here.md` inside the phase dir, not the project root.
+`cp` normalises plan IDs (`02` vs `"02"`) when computing the next plan.
+
+## Roadmap
+
+**v0.1 (current)** — vertical slice for GitHub Copilot CLI: `new-project`,
+`new-milestone`, `plan-phase`, `execute-phase`, `quick`, `progress`,
+`resume`, `complete-milestone`. Claude installer + manual provider shipped.
+
+**v0.2** — `cp execute-phase` / `cp complete-milestone` CLI wrappers (so you
+don't have to remember the lib contracts); `/cp-capture` for inbox triage;
+status-line hook; optional Superpowers worktree integration.
+
+**v0.3** — multi-workspace support; `/cp-doctor` markdown command; Cursor
+and Aider installers.
 
 ## Credits
 
@@ -153,3 +310,4 @@ Claude Code installer, full command set, and `manual` provider follow.
   [Superpowers](https://github.com/obra/superpowers) by Jesse Vincent.
 
 MIT.
+
