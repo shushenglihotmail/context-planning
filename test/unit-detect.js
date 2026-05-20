@@ -218,7 +218,11 @@ section('detectProviderAtAnyHarness: unknown provider');
 section('detectAllInstalled: full report shape');
 {
   const tmpHome = track(mktmp('full'));
+  const tmpRepo = track(mktmp('full-repo'));
+  fs.mkdirSync(path.join(tmpRepo, '.git'), { recursive: true });
   os.homedir = () => tmpHome;
+  const oldCwd = process.cwd();
+  process.chdir(tmpRepo);
   try {
     // Create copilot marketplace layout for superpowers
     const spDir = path.join(tmpHome, '.copilot', 'installed-plugins', 'sp-mkt', 'superpowers');
@@ -250,11 +254,12 @@ section('detectAllInstalled: full report shape');
     const manual = report.providers.find((p) => p.name === 'manual');
     ok('manual is installed', manual && manual.installed === true);
 
-    // Check echo-provider is NOT installed (no local files)
+    // Check echo-provider is NOT installed (no local files in sandboxed env)
     const echo = report.providers.find((p) => p.name === 'echo-provider');
     ok('echo-provider in report', !!echo);
     ok('echo-provider is not installed', echo && echo.installed === false);
   } finally {
+    process.chdir(oldCwd);
     os.homedir = realHomedir;
   }
 }

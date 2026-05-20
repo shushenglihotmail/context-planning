@@ -117,7 +117,7 @@
       "echo-provider": {
         "description": "Schema-test stub. Echoes the role name. Not for end users.",
         "plugin_shape": { "dir_name": "echo-provider", "required_subdirs": [] },
-        "detect": { "any_of": [] },
+        "detect": { "any_of": [".planning/providers/echo-provider"] },
         "skills": {
           "brainstorm": "echo",
           "plan": "echo",

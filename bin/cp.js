@@ -451,10 +451,23 @@ function resolveAuditRoot(rootArg) {
 function cmdInstall(args) {
   const harness = args[0];
   if (!harness) {
-    console.error('Usage: cp install <copilot|claude|cursor|aider> [--force]');
+    console.error('Usage: cp install <copilot|claude|cursor|aider|echo-provider> [--force]');
     process.exit(2);
   }
   const force = args.includes('--force');
+
+  // Special case: echo-provider installs to .planning/providers/
+  if (harness === 'echo-provider') {
+    const echoInstaller = require(path.join(pluginRoot(), 'install', 'echo-provider.js'));
+    const result = echoInstaller.install();
+    for (const r of result.results) {
+      console.log(`✓ ${r.file} (${r.status})`);
+    }
+    console.log('\necho-provider installed. Switch with:');
+    console.log('  cp config set workflow_provider echo-provider');
+    return;
+  }
+
   let installer;
   try {
     installer = require(path.join(pluginRoot(), 'install', `${harness}.js`));
