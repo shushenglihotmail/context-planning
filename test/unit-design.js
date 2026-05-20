@@ -120,6 +120,39 @@ section('lib/lifecycle: scaffoldMilestone emits milestones/<slug>/DESIGN.md');
 }
 
 // =============================================================
+section('lib/milestone: aggregateSummaries surfaces phaseDesignRefs[]');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('agg-design');
+  const phasePath = path.join(root, '.planning', 'phases', '16-test-phase');
+  fs.mkdirSync(phasePath, { recursive: true });
+  fs.writeFileSync(path.join(phasePath, 'DESIGN.md'), '# Design: Phase 16\n');
+
+  const summaries = [
+    { phase: '16', plan: '01', phasePath, data: { subsystem: 'tooling', 'key-decisions': ['dec1'] } },
+    { phase: '16', plan: '02', phasePath, data: { subsystem: 'tooling', 'key-decisions': ['dec2'] } },
+  ];
+
+  const agg = milestone.aggregateSummaries(summaries);
+  ok('phaseDesignRefs key exists', Array.isArray(agg.phaseDesignRefs));
+  ok('phaseDesignRefs deduped to 1 entry per phase', agg.phaseDesignRefs.length === 1);
+  ok('phaseDesignRefs[0].phase = "16"',
+    agg.phaseDesignRefs[0] && agg.phaseDesignRefs[0].phase === '16');
+}
+
+section('lib/milestone: aggregateSummaries empty when no DESIGN.md');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('agg-nodes');
+  const phasePath = path.join(root, '.planning', 'phases', '17-no-design');
+  fs.mkdirSync(phasePath, { recursive: true });
+  // No DESIGN.md.
+  const summaries = [{ phase: '17', plan: '01', phasePath, data: {} }];
+  const agg = milestone.aggregateSummaries(summaries);
+  ok('phaseDesignRefs empty when no DESIGN', agg.phaseDesignRefs.length === 0);
+}
+
+// =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
