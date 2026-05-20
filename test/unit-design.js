@@ -247,6 +247,33 @@ section('lib/lifecycle: scaffoldPhase emits REVIEW-LOG.md');
   ok('scaffoldPhase now emits 4 actions', r.actions.length === 4);
 }
 
+section('lib/milestone: aggregateSummaries surfaces reviewLogRefs[] + reviewCount');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('agg-review');
+  const phasePath = path.join(root, '.planning', 'phases', '20-test');
+  fs.mkdirSync(phasePath, { recursive: true });
+  fs.writeFileSync(path.join(phasePath, 'REVIEW-LOG.md'),
+    '---\nphase: "20"\n---\n# Review Log\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n\n## 2026-05-20 — Plan 20-01 Task 1 — code-quality\n\n**Verdict:** approved\n\n---\n\n## 2026-05-20 — Plan 20-01 Task 2 — spec-compliance\n\n**Verdict:** rejected\n\n---\n');
+  const summaries = [{ phase: '20', plan: '01', phasePath, data: {} }];
+  const agg = milestone.aggregateSummaries(summaries);
+  ok('reviewLogRefs key exists', Array.isArray(agg.reviewLogRefs));
+  ok('reviewLogRefs has 1 entry (deduped by phase)', agg.reviewLogRefs.length === 1);
+  ok('reviewCount tallies all entries across phases', agg.reviewCount === 2);
+}
+
+section('lib/milestone: aggregateSummaries empty review counts');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('agg-noreview');
+  const phasePath = path.join(root, '.planning', 'phases', '21-norl');
+  fs.mkdirSync(phasePath, { recursive: true });
+  const summaries = [{ phase: '21', plan: '01', phasePath, data: {} }];
+  const agg = milestone.aggregateSummaries(summaries);
+  ok('reviewLogRefs empty', agg.reviewLogRefs.length === 0);
+  ok('reviewCount zero', agg.reviewCount === 0);
+}
+
 // =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
