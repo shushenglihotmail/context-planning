@@ -22,3 +22,7 @@ test/__tmp_*
 .github/skills/
 .github/context-planning.md
 .github/agents/
+
+# c8 coverage output
+coverage/
+.nyc_output/

@@ -1,0 +1,21 @@
+{
+  "all": true,
+  "include": [
+    "bin/**/*.js",
+    "lib/**/*.js",
+    "install/**/*.js"
+  ],
+  "exclude": [
+    "bin/commands/_usage.js",
+    "install/echo-provider.js",
+    "test/**",
+    "templates/**",
+    "commands/**",
+    "docs/**",
+    ".planning/**",
+    "**/*.config.js"
+  ],
+  "exclude-after-remap": false,
+  "skip-full": false,
+  "report-dir": "coverage"
+}
