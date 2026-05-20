@@ -58,10 +58,18 @@ the project context (Core Value, last 3 validated requirements).
 
 Goal of the brainstorm: a clear, scoped specification for the milestone.
 
-Save the brainstorm output to `.planning/MILESTONE-CONTEXT.md` (top-level,
-transient — same name and location GSD uses, so a switch back to GSD will
-find it). It will be deleted (or moved to `.planning/milestones/{slug}/`)
-once all phases in this milestone are planned via `/cp-plan-phase`.
+**v0.7 design-capture (TWO destinations):**
+1. Save the FULL brainstorm transcript (verbatim Q&A) to
+   `.planning/MILESTONE-CONTEXT.md`. This is the unedited working file.
+2. Save the structured ADR summary (Status / Context / Decision /
+   Consequences / Architecture / etc.) to
+   `.planning/milestones/<slug>/DESIGN.md`. `cp scaffold-milestone`
+   already created the empty template — SP brainstorming overwrites it
+   with the populated version using its `path:` override parameter.
+
+At `cp complete-milestone`, MILESTONE-CONTEXT.md is automatically
+promoted into the milestone DESIGN.md as a "Brainstorm transcript"
+appendix and the transient file is deleted.
 
 ## Step 4 — Update PROJECT.md
 

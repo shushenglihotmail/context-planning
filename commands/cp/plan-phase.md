@@ -103,9 +103,36 @@ Run `npx cp doctor`. Find the `plan` role's resolved provider + skill.
 - If `manual`: warn the user the provider's plan skill is missing, then fall
   back to inline plan-writing — ask the user about each task, scope, success.
 
+## Step 3.5 — Delegate to brainstorming for DESIGN.md (v0.7)
+
+Before invoking the plan skill, invoke the provider's `brainstorm` skill
+to fill in the phase-tier DESIGN.md.
+
+- `cp scaffold-phase` already created an empty template at
+  `.planning/phases/{phase-dir}/DESIGN.md`.
+- Pass to the brainstorm skill:
+  - The phase Goal, Success Criteria, and Requirements (from ROADMAP.md)
+  - The milestone DESIGN.md at `.planning/milestones/<slug>/DESIGN.md` as
+    context (so the phase design stays consistent with the milestone)
+  - A `path:` override pointing to
+    `.planning/phases/{phase-dir}/DESIGN.md` so SP writes there directly
+    instead of `docs/superpowers/specs/...`
+- Do NOT touch frontmatter keys cp populated (`phase`, `milestone`,
+  `status`, `created`). SP fills in Status, Context, Decision,
+  Consequences, Architecture, Components, Data Flow, Error Handling,
+  Testing Strategy, Alternatives Considered, Open Questions, References.
+
+If the brainstorm skill is unavailable (provider = manual), skip this
+step — DESIGN.md stays empty and the user can fill it later.
+
+The DESIGN.md becomes a context input to the plan skill in Step 4.
+
 ## Step 4 — Delegate to the plan skill
 
 Pass to the plan skill:
+- The phase DESIGN.md at `.planning/phases/{phase-dir}/DESIGN.md` (v0.7)
+  as the architectural source-of-truth; plan tasks should align with the
+  Decision and Components sections.
 - The phase Goal and Success Criteria (verbatim from ROADMAP.md)
 - The Requirements list (from ROADMAP's `**Requirements**:` line)
 - The Context block from PROJECT.md (Core Value, related Active requirements)
