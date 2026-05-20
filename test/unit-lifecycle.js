@@ -328,7 +328,7 @@ section('scaffoldMilestone');
   ok('ok=true on first add', r.ok);
   ok('milestone name preserved', r.milestone === 'v0.2 Greet v2');
   ok('status defaults to in-progress', r.status === 'in-progress');
-  ok('one action emitted', r.actions.length === 1);
+  ok('two actions emitted', r.actions.length === 2);
   const content = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
   ok('heading injected with 🚧 emoji + (In Progress) suffix',
     content.includes('### 🚧 v0.2 Greet v2 (In Progress)'));

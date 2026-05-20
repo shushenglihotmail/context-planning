@@ -90,6 +90,36 @@ section('lib/lifecycle: scaffoldPhase emits DESIGN.md');
 }
 
 // =============================================================
+section('lib/lifecycle: scaffoldMilestone emits milestones/<slug>/DESIGN.md');
+{
+  const lifecycle = require('../lib/lifecycle');
+  const root = mktmp('scaffold-milestone-design');
+  fs.mkdirSync(path.join(root, '.planning'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# Roadmap\n\n## Phases\n');
+
+  const r = lifecycle.scaffoldMilestone(root, 'v0.7 Design Capture');
+  ok('scaffoldMilestone ok', r.ok === true);
+
+  const roadmap = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('roadmap has milestone heading', roadmap.includes('v0.7 Design Capture'));
+
+  const mdPath = paths.milestoneDesignFile('v0.7 Design Capture', root);
+  ok('milestone DESIGN.md exists', fs.existsSync(mdPath));
+
+  const design = fs.readFileSync(mdPath, 'utf8');
+  ok('milestone DESIGN has milestone_slug frontmatter',
+    /^milestone_slug:\s*"v0-7-design-capture"\s*$/m.test(design));
+  ok('milestone DESIGN title substituted',
+    /^# Design: v0\.7 Design Capture\s*$/m.test(design));
+  ok('milestone DESIGN has no unsubstituted placeholders',
+    !design.includes('{{') && !design.includes('}}'));
+
+  const wrote = r.actions.find((a) => a.path === mdPath);
+  ok('actions include milestone DESIGN.md write', !!wrote && wrote.kind === 'write');
+}
+
+// =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
