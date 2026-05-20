@@ -391,6 +391,7 @@ section('scaffoldPhase happy path');
   ok('phaseNum echoed', r.phaseNum === '2');
   ok('milestone resolved to active', r.milestone === 'v0.1 Hi');
   ok('plans list returned', JSON.stringify(r.plans) === '["02-01","02-02","02-03"]');
+  ok('four actions emitted (ROADMAP + PLAN + DESIGN + REVIEW-LOG)', r.actions.length === 4);
   ok('phase dir created', fs.existsSync(r.phaseDir) && r.phaseDir.endsWith('02-ship-it'));
   ok('PLAN.md created', fs.existsSync(path.join(r.phaseDir, 'PLAN.md')));
   const planContent = fs.readFileSync(path.join(r.phaseDir, 'PLAN.md'), 'utf8');
