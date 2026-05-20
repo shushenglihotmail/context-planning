@@ -149,7 +149,8 @@ section('statusline: %B branch token resolves');
   const root = bootProject('statusline-branch');
   withMilestone(root, 'v0.7');
   withPhase(root, 1, 'foo', 1);
-  execSync('git checkout -b feature/cool 2>NUL', { cwd: root, stdio: 'pipe', shell: 'cmd.exe' });
+  // Cross-platform: don't redirect stderr / don't force cmd.exe shell.
+  execSync('git checkout -b feature/cool', { cwd: root, stdio: 'pipe' });
   const r = run(['statusline', '--format', 'branch=%B'], { cwd: root });
   ok('contains the new branch name', /branch=feature\/cool/.test(r.stdout),
     `got: ${r.stdout}`);
