@@ -1,10 +1,29 @@
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const { repoRoot } = require('../../lib/paths');
 const provider = require('../../lib/provider');
 const lifecycle = require('../../lib/lifecycle');
 const worktree = require('../../lib/worktree');
+
+// Best-effort canonical path: collapses Windows short names (FOO~1) and
+// resolves symlinks. Falls back to path.resolve() if the path doesn't
+// exist (which can happen for registry entries whose worktree was
+// removed externally).
+function canonical(p) {
+  try { return fs.realpathSync(p); }
+  catch { return path.resolve(p); }
+}
+
+function samePath(a, b) {
+  const ca = canonical(a);
+  const cb = canonical(b);
+  if (process.platform === 'win32') {
+    return ca.toLowerCase() === cb.toLowerCase();
+  }
+  return ca === cb;
+}
 
 function runCreate(args, root) {
   let name = null;
@@ -123,7 +142,7 @@ function runList(args, root) {
 
   console.log(`Registered worktrees (.planning/WORKTREES.md):`);
   for (const e of entries) {
-    const onDisk = gitTrees.find((g) => path.resolve(g.path) === path.resolve(e.path));
+    const onDisk = gitTrees.find((g) => samePath(g.path, e.path));
     const status = onDisk ? '✓ on disk' : '✗ missing';
     console.log(`  ${e.slug.padEnd(20)} ${e.branch.padEnd(28)} ${status}`);
     console.log(`    ${e.path}${e.phase ? '  [phase ' + e.phase + ']' : ''}`);
