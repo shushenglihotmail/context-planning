@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-681%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-737%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -186,6 +186,19 @@ cp statusline [--format <fmt>] [--json] [--no-color]
                                 # Silent outside a cp project. Tokens: %M
                                 # (milestone), %P (phase slug), %D (done/total),
                                 # %N (next plan id), %B (branch).
+cp worktree create <name> [--branch <b>] [--from <base>] [--path <dir>] [--phase <N>] [--use-provider] [--no-create]
+                                # Run `git worktree add <path> -b cp/<slug>`
+                                # and record in .planning/WORKTREES.md. With
+                                # --use-provider, delegates to the configured
+                                # provider's worktree skill (Superpowers:
+                                # using-git-worktrees) instead of running git
+                                # directly.
+cp worktree list [--json]       # List cp-tracked worktrees, cross-referenced
+                                # against `git worktree list --porcelain`.
+cp worktree remove <slug> [--force] [--no-commit]
+                                # `git worktree remove` + drop the registry
+                                # entry. Refuses if git refuses (dirty
+                                # worktree) unless --force.
 cp tick <plan-id> [--undo] [--no-commit] [--dry-run]
                                 # Mark a plan done in ROADMAP + phase PLAN.md.
                                 # Idempotent. Commits unless --no-commit.
@@ -406,8 +419,15 @@ writes each cp slash-command as a `.cursor/rules/cp-<name>.mdc` rule
 `.aider/cp-commands/<name>.md` and patches `.aider.conf.yml` with a
 fenced `read:` block (preserves any other YAML you've added). 681 tests.
 
-**v0.4.x — planned** — optional Superpowers worktree integration;
-multi-workspace.
+**v0.4.3 — git worktree integration** (shipped) — `cp worktree create/list/remove`
+wraps `git worktree` with cp-aware defaults (sibling-dir layout, `cp/<slug>`
+branch) and records each worktree in `.planning/WORKTREES.md`. `--use-provider`
+opt-in delegates to the configured workflow provider's `worktree` skill
+(Superpowers maps it to `using-git-worktrees`); cp-native fallback uses
+`git worktree add` directly. 737 tests.
+
+**v0.4.x — planned** — multi-workspace; live dogfood of the v0.3.4+v0.4.x
+hardening via `/cp-map-codebase --force`.
 
 ## Credits
 

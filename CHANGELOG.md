@@ -8,6 +8,61 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.4.3] — 2026-05-20
+
+Adds **`cp worktree {create,list,remove}`** — git-worktree management with
+optional Superpowers provider hand-off. Closes the v0.4 roadmap item
+"optional Superpowers worktree integration".
+
+### Added — `cp worktree`
+
+- **`cp worktree create <name> [--branch <b>] [--from <base>] [--path <dir>] [--phase <N>] [--no-create] [--use-provider]`** —
+  runs `git worktree add <path> -b cp/<slug>` with sensible defaults (sibling
+  directory `<repo>-<slug>`, branch `cp/<slug>`) and records the entry in
+  `.planning/WORKTREES.md`. Auto-commits scoped to `WORKTREES.md` only (v0.3.3
+  invariant preserved).
+- **`cp worktree list [--json]`** — shows registered worktrees,
+  cross-referenced against `git worktree list --porcelain` so you can see at
+  a glance which entries still have their directory on disk.
+- **`cp worktree remove <slug> [--force] [--no-commit]`** — runs
+  `git worktree remove <path>` and drops the registry entry. Refuses (exit 1)
+  if git refuses (e.g. dirty worktree) unless `--force` is passed.
+- **`--use-provider` opt-in delegation.** When set, cp resolves the
+  configured workflow provider's `worktree` role (Superpowers maps it to
+  `using-git-worktrees`) and emits a hand-off line instead of running git
+  itself. The harness picks up the skill name and the prepared
+  `git worktree add` invocation. The cp-native path remains the default —
+  this is an opt-in for users who want their provider's worktree skill in
+  charge.
+
+### Added — `lib/worktree.js`
+
+- Pure helpers: `slugify`, `defaultWorktreePath`, `defaultBranchName`,
+  `parseGitWorktreeList`, `renderWorktreesDoc`, `parseWorktreesDoc`,
+  `addRegistryEntry`, `removeRegistryEntry`, `listRegistry`, `isoDay`.
+- Returns the same `{actions, ...}` shape as `lib/inbox.js` and the rest of
+  the lifecycle ops so the CLI routes writes through `writeBatch` for free
+  (atomic + transactional, per v0.3.2).
+
+### Added — coverage
+
+- **`test/unit-worktree.js`** — 56 new assertions: slugify edge cases,
+  default path / branch helpers, `git worktree list --porcelain` parser
+  with detached + bare entries, registry doc round-trip, parse-tolerates-noise,
+  add/remove/dedupe behaviour, end-to-end CLI (`create` → `list` →
+  `list --json` → `remove`), `--no-create` skip path, all usage error paths
+  (no subcommand, bad subcommand, missing name/slug).
+- Test totals: **737 assertions** across 14 suites, all green.
+
+### Notes
+
+- The cp-native path uses `git worktree add` with `-b cp/<slug>`. If your
+  workflow needs a different branch convention, pass `--branch <name>`.
+- `cp worktree list --json` shape: `{ registered: [...], git: [...] }` —
+  `registered` is what `.planning/WORKTREES.md` knows about, `git` is what
+  `git worktree list --porcelain` reports. The two should agree; when they
+  drift, run `cp worktree list` to see the `on disk` / `missing` markers.
+
 ## [0.4.2] — 2026-05-20
 
 Adds **`cp install cursor`** and **`cp install aider`** — two new harness
@@ -479,7 +534,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.2...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.3...HEAD
+[0.4.3]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.3
 [0.4.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.2
 [0.4.1]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.1
 [0.4.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.0
