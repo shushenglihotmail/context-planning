@@ -256,7 +256,9 @@ section('completeMilestone');
   ok('dry-run dryRun=true', dry.dryRun === true);
   ok('dry-run did NOT write MILESTONES.md', !fs.existsSync(path.join(root, '.planning', 'MILESTONES.md')));
   ok('dry-run did NOT delete MILESTONE-CONTEXT.md', fs.existsSync(path.join(root, '.planning', 'MILESTONE-CONTEXT.md')));
-  ok('dry-run actions length 4 (MILESTONES write + ROADMAP write + STATE write + MC delete)', dry.actions.length === 4);
+  ok('dry-run actions length 5 (MILESTONES write + ROADMAP write + DESIGN write + STATE write + MC delete)', dry.actions.length === 5);
+  ok('dry-run includes milestone DESIGN.md write',
+    dry.actions.some((a) => a.kind === 'write' && /[\\/]milestones[\\/]v0-1-hi[\\/]DESIGN\.md$/.test(a.path)));
 
   // Real run.
   const real = lifecycle.completeMilestone(root, { noCommit: true });

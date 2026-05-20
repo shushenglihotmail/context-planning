@@ -153,6 +153,34 @@ section('lib/milestone: aggregateSummaries empty when no DESIGN.md');
 }
 
 // =============================================================
+section('lib/milestone: promoteMilestoneContext');
+{
+  const milestoneLib = require('../lib/milestone');
+  const root = mktmp('promote');
+  fs.mkdirSync(path.join(root, '.planning'), { recursive: true });
+
+  ok('null when no context', milestoneLib.promoteMilestoneContext(root, 'X') === null);
+
+  fs.writeFileSync(path.join(root, '.planning', 'MILESTONE-CONTEXT.md'), '   \n');
+  ok('null when context empty', milestoneLib.promoteMilestoneContext(root, 'X') === null);
+
+  fs.writeFileSync(path.join(root, '.planning', 'MILESTONE-CONTEXT.md'),
+    '# Brainstorm\n\nQ: what?\nA: this.\n');
+  const r1 = milestoneLib.promoteMilestoneContext(root, 'v0.7 Test');
+  ok('action = created', r1 && r1.action === 'created');
+  ok('after has Brainstorm transcript heading', r1.after.includes('## Brainstorm transcript'));
+  ok('after has Q&A body', r1.after.includes('Q: what?'));
+  ok('after has slug frontmatter', r1.after.includes('milestone_slug: "v0-7-test"'));
+
+  fs.mkdirSync(path.dirname(r1.path), { recursive: true });
+  fs.writeFileSync(r1.path, '---\nmilestone: v0.7 Test\n---\n\n# Design: v0.7 Test\n\n## Status\nAccepted\n');
+  const r2 = milestoneLib.promoteMilestoneContext(root, 'v0.7 Test');
+  ok('action = appended', r2 && r2.action === 'appended');
+  ok('appended preserves Status section', r2.after.includes('## Status') && r2.after.includes('Accepted'));
+  ok('appended adds Brainstorm transcript', r2.after.includes('## Brainstorm transcript'));
+}
+
+// =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
