@@ -11,7 +11,15 @@ const worktree = require('../../lib/worktree');
 // resolves symlinks. Falls back to path.resolve() if the path doesn't
 // exist (which can happen for registry entries whose worktree was
 // removed externally).
+//
+// On Windows, the JS realpathSync historically preserves 8.3 short
+// names while realpathSync.native (GetFinalPathNameByHandle) expands
+// them. Try .native first.
 function canonical(p) {
+  const realNative = fs.realpathSync.native;
+  if (realNative) {
+    try { return realNative(p); } catch { /* fall through */ }
+  }
   try { return fs.realpathSync(p); }
   catch { return path.resolve(p); }
 }
