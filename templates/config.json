@@ -59,11 +59,35 @@
 
   "cp": {
     "$comment": "context-planning settings. GSD ignores unknown top-level keys, so both tools can coexist.",
-    "version": 1,
+    "version": 2,
     "workflow_provider": "superpowers",
+
+    "harnesses": {
+      "copilot": {
+        "description": "GitHub Copilot CLI",
+        "plugin_roots": ["~/.copilot/installed-plugins/*/"]
+      },
+      "claude": {
+        "description": "Claude Code",
+        "plugin_roots": ["~/.claude/plugins/*/", "~/.claude/skills/"]
+      },
+      "cursor": {
+        "description": "Cursor",
+        "plugin_roots": ["~/.cursor/extensions/*/"]
+      },
+      "aider": {
+        "description": "Aider (file-based, no plugin slot today)",
+        "plugin_roots": []
+      }
+    },
+
     "providers": {
       "superpowers": {
         "description": "Jesse Vincent's Superpowers plugin (https://github.com/obra/superpowers)",
+        "plugin_shape": {
+          "dir_name": "superpowers",
+          "required_subdirs": ["skills/writing-plans", "skills/subagent-driven-development"]
+        },
         "detect": {
           "any_of": [
             ".claude/plugins/superpowers",
@@ -88,6 +112,24 @@
           "tdd": "test-driven-development",
           "debug": "systematic-debugging",
           "verify": "verification-before-completion"
+        }
+      },
+      "echo-provider": {
+        "description": "Schema-test stub. Echoes the role name. Not for end users.",
+        "plugin_shape": { "dir_name": "echo-provider", "required_subdirs": [] },
+        "detect": { "any_of": [] },
+        "skills": {
+          "brainstorm": "echo",
+          "plan": "echo",
+          "execute": "echo",
+          "execute_simple": "echo",
+          "review": "echo",
+          "receive_review": "echo",
+          "finish": "echo",
+          "worktree": "echo",
+          "tdd": "echo",
+          "debug": "echo",
+          "verify": "echo"
         }
       },
       "manual": {
