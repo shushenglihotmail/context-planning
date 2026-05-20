@@ -8,6 +8,88 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## v0.7.0 — Design Capture (persistent design, review log, key-decisions hard-block)
+
+**Milestone goal:** Close three persistence gaps surfaced after the v0.6
+release retrospective: (1) architectural rationale was transient
+(`MILESTONE-CONTEXT.md` deleted at close), (2) SP `subagent-driven-development`
+review chains lived only in the orchestrator transcript, and (3) `key-decisions`
+in plan SUMMARYs was silently optional, so empty arrays slipped through and
+erased decision history.
+
+**One milestone, one phase, three plans, one tag.**
+
+### Highlights
+
+- **Milestone DESIGN.md** — `cp scaffold-milestone` now creates
+  `.planning/milestones/<slug>/DESIGN.md` from `templates/DESIGN.md` (a union
+  ADR + SP-brainstorm template). Persistent home for architectural rationale.
+- **Phase DESIGN.md** — `cp scaffold-phase` now emits a phase-tier `DESIGN.md`
+  alongside `PLAN.md`. The `cp-plan-phase` skill gained a new **Step 3.5**
+  that delegates to SP `brainstorming` (with a `path:` override) to populate
+  it before planning starts.
+- **MILESTONE-CONTEXT.md promote-on-close** — `cp complete-milestone` now
+  promotes the transient brainstorm transcript into the milestone DESIGN.md
+  as a "Brainstorm transcript" appendix, then deletes the transient file
+  atomically.
+- **REVIEW-LOG.md** — `cp scaffold-phase` now emits an append-only
+  `REVIEW-LOG.md` (4th action). The `cp-execute-phase` skill gained a new
+  **Step 4.5** that instructs the orchestrator to append one block per SP
+  review cycle (verdict, findings, resolution). The cp aggregator counts
+  entries via `reviewLogRefs[]` and `reviewCount`.
+- **key-decisions hard-block** — `cp write-summary` now exits code **2**
+  with the exact message:
+
+  ```
+  Error: 'key-decisions' is required and must have ≥1 entry. See spec at
+  docs/superpowers/specs/2026-05-20-v0-7-design-capture-design.md
+  ```
+
+  if the input is missing `key-decisions` or has an empty array. Existing
+  v0.6 SUMMARYs were backfilled (33 files) to satisfy the new constraint.
+- **Aggregator extensions** — `aggregateSummaries(...)` now returns
+  `phaseDesignRefs[]` (deduped per phase) and `reviewLogRefs[]` +
+  `reviewCount` (entry tally) alongside existing fields.
+- **No upstream SP changes** — All capture logic lives in cp templates, cp
+  lib, and cp skill docs. SP `brainstorming` is invoked with a `path:`
+  override; SP `subagent-driven-development` is unchanged (the review-log
+  append is a skill-level orchestrator instruction).
+
+### Internal
+
+- New `lib/paths` helpers: `designFile`, `milestoneSlug`, `milestoneDir`,
+  `milestoneDesignFile`, `reviewLogFile`.
+- New `lib/milestone.promoteMilestoneContext(root, milestoneName, options)`
+  helper (returns `{ action, path, after, contextPath }` or null).
+- New `lib/milestone.ValidationError` (name + `code: 'EVALIDATION'`)
+  thrown by `writeSummary` on invalid input.
+- New `test/unit-design.js` (59 assertions across 8 sections).
+- New `templates/DESIGN.md` and `templates/REVIEW-LOG.md`.
+- New `scripts/backfill-v07-design.js` — mid-flight migration helper for
+  milestones/phases scaffolded before v0.7 code existed.
+- Coverage thresholds held: 89.37% lines / 77.63% branches.
+
+### Migration
+
+For existing cp projects upgrading to v0.7:
+
+1. `npm install -g context-planning@0.7.0`
+2. Existing milestones / phases do NOT get DESIGN.md retroactively. Use
+   `scripts/backfill-v07-design.js` as a template (copy to your project and
+   adapt the milestone slug + phase number) to backfill any in-flight work.
+3. SUMMARY files with empty `key-decisions: []` will be rejected by the
+   next `cp write-summary` call. Backfill them once: open each
+   `.planning/phases/**/NN-MM-SUMMARY.md`, replace the empty array with at
+   least one entry. Trivial mechanical plans can use:
+   `key-decisions: ['mechanical edits only — no design decisions']`.
+4. The default `cp doctor` continues to find SP via Copilot CLI marketplace
+   (added in v0.4.5) and Claude Code (legacy) installs.
+
+### Spec
+
+`docs/superpowers/specs/2026-05-20-v0-7-design-capture-design.md` — full
+ADR with Alternatives Considered (A-E) and Open Questions deferred to v0.8.
+
 ## v0.6.0 — Quality Wave (CI, dual-binary, command decomposition, coverage)
 
 **Milestone goal:** Production-hardening pass — break up the
