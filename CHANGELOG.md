@@ -8,6 +8,61 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.4.2] — 2026-05-20
+
+Adds **`cp install cursor`** and **`cp install aider`** — two new harness
+installers that bring the cp slash-command surface into Cursor IDE and
+Aider, respectively. No changes to existing copilot / claude installers.
+
+### Added — Cursor installer (`cp install cursor`)
+
+- Installs each `commands/cp/<name>.md` as a `.cursor/rules/cp-<name>.mdc`
+  rule file. Each rule has `alwaysApply: false` so it shows up in Cursor's
+  rule picker / `@-attach` autocomplete without bloating every chat
+  context. The source command's `description:` is hoisted into the Cursor
+  frontmatter so the rule picker shows it inline.
+- Installs an ambient `.cursor/rules/context-planning.mdc` (`alwaysApply:
+  true`) mirroring the routing instructions we install for Copilot CLI's
+  context file. This tells Cursor what cp is and how to route `/cp-*` /
+  `cp-*` user invocations to the matching rule.
+- Supports `CP_INSTALL_SCOPE=user` for `~/.cursor/rules/` install.
+- Inherits the v0.3.4 collision protection: `--force` to clobber local
+  edits, exit code 3 when local files are kept.
+
+### Added — Aider installer (`cp install aider`)
+
+- Aider has NO per-project slash-command or rule extension mechanism — its
+  slash commands are hard-coded Python. So cp installs a read-only context
+  briefing the user can pull into chat instead:
+  - **`.aider/CP-CONTEXT.md`** — generated overview of the cp slash
+    commands + a CLI cheat-sheet, with rules for when to invoke `cp`.
+  - **`.aider/cp-commands/<name>.md`** — full per-command body, attachable
+    via Aider's `/read .aider/cp-commands/<name>.md` chat command.
+  - **`.aider.conf.yml`** — patched (or created) to include
+    `read: - .aider/CP-CONTEXT.md` via a fenced
+    `# >>> context-planning (cp)` block. Idempotent re-runs are detected.
+    Hand-written keys in `.aider.conf.yml` (other YAML) are preserved.
+- User asks Aider in chat (e.g. "use cp to make a new milestone called
+  'foo'"); Aider sees the briefing and invokes `cp scaffold-milestone foo`
+  via shell.
+
+### Added — coverage
+
+- **`test/unit-installers.js`** — 50 new assertions: `cursor.buildRule`
+  frontmatter synthesis (with + without source frontmatter), e2e cursor
+  install + re-run + hand-edit-refuse + `--force` clobber,
+  `aider.buildContextBriefing` shape, `aider.patchAiderConfig`
+  create/idempotent/preserve-user-edits, e2e aider install, `cp install
+  pyramid` unknown-harness error path lists all four harnesses.
+- Test totals: **681 assertions** across 13 suites, all green.
+
+### Notes
+
+- Both installers use the same `install/common.js writeFileSafe` helper
+  shipped in v0.3.4, so they get collision protection + identical-detect
+  for free.
+- This closes the v0.4 README roadmap items "Cursor and Aider installers".
+
 ## [0.4.1] — 2026-05-20
 
 Adds **`cp statusline`** — a one-line prompt-friendly status indicator for
@@ -424,7 +479,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.2
 [0.4.1]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.1
 [0.4.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.0
 [0.3.4]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.4

@@ -35,7 +35,7 @@ function usage() {
   console.log(`cp v${pkg.version} — context-planning CLI
 
 Usage:
-  cp install <harness>            Install into a harness (copilot | claude)
+  cp install <harness>            Install into a harness (copilot | claude | cursor | aider)
   cp init                         Scaffold .planning/ in this repo
   cp gsd-import [--root <dir>] [--json] [--apply]
                                   Read-only audit of any planning project
@@ -320,7 +320,7 @@ function resolveAuditRoot(rootArg) {
 function cmdInstall(args) {
   const harness = args[0];
   if (!harness) {
-    console.error('Usage: cp install <copilot|claude> [--force]');
+    console.error('Usage: cp install <copilot|claude|cursor|aider> [--force]');
     process.exit(2);
   }
   const force = args.includes('--force');
@@ -329,7 +329,7 @@ function cmdInstall(args) {
     installer = require(path.join(pluginRoot(), 'install', `${harness}.js`));
   } catch (e) {
     console.error(`Unknown harness: ${harness}`);
-    console.error(`Available: copilot${available('claude') ? ', claude' : ''}`);
+    console.error(`Available: copilot${available('claude') ? ', claude' : ''}${available('cursor') ? ', cursor' : ''}${available('aider') ? ', aider' : ''}`);
     process.exit(2);
   }
   const result = installer.install({ pluginRoot: pluginRoot(), repoRoot: repoRoot(), force });

@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-631%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-681%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -143,7 +143,7 @@ decisions, patterns, and files touched — aggregated across every SUMMARY.md.
 ### Node CLI (operational tooling — not used inside the AI loop)
 
 ```bash
-cp install <copilot|claude>     # Install slash-commands + agents into a harness
+cp install <copilot|claude|cursor|aider>     # Install slash-commands + agents into a harness
 cp init                         # Scaffold .planning/ (idempotent; safe over GSD projects)
 cp doctor                       # Show resolved config, provider status, GSD compat report
 cp gsd-import [--root <dir>] [--json] [--apply]
@@ -399,8 +399,15 @@ outside a cp project (safe for PS1 / Starship / tmux). `--format`
 supports `%M %P %D %N %B` tokens; `--json` for harness consumption.
 631 tests.
 
-**v0.4.x — planned** — Cursor and Aider installers; optional Superpowers
-worktree integration; multi-workspace.
+**v0.4.2 — Cursor + Aider installers** (shipped) — `cp install cursor`
+writes each cp slash-command as a `.cursor/rules/cp-<name>.mdc` rule
+(invokable via `@cp-<name>` in Cursor chat) plus an ambient routing rule
+(`alwaysApply: true`). `cp install aider` writes `.aider/CP-CONTEXT.md` +
+`.aider/cp-commands/<name>.md` and patches `.aider.conf.yml` with a
+fenced `read:` block (preserves any other YAML you've added). 681 tests.
+
+**v0.4.x — planned** — optional Superpowers worktree integration;
+multi-workspace.
 
 ## Credits
 
