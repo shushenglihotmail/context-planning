@@ -66,6 +66,9 @@
 | `MILESTONE-CONTEXT.md` | Transient spec for current milestone | `cp-new-milestone` (created), `cp-complete-milestone` (moved) |
 | `phases/{NN-slug}/{phase}-{plan}-PLAN.md` | Concrete tasks for a plan | `cp-plan-phase` (via provider) |
 | `phases/{NN-slug}/{phase}-{plan}-SUMMARY.md` | What actually happened | `cp-execute-phase` |
+| `phases/{NN-slug}/DESIGN.md` | Phase-level design intent (ADR-style) | `cp-plan-phase` Step 3.5 (via provider `brainstorm`) |
+| `phases/{NN-slug}/REVIEW-LOG.md` | Append-only log of review/decision pivots | `cp-execute-phase` Step 4.5 |
+| `milestones/{slug}/DESIGN.md` | Milestone-level design + roll-up of phase DESIGNs | `cp-new-milestone`, promoted by `cp-complete-milestone` |
 | `quick/*/PLAN.md` | Concrete tasks for ad-hoc work | `cp-quick` |
 | `quick/*/SUMMARY.md` | Outcome | `cp-quick` |
 | `config.json` (`cp.*`) | Provider + behavior settings | `cp config set`, manual edits |
@@ -73,6 +76,108 @@
 All filenames and frontmatter match GSD's conventions. See the
 "GSD compatibility" section in the [README](../README.md) for the round-trip
 contract.
+
+## Interaction with workflow providers
+
+cp drives a provider session like a *conversation with a contract*: cp owns
+the file system before/after the call, the provider owns reasoning + creative
+output during the call, and cp captures the durable artifacts back out before
+yielding control to the user.
+
+```
+                cp command                provider skill (e.g. SP)
+                ──────────                ────────────────────────
+   call:   ─ assemble context ──▶  ─ brainstorm / plan / execute ─┐
+              (state + slot)                                       │
+                                                                   │
+   return: ◀── extract artifacts ◀── conversation output ──────────┘
+              (write to .planning/)
+```
+
+### The role contract
+
+Each provider skill is invoked for a specific **role**. cp passes a small
+*context slot* (relevant files + intent) and expects a known *artifact* back.
+Providers don't need to know about cp — they just produce their normal output;
+cp's command markdown does the lifting to harvest it.
+
+| Role | Where cp calls it | What cp sends in | What cp captures back | Lands in |
+|---|---|---|---|---|
+| `brainstorm` | `cp-new-project`, `cp-new-milestone`, `cp-plan-phase` Step 3.5 | PROJECT.md, MILESTONE-CONTEXT.md, phase intent | Design intent (Context / Decision / Alternatives Considered / Consequences) | `milestones/{slug}/DESIGN.md`, `phases/{NN-slug}/DESIGN.md` |
+| `plan` | `cp-plan-phase`, `cp-quick` | Phase DESIGN.md + roadmap row | Plan body (task list, acceptance criteria) | `phases/{NN-slug}/{phase}-{plan}-PLAN.md`, `quick/*/PLAN.md` |
+| `execute` | `cp-execute-phase`, `cp-quick` | PLAN.md + DESIGN.md (read-only) | Code changes + commit history + free-text outcome | Provider commits to git; cp writes `SUMMARY.md` with required `key-decisions` |
+| `review` | `cp-execute-phase` Step 4.5 (opt-in) | Diff of execute step | Findings, pivots, rejected approaches | Appended to `phases/{NN-slug}/REVIEW-LOG.md` |
+| `finish` / `worktree` / `tdd` / `debug` / `verify` | Various | Role-specific | Role-specific | Folded into SUMMARY notes; no dedicated file |
+
+Only `brainstorm`, `plan`, and `execute` are required. Missing roles fall
+back to inline `manual` prompts written into the command markdown
+(soft-dependency principle #3).
+
+### The return path (what cp captures back)
+
+This is the half of the contract that's easy to miss. When SP runs a
+brainstorm or planning session, it produces a *lot* of context that would
+otherwise vanish when the LLM session ends. cp's command markdown forces a
+small handful of structured extractions before the user is allowed to move
+on:
+
+1. **`brainstorm` → DESIGN.md.** After the provider returns, cp prompts:
+   *"Capture the design intent in the milestone/phase DESIGN.md using the
+   template (Context / Decision / Alternatives Considered / Consequences)."*
+   The template lives at `templates/DESIGN.md`. Empty DESIGN.md files are
+   tolerated but flagged by `cp status` (v0.8 deferred).
+2. **`plan` → phase directory.** The aggregator discovers DESIGN.md by phase
+   directory at roll-up time; no PLAN.md back-link is required today.
+   A frontmatter `phases:` back-link array on milestone DESIGN.md is a
+   v0.8 deferred item.
+3. **`execute` → SUMMARY.md `key-decisions`.** Required key (validated by
+   `lib/milestone.js::writeSummary`, surfaced via `cp write-summary` which
+   exits 2 on missing). Forces the executor to record any deviation from
+   the plan, surprise discoveries, or design-affecting choices made
+   mid-execute. This is the audit trail.
+4. **`execute` (+ optional `review`) → REVIEW-LOG.md.** Append-only,
+   marker-anchored (`<!-- REVIEW-LOG-ENTRIES-BELOW -->`). Each entry is
+   timestamped (`## YYYY-MM-DD HH:MM — Plan NN-MM Task N — <reviewer-role>`)
+   and the aggregator counts entries to populate `reviewCount` in the
+   milestone roll-up. Nothing is ever rewritten.
+5. **`cp-complete-milestone`** promotes phase DESIGNs into the milestone
+   DESIGN.md roll-up (`phaseDesignRefs` / `reviewLogRefs` / `reviewCount`
+   in `lib/milestone.js::aggregateSummaries`), then archives the milestone
+   into `MILESTONES.md`.
+
+The net effect: a stateless LLM picking up this repo six months later can
+reconstruct *what was decided, why, what was tried and rejected, and what
+changed during execution* — without re-reading the original SP session
+transcript (which is gone).
+
+### Provider resolution
+
+At runtime `lib/provider.js` walks `config.json → cp.providers`, runs the
+provider's `detect` block (any-of paths / glob / command exit code) against
+the current repo, and resolves each role to a concrete skill name. The
+default config ships an `superpowers` provider, an `echo` test provider, and
+a `manual` fallback. See [writing-providers.md](writing-providers.md) for
+the schema, and `docs/superpowers/specs/2026-05-20-generic-provider-harness-detection-design.md`
+for why detection is generic instead of SP-hardcoded.
+
+### Worked example — `/cp-new-milestone "add OAuth login"`
+
+1. **cp** reads `PROJECT.md`, creates `milestones/add-oauth-login/`, writes
+   a stub `MILESTONE-CONTEXT.md` with the user's intent.
+2. **cp** resolves role `brainstorm` → SP `brainstorming` skill → invokes it
+   with MILESTONE-CONTEXT.md as the seed.
+3. **SP** runs its own clarifying-questions / 2-3-approaches / design loop
+   and emits a spec under `docs/superpowers/specs/`.
+4. **cp** prompts the user to copy the agreed Context / Decision / Alternatives
+   Considered / Consequences into `milestones/add-oauth-login/DESIGN.md`
+   (template-driven; not optional).
+5. **cp** updates `ROADMAP.md` with the new milestone + phase list derived
+   from the design's "Components" section, updates `STATE.md`, and commits.
+
+The user now has *both* a freeform SP spec (rich, conversational) *and* a
+canonical cp DESIGN.md (structured, queryable, survives session loss). The
+v0.7 milestone hardened this contract; see
+`docs/superpowers/specs/2026-05-20-v0-7-design-capture-design.md`.
 
 ## What we explicitly do NOT do
 
