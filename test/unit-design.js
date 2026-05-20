@@ -180,6 +180,35 @@ section('lib/milestone: promoteMilestoneContext');
   ok('appended adds Brainstorm transcript', r2.after.includes('## Brainstorm transcript'));
 }
 
+section('lib/milestone: writeSummary validates key-decisions');
+{
+  const milestoneLib = require('../lib/milestone');
+  const root = mktmp('ws-validate');
+  fs.mkdirSync(path.join(root, '.planning', 'phases', '50-test'), { recursive: true });
+
+  const empty = { phase: '50', plan: '01', 'key-decisions': [] };
+  let caught = null;
+  try { milestoneLib.writeSummary(root, '50-01', empty); }
+  catch (e) { caught = e; }
+  ok('empty key-decisions throws', caught !== null);
+  ok('error message mentions key-decisions',
+    caught && caught.message.includes("'key-decisions' is required"));
+  ok('error message references spec',
+    caught && caught.message.includes('docs/superpowers/specs/2026-05-20-v0-7-design-capture-design.md'));
+
+  const missing = { phase: '50', plan: '01' };
+  let caught2 = null;
+  try { milestoneLib.writeSummary(root, '50-01', missing); }
+  catch (e) { caught2 = e; }
+  ok('missing key-decisions throws', caught2 !== null);
+
+  const valid = { phase: '50', plan: '01', 'key-decisions': ['decision 1'] };
+  let caught3 = null;
+  try { milestoneLib.writeSummary(root, '50-01', valid); }
+  catch (e) { caught3 = e; }
+  ok('valid input does not throw', caught3 === null);
+}
+
 // =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
