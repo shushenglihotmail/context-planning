@@ -69,7 +69,7 @@
       },
       "claude": {
         "description": "Claude Code",
-        "plugin_roots": ["~/.claude/plugins/*/", "~/.claude/skills/"]
+        "plugin_roots": ["~/.claude/plugins/", "~/.claude/skills/"]
       },
       "cursor": {
         "description": "Cursor",
