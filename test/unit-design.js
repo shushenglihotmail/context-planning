@@ -58,6 +58,38 @@ section('lib/paths: designFile resolves phase dir');
 }
 
 // =============================================================
+section('lib/lifecycle: scaffoldPhase emits DESIGN.md');
+{
+  const lifecycle = require('../lib/lifecycle');
+  const root = mktmp('scaffold-design');
+  fs.mkdirSync(path.join(root, '.planning'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# Roadmap\n\n## Phases\n\n### 🚧 Test Milestone (In Progress)\n');
+
+  const r = lifecycle.scaffoldPhase(root, '99', { name: 'design test', plans: 1 });
+  ok('scaffoldPhase ok', r.ok === true);
+
+  const planPath = path.join(r.phaseDir, 'PLAN.md');
+  ok('PLAN.md exists', fs.existsSync(planPath));
+
+  const designPath = path.join(r.phaseDir, 'DESIGN.md');
+  ok('DESIGN.md exists', fs.existsSync(designPath));
+
+  const design = fs.readFileSync(designPath, 'utf8');
+  ok('DESIGN.md has phase: "99" frontmatter', /^phase:\s*"99"\s*$/m.test(design));
+  ok('DESIGN.md has milestone: Test Milestone', /^milestone:\s*Test Milestone\s*$/m.test(design));
+  ok('DESIGN.md title substituted', /^# Design: Phase 99: design test\s*$/m.test(design));
+  ok('DESIGN.md has Status section', design.includes('## Status'));
+  ok('DESIGN.md has Architecture section', design.includes('## Architecture'));
+  ok('DESIGN.md has no unsubstituted placeholders',
+    !design.includes('{{') && !design.includes('}}'),
+    `found: ${(design.match(/\{\{[^}]+\}\}/g)||[]).join(',')}`);
+
+  const wrote = r.actions.find((a) => a.path === designPath);
+  ok('actions include DESIGN.md write', !!wrote && wrote.kind === 'write');
+}
+
+// =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
