@@ -6,7 +6,15 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added
+Nothing yet — open an issue if you want something prioritised.
+
+## [0.3.2] — 2026-05-19
+
+This release ships **`/cp-map-codebase`** (cp-native, no Superpowers required)
+and the **atomic-write hotfix** for the data-integrity Critical that the
+live `/cp-map-codebase` dry-fire against cp itself surfaced.
+
+### Added — `/cp-map-codebase`
 - **`/cp-map-codebase`** slash command — cp-native equivalent of GSD's
   `gsd-map-codebase`. Dispatches 4 parallel sub-agents (tech / arch / quality /
   concerns) via the host harness's native sub-agent primitive (Copilot CLI's
@@ -14,7 +22,7 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `.planning/codebase/` (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE,
   CONVENTIONS, TESTING, CONCERNS). Filenames and layout match GSD exactly so
   `cp gsd-import` stays clean. Supports `--force` (overwrite) and `--fast`
-  (single-agent scan with optional `--focus`).
+  (single-agent scan with optional `--focus`). **No workflow provider involved.**
 - **`cp scaffold-codebase [--force] [--no-commit] [--dry-run]`** CLI wrapper —
   creates `.planning/codebase/` and seeds 7 stub files from
   `templates/codebase/*.md`. Idempotent: refuses to overwrite existing files
@@ -26,30 +34,60 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **`lib/codebase-mapper.js`** — pure file-I/O module exposing
   `scaffoldCodebase`, `codebaseStatus`, `DOCS`, and `FOCUS_AREAS`
   (the 4-way split the slash command consumes to build agent prompts).
-  Deliberately calls no LLM so it's unit-testable.
-- **`templates/codebase/{7 files}.md`** — minimal stubs with section
-  headers and HTML-comment guidance the mapper agents replace.
+  Calls no LLM — fully unit-testable.
+- **`templates/codebase/{7 files}.md`** — minimal stubs with section headers
+  and HTML-comment guidance the mapper agents replace.
 - **`test/unit-codebase.js`** — 39 assertions covering scaffold happy path,
   refuse-overwrite, `--force`, `--dry-run`, missing-`.planning/` error,
   `codebaseStatus` shape, stub-vs-filled heuristic.
 
+### Fixed — atomic multi-file writes
+- **Atomic single-file writes (CONCERNS Critical, closed).** `lib/lifecycle.js`
+  `writeFile()` now writes to a sibling `.cp-tmp-{pid}-{rand}` file then
+  `fs.renameSync`s it into place. The rename is atomic on POSIX and on NTFS
+  via `MoveFileEx(MOVEFILE_REPLACE_EXISTING)`. Readers will see either old or
+  new content, never a half-written file. Temp files are cleaned up if the
+  write step throws.
+- **Multi-file transactional batch (`writeBatch`).** New helper exported from
+  `lib/lifecycle.js`. Stages every `write` action to a temp file FIRST; only
+  after every temp lands does it rename them into place; ONLY THEN does it
+  apply `delete` actions. Used by `completeMilestone` so the destructive
+  `delete .planning/MILESTONE-CONTEXT.md` step can never run before the
+  replacement `MILESTONES.md` / collapsed `ROADMAP.md` / reset `STATE.md`
+  are durably on disk. Closes the Critical surfaced by the live
+  `/cp-map-codebase` dry-fire against cp itself.
+- **`test/unit-atomic.js`** — 23 assertions: no-temp-leftover on success,
+  atomic overwrite, temp cleanup on failure, `writeBatch` apply order,
+  deletes-only-after-writes invariant, abort-on-staged-write-failure rollback
+  (deletes never run), `skip` / unknown-kind action handling, end-to-end
+  `completeMilestone` run with zero `.cp-tmp-*` orphans under `.planning/`.
+
 ### Changed
-- README "Slash commands" table gains `/cp-map-codebase` row; "Node CLI"
-  block adds `cp scaffold-codebase` + `cp codebase-status` entries; Roadmap
-  gains a "v0.3.x — `/cp-map-codebase`" milestone entry.
+- README "Slash commands" table gains `/cp-map-codebase` row; "Node CLI" block
+  adds `cp scaffold-codebase` + `cp codebase-status` entries; Roadmap gains a
+  "v0.3.x — `/cp-map-codebase`" milestone entry.
+- `package.json` `scripts.test` now includes `unit-codebase` and `unit-atomic`.
+  `npm test` runs 9 suites totalling ~491 assertions (up from 429).
+- `lib/lifecycle.js` exports `writeFile` and `writeBatch` publicly so future
+  cp libs (and external callers) can opt into the same atomicity guarantees
+  instead of reimplementing temp+rename.
 
 ### Design notes
-- **Why cp-native, not provider-delegated.** This work is upfront context
-  gathering that writes structured state — it has no analog in
-  Superpowers' workflow-skill catalogue (brainstorm / plan / execute /
+- **Why map-codebase is cp-native, not provider-delegated.** This work is
+  upfront context gathering that writes structured state — it has no analog
+  in Superpowers' workflow-skill catalogue (brainstorm / plan / execute /
   review / debug / TDD / verify), and using a workflow-provider role here
-  would only add latency and lose the 4-way parallelism. cp owns it
-  directly, in the same way it owns `cp init` and `cp scaffold-*`.
-  The provider abstraction is for *workflow* work only.
+  would only add latency and lose the 4-way parallelism. cp owns it directly,
+  in the same way it owns `cp init` and `cp scaffold-*`. The provider
+  abstraction is for *workflow* work only.
 - **Brownfield bootstrap order:** `cp scaffold-codebase` → `/cp-map-codebase`
   → `cp init`. Running `/cp-map-codebase` first gives `cp init` real context
   to ground PROJECT.md against, matching the GSD recommendation for existing
   codebases.
+- **Eating our own dogfood.** The atomic-write Critical was found in <10 min
+  by running `/cp-map-codebase` against cp's own source. The hotfix shipped
+  in the same release. This is the value loop the whole project is built
+  around.
 
 ## [0.3.0] — 2026-05-19
 
@@ -150,7 +188,8 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.2
 [0.3.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.0
 [0.2.0]: https://github.com/shushenglihotmail/context-planning/compare/fb25af1...3607082
 [0.1.0]: https://github.com/shushenglihotmail/context-planning/commit/fb25af1
