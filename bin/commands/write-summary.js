@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { repoRoot } = require('../../lib/paths');
-const lifecycle = require('../../lib/lifecycle');
+const milestone = require('../../lib/milestone');
 
 function run(args = []) {
   const root = repoRoot();
@@ -36,10 +36,13 @@ function run(args = []) {
   const body = bodyPath ? fs.readFileSync(bodyPath, 'utf8') : undefined;
   let r;
   try {
-    r = lifecycle.writeSummary(root, planId, data, { dryRun, body, overwrite });
-  } catch (e) {
-    console.error(`write-summary: ${e.message}`);
-    process.exit(1);
+    r = milestone.writeSummary(root, planId, data, { dryRun, body, overwrite });
+  } catch (err) {
+    if (err && (err.name === 'ValidationError' || err.code === 'EVALIDATION')) {
+      process.stderr.write(err.message + '\n');
+      process.exit(2);
+    }
+    throw err;
   }
   console.log(`${dryRun ? '·' : '✓'} ${path.relative(root, r.path)}`);
   if (dryRun) {

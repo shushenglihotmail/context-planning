@@ -209,6 +209,44 @@ section('lib/milestone: writeSummary validates key-decisions');
   ok('valid input does not throw', caught3 === null);
 }
 
+section('CLI: cp write-summary exits 2 on empty key-decisions');
+{
+  const { spawnSync } = require('child_process');
+  const root = mktmp('ws-cli');
+  fs.mkdirSync(path.join(root, '.planning', 'phases', '50-test'), { recursive: true });
+  const json = path.join(root, 'bad.json');
+  fs.writeFileSync(json, JSON.stringify({ phase: '50', plan: '01', 'key-decisions': [] }), 'utf8');
+
+  const cpBin = path.join(__dirname, '..', 'bin', 'cp.js');
+  const r = spawnSync(process.execPath, [cpBin, 'write-summary', '50-01', '--from', json], {
+    cwd: root,
+    encoding: 'utf8',
+  });
+  ok('exit code is 2', r.status === 2);
+  ok('stderr includes key-decisions error',
+    (r.stderr || '').includes("'key-decisions' is required"));
+}
+
+section('lib/lifecycle: scaffoldPhase emits REVIEW-LOG.md');
+{
+  const lifecycle = require('../lib/lifecycle');
+  const root = mktmp('scaffold-review');
+  fs.mkdirSync(path.join(root, '.planning'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# Roadmap\n\n## Phases\n\n### 🚧 Test Milestone (In Progress)\n');
+  const r = lifecycle.scaffoldPhase(root, '98', { name: 'review test', plans: 1 });
+  ok('scaffoldPhase ok', r.ok === true);
+  const reviewPath = path.join(r.phaseDir, 'REVIEW-LOG.md');
+  ok('REVIEW-LOG.md exists', fs.existsSync(reviewPath));
+  const rl = fs.readFileSync(reviewPath, 'utf8');
+  ok('REVIEW-LOG has phase frontmatter', /^phase:\s*"98"\s*$/m.test(rl));
+  ok('REVIEW-LOG has entries marker', rl.includes('REVIEW-LOG-ENTRIES-BELOW'));
+  ok('REVIEW-LOG no placeholders', !rl.includes('{{') && !rl.includes('}}'));
+  const wrote = r.actions.find((a) => a.path === reviewPath);
+  ok('actions include REVIEW-LOG.md write', !!wrote && wrote.kind === 'write');
+  ok('scaffoldPhase now emits 4 actions', r.actions.length === 4);
+}
+
 // =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
