@@ -19,12 +19,12 @@
 
 const fs = require('fs');
 const path = require('path');
-const { listCommandFiles, writeFile, homeDir } = require('./common');
+const { listCommandFiles, writeFile, writeFileSafe, homeDir } = require('./common');
 
 const CP_BLOCK_BEGIN = '<!-- context-planning (cp) — managed by cp installer -->';
 const CP_BLOCK_END = '<!-- /context-planning -->';
 
-function install({ pluginRoot, repoRoot }) {
+function install({ pluginRoot, repoRoot, force = false }) {
   const userScope = process.env.CP_INSTALL_SCOPE === 'user';
   const base = userScope
     ? path.join(homeDir(), '.claude')
@@ -34,20 +34,26 @@ function install({ pluginRoot, repoRoot }) {
   console.log(`Installing cp commands as Claude Code slash-commands into:`);
   console.log(`  ${cmdDir}`);
 
-  let n = 0;
+  let written = 0;
+  let identical = 0;
+  const userModified = [];
   for (const { name, src } of listCommandFiles(pluginRoot)) {
     // Claude expects the filename to match the command, so /cp-progress reads
     // .claude/commands/cp-progress.md. Our source files are already named
     // {name}.md (no cp- prefix), so we prefix on install.
     const dest = path.join(cmdDir, `cp-${name}.md`);
     const body = fs.readFileSync(src, 'utf8');
-    writeFile(dest, body);
-    console.log(`  + /cp-${name}`);
-    n++;
+    const r = writeFileSafe(dest, body, { force });
+    if (r.status === 'written')           { console.log(`  + /cp-${name}`); written++; }
+    else if (r.status === 'identical')    { console.log(`  = /cp-${name} (unchanged)`); identical++; }
+    else if (r.status === 'user-modified') { console.log(`  ! /cp-${name} (LOCALLY MODIFIED — kept)`); userModified.push(`cp-${name}.md`); }
   }
 
   // Merge the cp instruction block into CLAUDE.md (project or user) —
   // idempotent. Strip any prior cp block first, then append a fresh one.
+  // This is always safe: we only ever touch text *between* our markers,
+  // so any unrelated CLAUDE.md content (user instructions, other plugins'
+  // blocks) is preserved verbatim. No --force needed.
   const claudeMdPath = path.join(base, 'CLAUDE.md');
   const block = `${CP_BLOCK_BEGIN}
 # Instructions for context-planning (cp)
@@ -87,13 +93,20 @@ ${CP_BLOCK_END}
 
   writeFile(claudeMdPath, merged);
 
-  console.log(`\nInstalled ${n} slash-command(s).`);
+  console.log(`\nInstalled: ${written} written, ${identical} unchanged${userModified.length ? `, ${userModified.length} kept (locally modified)` : ''}.`);
   console.log(`Merged cp block into: ${claudeMdPath}`);
+  if (userModified.length > 0) {
+    console.log(`\n⚠ The following slash-command files exist with local modifications and were NOT overwritten:`);
+    for (const f of userModified) console.log(`    - ${f}`);
+    console.log(`  Re-run with \`cp install claude --force\` to overwrite them, or delete the local copy first.`);
+  }
   console.log(`\nNext steps:`);
   console.log(`  1. Make sure your workflow provider (default: superpowers) is installed.`);
   console.log(`     - For Claude Code:  /plugin install superpowers@superpowers-marketplace`);
   console.log(`  2. In a project directory:  cp init`);
   console.log(`  3. Then in Claude Code:     /cp-new-milestone "my first milestone"`);
+
+  return { written, identical, userModified };
 }
 
 function escapeRegex(s) {

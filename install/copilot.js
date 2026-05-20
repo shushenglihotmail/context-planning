@@ -14,9 +14,9 @@
 
 const fs = require('fs');
 const path = require('path');
-const { listCommandFiles, writeFile, homeDir } = require('./common');
+const { listCommandFiles, writeFile, writeFileSafe, homeDir } = require('./common');
 
-function install({ pluginRoot, repoRoot }) {
+function install({ pluginRoot, repoRoot, force = false }) {
   const target = process.env.CP_INSTALL_SCOPE === 'user'
     ? path.join(homeDir(), '.copilot', 'skills')
     : path.join(repoRoot, '.github', 'skills');
@@ -24,24 +24,28 @@ function install({ pluginRoot, repoRoot }) {
   console.log(`Installing cp commands as Copilot skills into:`);
   console.log(`  ${target}`);
 
-  let n = 0;
+  let written = 0;
+  let identical = 0;
+  const userModified = [];
   for (const { name, src } of listCommandFiles(pluginRoot)) {
     const skillName = `cp-${name}`;
     const skillDir = path.join(target, skillName);
     const skillMd = path.join(skillDir, 'SKILL.md');
     const body = fs.readFileSync(src, 'utf8');
-    writeFile(skillMd, body);
-    console.log(`  + ${skillName}`);
-    n++;
+    const r = writeFileSafe(skillMd, body, { force });
+    if (r.status === 'written')           { console.log(`  + ${skillName}`); written++; }
+    else if (r.status === 'identical')    { console.log(`  = ${skillName} (unchanged)`); identical++; }
+    else if (r.status === 'user-modified') { console.log(`  ! ${skillName} (LOCALLY MODIFIED — kept)`); userModified.push(skillName); }
   }
 
-  // Also write a tiny CONTEXT.md that the harness picks up to teach the agent
-  // how to invoke /cp commands.
+  // The ambient instruction file is cp-owned end-to-end (we rewrite the
+  // whole block every install). Apply the same collision rule though so a
+  // user who hand-edited it doesn't silently lose changes.
   const ctxDest = process.env.CP_INSTALL_SCOPE === 'user'
     ? path.join(homeDir(), '.copilot', 'context-planning.md')
     : path.join(repoRoot, '.github', 'context-planning.md');
 
-  writeFile(ctxDest, `<!-- context-planning (cp) — managed by cp installer -->
+  const ctxBody = `<!-- context-planning (cp) — managed by cp installer -->
 # Instructions for context-planning (cp)
 
 - When the user invokes a \`/cp-*\` slash command (or \`cp-*\` skill), load the
@@ -59,15 +63,24 @@ function install({ pluginRoot, repoRoot }) {
 - Only invoke cp commands when the user explicitly asks. Don't apply cp
   workflows unbidden.
 <!-- /context-planning -->
-`);
+`;
+  const ctxR = writeFileSafe(ctxDest, ctxBody, { force });
+  if (ctxR.status === 'user-modified') userModified.push(path.basename(ctxDest));
 
-  console.log(`\nInstalled ${n} skill(s).`);
-  console.log(`Wrote context: ${ctxDest}`);
+  console.log(`\nInstalled: ${written} written, ${identical} unchanged${userModified.length ? `, ${userModified.length} kept (locally modified)` : ''}.`);
+  console.log(`Context file: ${ctxDest} (${ctxR.status})`);
+  if (userModified.length > 0) {
+    console.log(`\n⚠ The following files exist on disk with local modifications and were NOT overwritten:`);
+    for (const f of userModified) console.log(`    - ${f}`);
+    console.log(`  Re-run with \`cp install copilot --force\` to overwrite them, or delete the local copy first.`);
+  }
   console.log(`\nNext steps:`);
   console.log(`  1. Make sure your workflow provider (default: superpowers) is installed.`);
   console.log(`     copilot plugin install superpowers@superpowers-marketplace`);
   console.log(`  2. In a project directory:  cp init`);
   console.log(`  3. Then in Copilot CLI:     /cp-new-milestone "my first milestone"`);
+
+  return { written, identical, userModified };
 }
 
 module.exports = { install };

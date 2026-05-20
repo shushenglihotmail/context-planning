@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-519%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-558%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -360,7 +360,9 @@ scaffold-*, map-codebase) don't need Superpowers; the provider is for
 *workflow* work (brainstorm, plan, execute, review, debug) only. v0.3.2
 added atomic multi-file writes; v0.3.3 fixed `gitCommit` to never sweep the
 working tree (now stages only `.planning/` or an explicit paths list) and
-dropped the misleading short-form `PLAN.md` self-warning. 519 tests.
+dropped the misleading short-form `PLAN.md` self-warning; v0.3.4 made
+`writeBatch` rollback-safe, added installer collision protection
+(`--force` to overwrite), and fixed the `--key=value` argv form. 558 tests.
 
 **v0.4** — `/cp-capture` for inbox triage; status-line hook; optional
 Superpowers worktree integration; multi-workspace; Cursor and Aider installers.

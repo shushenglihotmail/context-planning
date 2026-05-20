@@ -307,9 +307,10 @@ function resolveAuditRoot(rootArg) {
 function cmdInstall(args) {
   const harness = args[0];
   if (!harness) {
-    console.error('Usage: cp install <copilot|claude>');
+    console.error('Usage: cp install <copilot|claude> [--force]');
     process.exit(2);
   }
+  const force = args.includes('--force');
   let installer;
   try {
     installer = require(path.join(pluginRoot(), 'install', `${harness}.js`));
@@ -318,7 +319,12 @@ function cmdInstall(args) {
     console.error(`Available: copilot${available('claude') ? ', claude' : ''}`);
     process.exit(2);
   }
-  installer.install({ pluginRoot: pluginRoot(), repoRoot: repoRoot() });
+  const result = installer.install({ pluginRoot: pluginRoot(), repoRoot: repoRoot(), force });
+  // Non-zero exit when there are user-modified files we refused to overwrite
+  // (signals the caller — e.g. CI — that the install was incomplete).
+  if (result && Array.isArray(result.userModified) && result.userModified.length > 0 && !force) {
+    process.exitCode = 3;
+  }
 }
 
 // ---------- lifecycle commands ----------
@@ -696,8 +702,35 @@ function renderTemplate(text, vars) {
   );
 }
 
+/**
+ * Pre-process argv to normalize `--key=value` → `--key value`. Lets every
+ * subcommand's hand-rolled parser keep using the simpler "next-slot" model
+ * without each one having to handle `=` separately.
+ *
+ * v0.3.4 — closes CONCERNS Low "argv parser doesn't support --key=value".
+ *
+ * - Leaves bare flags (`--force`, `-v`) alone.
+ * - Splits `--name=value` → ['--name', 'value']. The empty `--key=` form
+ *   becomes ['--key', ''] which is preserved as a real empty-string value.
+ * - Does NOT touch short combined flags like `-abc` (we don't use any).
+ */
+function normalizeArgv(argv) {
+  const out = [];
+  for (const tok of argv) {
+    if (typeof tok === 'string' && tok.startsWith('--') && tok.includes('=')) {
+      const eq = tok.indexOf('=');
+      out.push(tok.slice(0, eq));
+      out.push(tok.slice(eq + 1));
+    } else {
+      out.push(tok);
+    }
+  }
+  return out;
+}
+
 function main(argv) {
-  const [, , cmd, ...rest] = argv;
+  const normalized = normalizeArgv(argv.slice(2));
+  const [cmd, ...rest] = normalized;
   switch (cmd) {
     case 'install': return cmdInstall(rest);
     case 'init': return cmdInit();
@@ -726,4 +759,8 @@ function main(argv) {
   }
 }
 
-main(process.argv);
+if (require.main === module) {
+  main(process.argv);
+}
+
+module.exports = { normalizeArgv };

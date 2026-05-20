@@ -8,6 +8,81 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.3.4] — 2026-05-20
+
+Closes all three Mediums + the Low from the v0.3.3 dogfood `/cp-map-codebase`
+re-run. No new public API; all three fixes harden existing surfaces.
+
+### Fixed — `writeBatch` is now rollback-safe (CONCERNS Medium)
+
+- `lib/lifecycle.js writeBatch()` previously had a destructive-last guarantee
+  but no rollback for the rename phase itself. If `fs.renameSync` failed on
+  the Nth file after the first N-1 had already landed, on-disk state was
+  left half-replaced. Now:
+  - Before renaming, snapshot each destination's pre-batch contents (regular
+    files only; non-files snapshot as `unsnapshottable` and the rename will
+    fail on them anyway).
+  - If any rename throws, walk the completed renames in reverse and restore
+    the snapshots via the temp+rename pattern (so readers never see a
+    half-written rollback either).
+  - For dests that did NOT exist before the batch, rollback unlinks them.
+  - Any unrenamed temps are unlinked to avoid `.cp-tmp-*` orphans.
+  - The thrown error wraps the original rename error and reports how many
+    rollbacks succeeded / failed (`error.cause`, `error.rollbackErrors`).
+- The delete phase is still not rolled back — by design. If a delete fails
+  after all writes succeeded, the new content is already on disk and the
+  leftover file is logged in the error.
+
+### Fixed — Installer collision protection (CONCERNS Medium)
+
+- `cp install <copilot|claude>` used to silently overwrite every command /
+  skill file on every re-run, including any local user customizations. Now:
+  - **New `install/common.js writeFileSafe(dest, content, { force })`** —
+    returns `{ status: 'written' | 'identical' | 'user-modified' }`. Skips
+    writes when on-disk content already matches the source bytes (cheap
+    idempotent re-installs), and refuses to overwrite differing content
+    unless `force: true`.
+  - Both `install/copilot.js` and `install/claude.js` use the new helper for
+    every per-command write, print `+` / `=` / `!` markers per file, and end
+    with a summary plus a warning listing locally-modified files that were
+    NOT overwritten.
+  - `cp install <harness> --force` opts into clobbering local edits.
+  - When the install kept user-modified files (and `--force` wasn't passed),
+    `cp install` now exits with code 3 so CI / shell scripts can detect it.
+- The Claude `CLAUDE.md` cp block is still always rewritten — that path only
+  touches text between `<!-- context-planning -->` markers, never user
+  content elsewhere in the file.
+
+### Fixed — `--key=value` argv form now works (CONCERNS Low)
+
+- The hand-rolled per-subcommand argv loops only supported `--key value`
+  (two-token form). `--key=value` silently became a bare unknown flag.
+- **New `normalizeArgv(argv)`** in `bin/cp.js` runs as a pre-processor in
+  `main()` and splits any `--key=value` token into `['--key', 'value']`
+  before subcommand parsers see it. Empty `--key=` becomes `['--key', '']`.
+  Bare flags, positional args, and `=` inside positional args are left
+  untouched.
+- `bin/cp.js` is now safe to `require()` from tests too — top-level
+  `main(process.argv)` is gated behind `if (require.main === module)`.
+
+### Added — coverage
+
+- **`test/unit-v034.js`** — 39 new assertions covering: writeBatch happy
+  path, writeBatch rollback when rename phase fails (with on-disk state
+  fully restored, zero `.cp-tmp-*` orphans), writeBatch rollback for a
+  not-previously-existing destination, `writeFileSafe` collision detection,
+  end-to-end `cp install copilot` and `cp install claude` re-run idempotency
+  and `--force` behaviour, `normalizeArgv` exhaustive cases, and a real-CLI
+  end-to-end test of `cp scaffold-phase 1 --name=MVP --plans=2`.
+- Test totals: **558 assertions** across 10 suites, all green.
+
+### Changed
+
+- `cp install <harness>` exit codes:
+  - `0` — clean install (everything written or unchanged).
+  - `2` — usage error (missing harness arg, unknown harness).
+  - `3` — install kept user-modified files (re-run with `--force` to overwrite).
+
 ## [0.3.3] — 2026-05-19
 
 Hotfix release that closes both **High** findings the live `/cp-map-codebase`
@@ -250,7 +325,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.4...HEAD
+[0.3.4]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.4
 [0.3.3]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.3
 [0.3.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.2
 [0.3.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.0
