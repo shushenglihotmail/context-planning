@@ -8,6 +8,60 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.4.0] — 2026-05-20
+
+Adds **`/cp-capture`** + the `cp capture` / `cp inbox` CLI surface — a
+lightweight inbox-triage workflow for the half-formed ideas that always show
+up mid-session and never make it into a phase. Pure state-layer addition;
+no provider involvement required for capture/list/tick, harness-driven
+routing for the triage step.
+
+### Added — inbox capture & triage
+
+- **`cp capture "<text>"`** — appends a free-form line to
+  `.planning/INBOX.md` under the `## Open` section with an ISO-minute
+  timestamp. Auto-commits unless `--no-commit`, scoped to just `INBOX.md`
+  via `pathsFromActions` (won't sweep unrelated dirty files — v0.3.3
+  invariant preserved).
+- **`cp inbox [--json] [--all] [--tick <N> [--note <dest>]] [--no-commit]`** —
+  shows the current inbox (`Open` only by default; `--all` adds `Triaged`;
+  `--json` for harness consumption). `--tick <N>` moves open item N to
+  Triaged with an optional `--note` destination tag (e.g. `quick:rename`,
+  `phase:02-mvp`, `seed:routing-redesign`, `discard`). cp does NOT enforce
+  a closed vocabulary — the slash command picks whatever's useful.
+- **`/cp-capture`** slash command — harness-agnostic triage walker. Reads
+  `cp inbox --json`, proposes a destination class per item (always confirmed
+  with the user), performs the routing edit (quick task via the workflow
+  provider, append to a phase PLAN.md, append to STATE.md, or discard), then
+  marks the item triaged via `cp inbox --tick`.
+- **`lib/inbox.js`** — pure file-IO module: `parseInbox`, `renderInbox`,
+  `appendItem`, `markTriaged`, `listInbox`, `isoMinute`, `inboxPath`,
+  `INBOX_FILENAME`. Returns the same `{actions, ...}` shape as
+  `lib/lifecycle.js` so the CLI handlers route writes through
+  `writeBatch` for free (atomic + transactional, per v0.3.2).
+- **`templates/INBOX.md`** — bootstrap template with header + `## Open` /
+  `## Triaged` sections and HTML-comment placeholders.
+
+### Added — coverage
+
+- **`test/unit-inbox.js`** — 45 new assertions covering parse/render
+  round-trip, parser noise tolerance, `appendItem` happy path + dedup +
+  empty-string error, `markTriaged` happy path + invalid-idx error +
+  re-indexing, `listInbox` missing-file behaviour, null destination
+  round-trip, plus an end-to-end CLI loop (`cp capture` → `cp inbox --json`
+  → `cp inbox --tick --note` → `cp inbox --all`) including the v0.3.3
+  commit-scoping invariant (dirty siblings stay out of the inbox commit).
+- Test totals: **603 assertions** across 11 suites, all green.
+
+### Notes
+
+- `INBOX.md` lives at `.planning/INBOX.md`. It is committed (state-layer
+  artifact) but considered ephemeral — `/cp-capture` rotates items out
+  to phase PLANs / STATE.md / quick dirs as fast as practical.
+- The slash command does NOT auto-create phases or milestones from inbox
+  items — it surfaces them as `phase-seed:` / `milestone-seed:` tags and
+  lets `/cp-new-milestone` or `/cp-plan-phase` pick them up later.
+
 ## [0.3.4] — 2026-05-20
 
 Closes all three Mediums + the Low from the v0.3.3 dogfood `/cp-map-codebase`
@@ -325,7 +379,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.4...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.0
 [0.3.4]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.4
 [0.3.3]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.3
 [0.3.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.2

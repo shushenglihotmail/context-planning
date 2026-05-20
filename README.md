@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-558%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-603%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -138,6 +138,7 @@ decisions, patterns, and files touched — aggregated across every SUMMARY.md.
 | `/cp-resume`             | Restore from `.continue-here.md` + STATE | `execute` or whatever role was paused |
 | `/cp-complete-milestone` | Verify all phases done, aggregate SUMMARY frontmatter, append digest to MILESTONES.md, collapse milestone in ROADMAP, clear MILESTONE-CONTEXT.md, reset STATE | — |
 | `/cp-map-codebase`       | Scaffold `.planning/codebase/` (7 GSD-compatible docs: STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS); dispatch 4 parallel sub-agents to fill them. **cp-native** — no provider required. | Harness sub-agent dispatch (Copilot CLI `task` / Claude `Task` tool) |
+| `/cp-capture`            | Walk `.planning/INBOX.md` open items and route each to a quick task / phase note / seed / discard. cp tracks state; harness performs the routing edits. **cp-native** — no provider required for capture/list/tick. | Harness-driven routing; optional provider for `quick:*` items |
 
 ### Node CLI (operational tooling — not used inside the AI loop)
 
@@ -169,6 +170,16 @@ cp codebase-status [--json]     # Inventory .planning/codebase/: which docs
                                 # exist, line counts, which still look like
                                 # stubs (heuristic: <=40 lines OR contains
                                 # the "/cp-map-codebase" placeholder marker).
+cp capture "<text>" [--no-commit]
+                                # Append a free-form line to .planning/INBOX.md
+                                # under `## Open` with an ISO-minute timestamp.
+                                # Auto-commits scoped to INBOX.md only.
+cp inbox [--json] [--all] [--tick <N> [--note <dest>]] [--no-commit]
+                                # List the inbox (Open by default; --all adds
+                                # Triaged). `--tick N` moves open item N to
+                                # Triaged with an optional `--note` destination
+                                # tag (e.g. `quick:rename`, `phase:02-mvp`,
+                                # `seed:routing-redesign`, `discard`).
 cp tick <plan-id> [--undo] [--no-commit] [--dry-run]
                                 # Mark a plan done in ROADMAP + phase PLAN.md.
                                 # Idempotent. Commits unless --no-commit.
@@ -364,8 +375,20 @@ dropped the misleading short-form `PLAN.md` self-warning; v0.3.4 made
 `writeBatch` rollback-safe, added installer collision protection
 (`--force` to overwrite), and fixed the `--key=value` argv form. 558 tests.
 
-**v0.4** — `/cp-capture` for inbox triage; status-line hook; optional
-Superpowers worktree integration; multi-workspace; Cursor and Aider installers.
+**v0.4.0 — `/cp-capture` inbox triage** (shipped) — `cp capture "..."`
+appends an ISO-minute-stamped line to `.planning/INBOX.md`; `cp inbox`
+lists / triages (`--tick N --note <dest>` moves an item to the Triaged
+section with a free-form destination tag like `quick:rename`,
+`phase:02-mvp`, `seed:routing-redesign`, or `discard`). `/cp-capture`
+slash command walks the open items interactively, proposes a routing
+disposition per item (always user-confirmed), performs the routing edit
+(quick task via the workflow provider, append to a phase PLAN.md, append
+to STATE.md), and ticks the item triaged. Same auto-commit-scoping
+invariant as v0.3.3 — `cp capture` commits never sweep unrelated dirty
+files. 603 tests.
+
+**v0.4.x — planned** — status-line hook; optional Superpowers worktree
+integration; multi-workspace; Cursor and Aider installers.
 
 ## Credits
 

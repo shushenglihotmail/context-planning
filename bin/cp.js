@@ -29,6 +29,7 @@ const compat = require('../lib/gsd-compat');
 const importer = require('../lib/import');
 const lifecycle = require('../lib/lifecycle');
 const codebaseMapper = require('../lib/codebase-mapper');
+const inbox = require('../lib/inbox');
 
 function usage() {
   console.log(`cp v${pkg.version} — context-planning CLI
@@ -60,6 +61,12 @@ Usage:
                                   \`/cp-map-codebase\`.
   cp codebase-status [--json]     Inventory .planning/codebase/ — which docs
                                   exist, line counts, which still look like stubs
+  cp capture <text>               Append a free-form item to .planning/INBOX.md
+                                  with a timestamp (use \`/cp-capture\` to triage)
+  cp inbox [--json] [--all] [--tick <N> [--note <dest>]]
+                                  List open items (default) or all; --tick N moves
+                                  open item N to Triaged (optionally with a note like
+                                  --note "quick:rename-version-flag")
   cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
                                   Full milestone close-out (verify, aggregate digest,
                                   collapse in ROADMAP, clear context, reset STATE, commit)
@@ -687,6 +694,118 @@ function cmdCompleteMilestone(args) {
   if (!dryRun && r.commit) console.log(`\nCommitted:   ${r.commit}`);
 }
 
+function cmdCapture(args) {
+  // Collect everything up to first -- flag as the text. Allow --no-commit too.
+  let noCommit = false;
+  const positional = [];
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--no-commit') noCommit = true;
+    else if (a === '--dry-run') {
+      // Treat dry-run as no-commit + no-write. Useful for the slash command
+      // when proposing what would be captured.
+      console.error(`(dry-run not supported on capture — use \`cp inbox\` to see what would happen)`);
+      process.exit(2);
+    } else if (a.startsWith('--')) { console.error(`unknown option: ${a}`); process.exit(2); }
+    else positional.push(a);
+  }
+  const text = positional.join(' ').trim();
+  if (!text) {
+    console.error('Usage: cp capture <text> [--no-commit]');
+    process.exit(2);
+  }
+  const root = repoRoot();
+  let r;
+  try { r = inbox.appendItem(root, text); }
+  catch (e) { console.error(`capture: ${e.message}`); process.exit(1); }
+
+  lifecycle.writeBatch(r.actions);
+  console.log(`✓ inbox #${r.item.idx}  [${r.item.ts}]  ${r.item.text}`);
+  if (r.alreadyPresent) {
+    console.log(`  (note: an identical item already exists at the same minute — kept both)`);
+  }
+
+  if (!noCommit) {
+    const commit = lifecycle.gitCommit(root, `cp: capture inbox item #${r.item.idx}`, {
+      paths: lifecycle.pathsFromActions(r.actions),
+    });
+    if (commit) console.log(`committed ${commit}`);
+  }
+}
+
+function cmdInbox(args) {
+  let json = false;
+  let showAll = false;
+  let tickIdx = null;
+  let note = null;
+  let noCommit = false;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--json') json = true;
+    else if (a === '--all') showAll = true;
+    else if (a === '--no-commit') noCommit = true;
+    else if (a === '--tick') {
+      tickIdx = args[++i];
+      if (tickIdx == null) { console.error('--tick requires <N>'); process.exit(2); }
+    } else if (a === '--note') {
+      note = args[++i];
+      if (note == null) { console.error('--note requires <destination>'); process.exit(2); }
+    } else { console.error(`unknown option: ${a}`); process.exit(2); }
+  }
+  const root = repoRoot();
+
+  if (tickIdx !== null) {
+    let r;
+    try { r = inbox.markTriaged(root, tickIdx, note); }
+    catch (e) { console.error(`inbox: ${e.message}`); process.exit(1); }
+    lifecycle.writeBatch(r.actions);
+    const destPart = r.item.destination ? ` → ${r.item.destination}` : '';
+    console.log(`✓ triaged${destPart}  [${r.item.ts}]  ${r.item.text}`);
+    if (!noCommit) {
+      const commit = lifecycle.gitCommit(root, `cp: triage inbox item${destPart}`, {
+        paths: lifecycle.pathsFromActions(r.actions),
+      });
+      if (commit) console.log(`committed ${commit}`);
+    }
+    return;
+  }
+
+  const state = inbox.listInbox(root);
+  if (json) {
+    console.log(JSON.stringify(state, null, 2));
+    return;
+  }
+
+  if (!state.exists) {
+    console.log(`Inbox is empty (no ${path.relative(root, state.path)} yet).`);
+    console.log(`Add an item:  cp capture "your idea here"`);
+    return;
+  }
+
+  console.log(`Inbox: ${path.relative(root, state.path)}`);
+  console.log(`Open: ${state.open.length}  Triaged: ${state.triaged.length}`);
+  console.log('');
+  if (state.open.length === 0) {
+    console.log('  (no open items — capture a new one with `cp capture "..."`)');
+  } else {
+    console.log('## Open');
+    for (const it of state.open) {
+      console.log(`  ${String(it.idx).padStart(3)}  [${it.ts}]  ${it.text}`);
+    }
+  }
+  if (showAll && state.triaged.length > 0) {
+    console.log('');
+    console.log('## Triaged');
+    for (const it of state.triaged) {
+      const dest = it.destination ? `→ ${it.destination}` : '→';
+      console.log(`  ${String(it.idx).padStart(3)}  [${it.ts}]  ${dest}  ${it.text}`);
+    }
+  } else if (!showAll && state.triaged.length > 0) {
+    console.log('');
+    console.log(`(${state.triaged.length} triaged item(s) hidden — use \`cp inbox --all\`)`);
+  }
+}
+
 function available(name) {
   return fs.existsSync(path.join(pluginRoot(), 'install', `${name}.js`));
 }
@@ -743,6 +862,8 @@ function main(argv) {
     case 'scaffold-phase': return cmdScaffoldPhase(rest);
     case 'scaffold-codebase': return cmdScaffoldCodebase(rest);
     case 'codebase-status': return cmdCodebaseStatus(rest);
+    case 'capture': return cmdCapture(rest);
+    case 'inbox': return cmdInbox(rest);
     case 'complete-milestone': return cmdCompleteMilestone(rest);
     case 'config': return cmdConfig(rest);
     case 'version':
