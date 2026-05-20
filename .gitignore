@@ -16,3 +16,9 @@ Thumbs.db
 
 # Test scratch
 test/__tmp_*
+
+# cp self-install artifacts (cp install copilot writes here for dogfooding;
+# these are not part of the cp source tree).
+.github/skills/
+.github/context-planning.md
+.github/agents/
