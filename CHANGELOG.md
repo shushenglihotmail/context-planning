@@ -8,6 +8,64 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## v0.6.0 — Quality Wave (CI, dual-binary, command decomposition, coverage)
+
+**Milestone goal:** Production-hardening pass — break up the
+monolithic `bin/cp.js`, expose a `cplan` alias to dodge PowerShell's
+built-in `cp`, ship multi-OS CI, and gate on coverage.
+
+### Added
+
+- **`cplan` binary alias.** `npm install -g context-planning` now creates
+  both `cp` and `cplan` shims. PowerShell users hit by the built-in `cp →
+  Copy-Item` alias should invoke `cplan` instead. Documented in README
+  with a callout. Help text, `cp doctor` banner, and CLI usage all note
+  the dual name.
+
+- **`bin/commands/<name>.js` module layout.** Every command is now a
+  standalone module exporting `{ name, run(args) }`. New registry
+  (`bin/commands/index.js`) is the single source of truth for command
+  lookup — 18 entries. `bin/cp.js` is now a 47-LOC thin dispatcher
+  (down from 1218 LOC). Shared helpers extracted to
+  `bin/commands/_helpers.js`. Test back-compat preserved
+  (`module.exports = { normalizeArgv, main, registry }`).
+
+- **GitHub Actions CI.** Matrix `{ ubuntu-latest, windows-latest } ×
+  { node 20, node 22 }`. README gets a ci badge. `.github/skills/`,
+  `.github/agents/`, and `.github/context-planning.md` gitignored
+  (self-install dogfood artifacts) while `.github/workflows/` is
+  committed.
+
+- **`c8` coverage with threshold gate.** New `npm run coverage`
+  (HTML+text, local) and `npm run coverage:ci` (lcov + json-summary +
+  `--check-coverage --lines 85 --branches 75`). Coverage runs as a
+  dedicated CI job after the matrix, uploads a `coverage-report`
+  artifact (14-day retention). Current actual: 88.7% lines /
+  78.2% branches. v0.7 should ratchet the gate.
+
+### Fixed
+
+- **Windows CI worktree-path comparison.** `cp worktree list` compared
+  registry path against `git worktree list --porcelain` output via
+  `path.resolve()`. Windows GitHub Actions runners expose temp paths
+  via 8.3 short names (`RUNNER~1`) so the registry stored the short
+  form while git returned the long form, and the lookup always missed.
+  New `canonical()` wraps `fs.realpathSync.native` (which
+  GetFinalPathNameByHandle-resolves on Windows) and `samePath()`
+  lowercases on win32. Surfaces only on GitHub runners.
+
+- **Cross-platform `unit-statusline.js`.** Dropped a `shell: 'cmd.exe'
+  + 2>NUL` invocation that ENOENT'd on Ubuntu.
+
+### Notes for users
+
+- `cp install` re-runs are idempotent; if you have a globally installed
+  `cp < v0.6.0`, run `npm install -g context-planning@latest` then
+  `cp install copilot` (or your harness) again to get the `cplan` shim
+  and updated skill stubs.
+- No breaking changes; all 19 test suites (753 assertions) pass on
+  Ubuntu+Windows × Node 20+22.
+
 ## v0.5.0 — Generic provider / harness detection
 
 **Milestone goal:** Restructure provider detection from hardcoded literal
