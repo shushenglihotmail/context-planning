@@ -988,14 +988,12 @@ function cmdWorktreeCreate(args, root) {
     console.error(`Falling back to cp-native worktree creation. Re-run without --use-provider to silence this message.`);
   }
 
-  // Native path: shell out to `git worktree add`.
+  // Native path: shell out via lib/worktree.runGitWorktreeAdd (v0.4.4).
   const created = worktree.isoDay();
   if (!noCreate && !dryRun) {
-    const { spawnSync } = require('child_process');
-    const gitArgs = ['worktree', 'add', finalPath, '-b', finalBranch];
-    if (from) gitArgs.push(from);
-    const r = spawnSync('git', gitArgs, { cwd: root, encoding: 'utf8' });
+    const r = worktree.runGitWorktreeAdd(root, { worktreePath: finalPath, branch: finalBranch, from });
     if (r.status !== 0) {
+      const gitArgs = ['worktree', 'add', finalPath, '-b', finalBranch].concat(from ? [from] : []);
       console.error(`git ${gitArgs.join(' ')} failed:`);
       if (r.stdout) process.stderr.write(r.stdout);
       if (r.stderr) process.stderr.write(r.stderr);
@@ -1040,13 +1038,8 @@ function cmdWorktreeList(args, root) {
   let json = args.includes('--json');
   const entries = worktree.listRegistry(root);
 
-  // Cross-reference with git's view if we can.
-  let gitTrees = [];
-  try {
-    const { execSync } = require('child_process');
-    const raw = execSync('git worktree list --porcelain', { cwd: root, stdio: ['ignore', 'pipe', 'ignore'] }).toString();
-    gitTrees = worktree.parseGitWorktreeList(raw);
-  } catch { gitTrees = []; }
+  // Cross-reference with git's view via lib/worktree.listGitWorktrees (v0.4.4).
+  const gitTrees = worktree.listGitWorktrees(root);
 
   if (json) {
     console.log(JSON.stringify({ registered: entries, git: gitTrees }, null, 2));
@@ -1088,13 +1081,10 @@ function cmdWorktreeRemove(args, root) {
     process.exit(1);
   }
 
-  // Shell out to `git worktree remove`. Use --force only if user asked.
-  const { spawnSync } = require('child_process');
-  const gitArgs = ['worktree', 'remove'];
-  if (force) gitArgs.push('--force');
-  gitArgs.push(r.removed.path);
-  const gr = spawnSync('git', gitArgs, { cwd: root, encoding: 'utf8' });
+  // Shell out via lib/worktree.runGitWorktreeRemove (v0.4.4).
+  const gr = worktree.runGitWorktreeRemove(root, { worktreePath: r.removed.path, force });
   if (gr.status !== 0) {
+    const gitArgs = ['worktree', 'remove'].concat(force ? ['--force'] : []).concat([r.removed.path]);
     console.error(`git ${gitArgs.join(' ')} failed:`);
     if (gr.stdout) process.stderr.write(gr.stdout);
     if (gr.stderr) process.stderr.write(gr.stderr);

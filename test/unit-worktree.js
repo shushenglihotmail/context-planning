@@ -249,5 +249,36 @@ for (const d of tracked) {
   } catch { /* ignore */ }
 }
 
+section('lib/worktree: shell-out helpers exported (v0.4.4)');
+{
+  ok('runGitWorktreeAdd is a function',
+    typeof worktree.runGitWorktreeAdd === 'function');
+  ok('runGitWorktreeRemove is a function',
+    typeof worktree.runGitWorktreeRemove === 'function');
+  ok('listGitWorktrees is a function',
+    typeof worktree.listGitWorktrees === 'function');
+
+  // listGitWorktrees in a non-git dir returns [] (does not throw).
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-wt-nongit-'));
+  tracked.push(tmp);
+  const out = worktree.listGitWorktrees(tmp);
+  ok('listGitWorktrees on non-git dir returns []',
+    Array.isArray(out) && out.length === 0);
+
+  // listGitWorktrees inside a real git repo returns at least the main worktree.
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-wt-gitrepo-'));
+  tracked.push(repo);
+  execSync('git init -q', { cwd: repo, stdio: 'ignore' });
+  execSync('git config user.email test@test', { cwd: repo, stdio: 'ignore' });
+  execSync('git config user.name test', { cwd: repo, stdio: 'ignore' });
+  fs.writeFileSync(path.join(repo, 'a.txt'), 'a\n');
+  execSync('git add . && git commit -q -m init', { cwd: repo, stdio: 'ignore' });
+  const trees = worktree.listGitWorktrees(repo);
+  ok('listGitWorktrees in real repo returns >=1 worktree',
+    Array.isArray(trees) && trees.length >= 1, `got ${JSON.stringify(trees)}`);
+  ok('listGitWorktrees first entry has .path',
+    trees[0] && typeof trees[0].path === 'string');
+}
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) process.exit(1);

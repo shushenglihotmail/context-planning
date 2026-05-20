@@ -8,6 +8,51 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.4.4] — 2026-05-20
+
+Hotfix wave surfaced by the `/cp-map-codebase --force` dogfood against
+v0.4.3. Closes two HIGH concerns recorded in `.planning/codebase/CONCERNS.md`.
+
+### Fixed — `install/aider.js` no longer clobbers user `read:` entries
+
+- **Bug**: v0.4.2 / v0.4.3 edited `.aider.conf.yml` with a regex-fenced
+  block (`# >>> context-planning (cp) ...`). If the user already had a
+  top-level `read:` list **outside** the fence, both lists survived and
+  Aider's YAML parse used the later one — cp's block silently overrode the
+  user's other `read:` entries.
+- **Fix**: `patchAiderConfig` now parses `.aider.conf.yml` with the `yaml`
+  module (already a direct dependency), appends `.aider/CP-CONTEXT.md` to
+  the existing `read:` list (deduped), and re-emits valid YAML. User keys
+  and `read:` entries are preserved.
+- **Migration**: a legacy fenced block from v0.4.2 / v0.4.3 is auto-stripped
+  on first run after upgrade; the entry is re-added to the proper `read:`
+  list. Status returned is `migrated`.
+- **Known limitation**: comments inside `.aider.conf.yml` are not preserved
+  through `YAML.parse` → `YAML.stringify`. Keys and values survive; inline
+  comments do not.
+
+### Fixed — `lib/worktree.js` now owns the git shell-outs
+
+- **Pattern violation**: in v0.4.3, `bin/cp.js cmdWorktreeCreate`,
+  `cmdWorktreeList`, and `cmdWorktreeRemove` shelled out to `git worktree`
+  directly with `spawnSync`/`execSync`. Every other shell-out in cp lives
+  in a `lib/*` module so the CLI handler stays a thin dispatcher.
+- **Fix**: extracted `runGitWorktreeAdd`, `runGitWorktreeRemove`, and
+  `listGitWorktrees` into `lib/worktree.js`. The CLI handlers now call
+  through the lib and keep responsibility only for printing and exit codes.
+
+### Added — coverage
+
+- `test/unit-installers.js` — +8 assertions across two new sections:
+  user `read:` preservation (proves the v0.4.4 fix) and legacy fenced
+  block migration (proves backward compatibility).
+- `test/unit-worktree.js` — +6 assertions for the new shell-out helpers
+  including `listGitWorktrees` against a real `git init`'d repo.
+
+### Tests
+
+- 751 assertions across 14 suites — `npm test` (was 737).
+
 ## [0.4.3] — 2026-05-20
 
 Adds **`cp worktree {create,list,remove}`** — git-worktree management with
@@ -534,7 +579,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.3...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.4...HEAD
+[0.4.4]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.4
 [0.4.3]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.3
 [0.4.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.2
 [0.4.1]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.1

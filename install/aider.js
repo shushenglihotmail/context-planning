@@ -24,10 +24,12 @@
 
 const fs = require('fs');
 const path = require('path');
+const YAML = require('yaml');
 const { listCommandFiles, writeFileSafe, homeDir } = require('./common');
 
 const CP_CONFIG_MARK_START = '# >>> context-planning (cp) — managed by cp installer';
 const CP_CONFIG_MARK_END   = '# <<< context-planning (cp)';
+const CP_READ_ENTRY        = '.aider/CP-CONTEXT.md';
 
 function buildContextBriefing(commandFiles) {
   const lines = [
@@ -86,38 +88,54 @@ function buildContextBriefing(commandFiles) {
 }
 
 /**
- * Patch (or create) `.aider.conf.yml` to include the CP-CONTEXT.md briefing
- * via Aider's `read:` config key. Uses a fenced section so we can update or
- * remove it cleanly later.
+ * Patch (or create) `.aider.conf.yml` so its top-level `read:` list contains
+ * `.aider/CP-CONTEXT.md`. Parses with the `yaml` module to preserve any
+ * existing user keys and `read:` entries (v0.4.4 — was regex-based fenced
+ * block in v0.4.2 and silently overrode user `read:` values).
  *
- * `read:` is a YAML list:
- *   read:
- *     - .aider/CP-CONTEXT.md
+ * Migrates legacy fenced blocks written by v0.4.2/v0.4.3: strips the
+ * `# >>> context-planning (cp) ...` block, parses what remains as YAML,
+ * then re-adds the entry to the proper `read:` list.
+ *
+ * Returns one of:
+ *   { status: 'created',   path } — file did not exist
+ *   { status: 'updated',   path } — added our entry to the read: list
+ *   { status: 'migrated',  path } — converted a legacy fenced block
+ *   { status: 'identical', path } — our entry already present, no change
  */
-function patchAiderConfig(repoRoot, force) {
+function patchAiderConfig(repoRoot /* , force unused */) {
   const conf = path.join(repoRoot, '.aider.conf.yml');
-  const block = `${CP_CONFIG_MARK_START}\nread:\n  - .aider/CP-CONTEXT.md\n${CP_CONFIG_MARK_END}\n`;
-  let existing = '';
-  if (fs.existsSync(conf)) {
-    existing = fs.readFileSync(conf, 'utf8');
-    const reBlock = new RegExp(
-      `${CP_CONFIG_MARK_START.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${CP_CONFIG_MARK_END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\n?`,
-      'g'
-    );
-    if (reBlock.test(existing)) {
-      // Update existing block in place
-      const updated = existing.replace(reBlock, block);
-      if (updated === existing) return { status: 'identical', path: conf };
-      fs.writeFileSync(conf, updated);
-      return { status: 'updated', path: conf };
-    }
-    // Append our block on a clean newline boundary
-    const sep = existing.endsWith('\n') || existing.length === 0 ? '' : '\n';
-    fs.writeFileSync(conf, existing + sep + '\n' + block);
-    return { status: 'appended', path: conf };
-  }
-  fs.writeFileSync(conf, block);
-  return { status: 'created', path: conf };
+  const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const reLegacy = new RegExp(
+    `${escapeRe(CP_CONFIG_MARK_START)}[\\s\\S]*?${escapeRe(CP_CONFIG_MARK_END)}\\n?`,
+    'g'
+  );
+
+  const fileExisted = fs.existsSync(conf);
+  const original = fileExisted ? fs.readFileSync(conf, 'utf8') : '';
+  let body = original;
+  const hadLegacyFence = reLegacy.test(body);
+  if (hadLegacyFence) body = body.replace(reLegacy, '');
+
+  let doc;
+  try { doc = body.trim() ? YAML.parse(body) : {}; }
+  catch (e) { throw new Error(`could not parse .aider.conf.yml: ${e.message}`); }
+  if (doc == null || typeof doc !== 'object' || Array.isArray(doc)) doc = {};
+
+  let reads = doc.read;
+  if (typeof reads === 'string') reads = [reads];
+  if (!Array.isArray(reads)) reads = [];
+  const wasPresent = reads.includes(CP_READ_ENTRY);
+  if (!wasPresent) reads.push(CP_READ_ENTRY);
+  doc.read = reads;
+
+  const next = YAML.stringify(doc);
+  if (fileExisted && next === original) return { status: 'identical', path: conf };
+  fs.writeFileSync(conf, next);
+  if (!fileExisted) return { status: 'created', path: conf };
+  if (hadLegacyFence) return { status: 'migrated', path: conf };
+  if (wasPresent) return { status: 'identical', path: conf };
+  return { status: 'updated', path: conf };
 }
 
 function install({ pluginRoot, repoRoot, force = false }) {

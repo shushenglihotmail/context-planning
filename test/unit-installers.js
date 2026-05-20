@@ -137,26 +137,74 @@ section('aider.patchAiderConfig: create / update / idempotent');
   const root = mktmp('aider-conf');
 
   // create case
-  const r1 = aiderInstaller.patchAiderConfig(root, false);
+  const r1 = aiderInstaller.patchAiderConfig(root);
   ok('create: status=created', r1.status === 'created');
   const conf = fs.readFileSync(r1.path, 'utf8');
-  ok('create: file contains read: block', /read:\n\s+-\s+\.aider\/CP-CONTEXT\.md/.test(conf));
-  ok('create: has fence markers', /managed by cp installer/.test(conf));
+  ok('create: file contains read: list with CP-CONTEXT.md',
+    /read:[\s\S]*\.aider\/CP-CONTEXT\.md/.test(conf), conf);
+  ok('create: NO legacy fence markers (parsed YAML now)',
+    !/managed by cp installer/.test(conf));
+  // Validate YAML parses cleanly with the yaml module:
+  const parsed = require('yaml').parse(conf);
+  ok('create: read is a YAML list containing CP-CONTEXT.md',
+    Array.isArray(parsed.read) && parsed.read.includes('.aider/CP-CONTEXT.md'));
 
   // idempotent re-run
-  const r2 = aiderInstaller.patchAiderConfig(root, false);
-  ok('idempotent: status=identical',
-    r2.status === 'identical', `got ${r2.status}`);
+  const r2 = aiderInstaller.patchAiderConfig(root);
+  ok('idempotent: status=identical', r2.status === 'identical', `got ${r2.status}`);
+}
 
-  // user appends unrelated config -> our block stays, theirs is preserved
-  fs.appendFileSync(r1.path, '\n# user comment\nmodel: gpt-4o\n');
-  const r3 = aiderInstaller.patchAiderConfig(root, false);
-  ok('user-edits preserved: status=identical (block unchanged)',
-    r3.status === 'identical', `got ${r3.status}`);
-  const final = fs.readFileSync(r1.path, 'utf8');
-  ok('user comment preserved', /user comment/.test(final));
-  ok('user model: line preserved', /model: gpt-4o/.test(final));
-  ok('cp block still present', /CP-CONTEXT\.md/.test(final));
+section('aider.patchAiderConfig: preserves user read: entries (v0.4.4 fix)');
+{
+  const root = mktmp('aider-conf-user');
+  const conf = path.join(root, '.aider.conf.yml');
+  fs.writeFileSync(conf, 'read:\n  - my-team-docs.md\n  - other.md\nmodel: gpt-4o\n');
+
+  const r = aiderInstaller.patchAiderConfig(root);
+  ok('user-read-preserved: status=updated', r.status === 'updated', `got ${r.status}`);
+
+  const after = require('yaml').parse(fs.readFileSync(conf, 'utf8'));
+  ok('user-read-preserved: my-team-docs.md still present',
+    Array.isArray(after.read) && after.read.includes('my-team-docs.md'));
+  ok('user-read-preserved: other.md still present',
+    after.read.includes('other.md'));
+  ok('user-read-preserved: CP-CONTEXT.md added',
+    after.read.includes('.aider/CP-CONTEXT.md'));
+  ok('user-read-preserved: user model: key intact',
+    after.model === 'gpt-4o');
+
+  // Re-running on the merged result is idempotent.
+  const r2 = aiderInstaller.patchAiderConfig(root);
+  ok('user-read-preserved: re-run identical',
+    r2.status === 'identical', `got ${r2.status}`);
+}
+
+section('aider.patchAiderConfig: migrates legacy fenced block (v0.4.2/v0.4.3 → v0.4.4)');
+{
+  const root = mktmp('aider-conf-legacy');
+  const conf = path.join(root, '.aider.conf.yml');
+  // Simulate a v0.4.2 install that wrote a fenced block:
+  fs.writeFileSync(conf,
+    'model: gpt-4o\n' +
+    '# >>> context-planning (cp) — managed by cp installer\n' +
+    'read:\n  - .aider/CP-CONTEXT.md\n' +
+    '# <<< context-planning (cp)\n');
+
+  const r = aiderInstaller.patchAiderConfig(root);
+  ok('legacy-migrate: status=migrated', r.status === 'migrated', `got ${r.status}`);
+
+  const text = fs.readFileSync(conf, 'utf8');
+  ok('legacy-migrate: fence markers stripped', !/managed by cp installer/.test(text));
+  const parsed = require('yaml').parse(text);
+  ok('legacy-migrate: CP-CONTEXT.md still listed',
+    Array.isArray(parsed.read) && parsed.read.includes('.aider/CP-CONTEXT.md'));
+  ok('legacy-migrate: user model: key survived',
+    parsed.model === 'gpt-4o');
+
+  // Re-running is identical now.
+  const r2 = aiderInstaller.patchAiderConfig(root);
+  ok('legacy-migrate: post-migration re-run identical',
+    r2.status === 'identical', `got ${r2.status}`);
 }
 
 // =============================================================

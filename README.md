@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-737%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-751%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -424,10 +424,17 @@ wraps `git worktree` with cp-aware defaults (sibling-dir layout, `cp/<slug>`
 branch) and records each worktree in `.planning/WORKTREES.md`. `--use-provider`
 opt-in delegates to the configured workflow provider's `worktree` skill
 (Superpowers maps it to `using-git-worktrees`); cp-native fallback uses
-`git worktree add` directly. 737 tests.
+`git worktree add` directly. 751 tests.
 
-**v0.4.x — planned** — multi-workspace; live dogfood of the v0.3.4+v0.4.x
-hardening via `/cp-map-codebase --force`.
+**v0.4.4 — dogfood hotfix** (shipped) — re-ran `/cp-map-codebase --force`
+against v0.4.3 source, surfaced two HIGH concerns, fixed both: `install/aider.js`
+now uses the `yaml` parser (preserves user `read:` entries; auto-migrates
+v0.4.2/v0.4.3 fenced blocks); `lib/worktree.js` now owns the git shell-outs
+(`runGitWorktreeAdd/Remove`, `listGitWorktrees`) so `bin/cp.js` handlers stay
+pure dispatch.
+
+**v0.4.x — planned** — multi-workspace; further dogfood cycles as new
+concerns surface.
 
 ## Credits
 
