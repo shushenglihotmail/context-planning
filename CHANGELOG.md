@@ -8,6 +8,51 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.4.1] — 2026-05-20
+
+Adds **`cp statusline`** — a one-line prompt-friendly status indicator for
+shell PS1, Starship, tmux, etc. Same-day point release on the v0.4.0
+inbox-triage line; no breaking changes.
+
+### Added — `cp statusline`
+
+- **`cp statusline [--format <fmt>] [--json] [--no-color]`** — prints a
+  compact status line resolved from `.planning/ROADMAP.md` +
+  `lifecycle.statusReport`. Default output looks like
+  `cp ▸ v0.5 ▸ 01-mvp 1/3 ▸ 01-02` (current milestone → active phase
+  slug → done/total → next plan id). Renders ANSI colors when stdout is a
+  TTY; suppresses them under `--no-color` or `NO_COLOR=1`.
+- **Silent outside a cp project.** When called outside any git repo, or
+  inside a git repo with no `.planning/ROADMAP.md`, statusline exits 0 with
+  no output / no stderr — safe to drop into a shell prompt that runs every
+  keystroke.
+- **`--format <fmt>` custom template.** Tokens: `%M` (milestone), `%P`
+  (phase slug, e.g. `01-mvp`), `%D` (done/total, e.g. `1/3`), `%N` (next
+  plan id, e.g. `01-02`), `%B` (current git branch). Use for Starship /
+  tmux / Powerline integrations.
+- **`--json` for harness consumption.** Returns a stable shape with
+  `milestone`, `milestoneStatus`, `phase: { num, name, label, done, total }`,
+  `nextPlan: { phaseNum, phaseName, planId, desc }`, `branch`.
+
+### Added — coverage
+
+- **`test/unit-statusline.js`** — 28 new assertions: silent-outside-project
+  invariants, milestone+phase rendering, `--json` shape, `--format` token
+  substitution, `--no-color` ANSI suppression, `NO_COLOR` env var support,
+  `%B` branch resolution, empty-milestone fallback.
+- Test totals: **631 assertions** across 12 suites, all green.
+
+### Notes
+
+- Example PS1 integration (bash): ``PS1='$(cp statusline 2>/dev/null) \w \$ '``
+- Example Starship config (`~/.config/starship.toml`):
+  ```toml
+  [custom.cp]
+  command = "cp statusline --no-color"
+  when = "test -f .planning/ROADMAP.md"
+  format = "[$output]($style) "
+  ```
+
 ## [0.4.0] — 2026-05-20
 
 Adds **`/cp-capture`** + the `cp capture` / `cp inbox` CLI surface — a
@@ -379,7 +424,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.1
 [0.4.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.4.0
 [0.3.4]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.4
 [0.3.3]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.3

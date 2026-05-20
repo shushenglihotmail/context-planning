@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-603%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-631%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -180,6 +180,12 @@ cp inbox [--json] [--all] [--tick <N> [--note <dest>]] [--no-commit]
                                 # Triaged with an optional `--note` destination
                                 # tag (e.g. `quick:rename`, `phase:02-mvp`,
                                 # `seed:routing-redesign`, `discard`).
+cp statusline [--format <fmt>] [--json] [--no-color]
+                                # Print a one-line prompt-friendly status string
+                                # (e.g. `cp ▸ v0.5 ▸ 01-mvp 1/3 ▸ 01-02`).
+                                # Silent outside a cp project. Tokens: %M
+                                # (milestone), %P (phase slug), %D (done/total),
+                                # %N (next plan id), %B (branch).
 cp tick <plan-id> [--undo] [--no-commit] [--dry-run]
                                 # Mark a plan done in ROADMAP + phase PLAN.md.
                                 # Idempotent. Commits unless --no-commit.
@@ -387,8 +393,14 @@ to STATE.md), and ticks the item triaged. Same auto-commit-scoping
 invariant as v0.3.3 — `cp capture` commits never sweep unrelated dirty
 files. 603 tests.
 
-**v0.4.x — planned** — status-line hook; optional Superpowers worktree
-integration; multi-workspace; Cursor and Aider installers.
+**v0.4.1 — shell statusline** (shipped) — `cp statusline` for prompt
+integration. Default output `cp ▸ v0.5 ▸ 01-mvp 1/3 ▸ 01-02`. Silent
+outside a cp project (safe for PS1 / Starship / tmux). `--format`
+supports `%M %P %D %N %B` tokens; `--json` for harness consumption.
+631 tests.
+
+**v0.4.x — planned** — Cursor and Aider installers; optional Superpowers
+worktree integration; multi-workspace.
 
 ## Credits
 
