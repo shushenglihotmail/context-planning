@@ -8,6 +8,75 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## v0.5.0 — Generic provider / harness detection
+
+**Milestone goal:** Restructure provider detection from hardcoded literal
+sentinel matching to a data-driven harnesses × providers cross-product, so
+adding a new harness or provider is a config-only edit — no code changes.
+
+### Added
+
+- **Harnesses block** in `templates/config.json` — 4 harnesses (copilot,
+  claude, cursor, aider) with `plugin_roots` using trailing-`*` glob specs.
+  Each harness declares where its plugins live on disk.
+
+- **`plugin_shape`** on each provider — `dir_name` + `required_subdirs`.
+  Detection scans every harness's expanded plugin roots for a child dir
+  matching the shape, verifying required subdirs exist.
+
+- **`lib/detect.js`** (~250 LOC) — new detection engine:
+  - `expandRoot()`: tilde expansion + trailing-`*` segment glob via
+    `fs.readdirSync` (zero external deps).
+  - `detectProviderAtAnyHarness()`: harnesses × plugin_shape cross-product
+    with fallback to legacy `detect.any_of` literal sentinels.
+  - `detectAllInstalled()`: full scan returning harness + provider reports.
+
+- **`lib/merge.js`** (~150 LOC) — additive config merge engine:
+  - `mergeCpDefaults()`: unions arrays (detect.any_of, plugin_roots),
+    deep-merges objects with user-wins precedence, bumps schema version.
+  - Never deletes user data.
+
+- **Auto-heal merge** in `loadConfig()`: first v0.5 invocation in a
+  brownfield project silently merges new upstream defaults (sentinels,
+  harnesses, providers, schema bump) and writes back, with a stderr notice.
+
+- **`cp config refresh [--dry-run]`** command: explicit re-sync of local
+  config with upstream defaults. `--dry-run` reports planned changes
+  without writing.
+
+- **`cp doctor` rewrite**: sectioned output showing harnesses → providers →
+  configured → roles → GSD compat. New flags: `--json` (machine-parsable),
+  `--quiet` (minimal).
+
+- **`echo-provider`** schema-test stub: proves the detection schema works
+  with more than Superpowers. Install with `cp install echo-provider`,
+  switch with `cp config set workflow_provider echo-provider`.
+
+- **Schema version 2**: `cp.version` bumped from 1 to 2. Informational
+  marker for future migrations.
+
+### Changed
+
+- `lib/provider.js` slimmed — detection logic moved to `lib/detect.js`.
+  Back-compat exports (`detectProvider`, `existsAnywhere`) preserved as
+  wrappers.
+
+- `templates/config.json` Claude Code harness `plugin_roots` fixed: was
+  `~/.claude/plugins/*/` (wrong — no marketplace wrapper); now
+  `~/.claude/plugins/` (flat plugin dir).
+
+### Fixed
+
+- Brownfield projects init'd against v0.4.x no longer silently miss new
+  upstream sentinels. The auto-heal merge adds them on first load.
+
+### Tests
+
+- 4 new test files: `unit-detect.js` (47), `unit-merge.js` (42),
+  `dryrun-doctor.js` (29), `dryrun-config-refresh.js` (16).
+- Total: **~760 assertions** across 19 test files (up from 592 in v0.4.5).
+- All tests use `os.homedir()` monkey-patching for host isolation.
+
 ## v0.4.5 — Copilot CLI marketplace Superpowers detection
 
 **Fix:** `cp doctor` now correctly detects Superpowers installed via the
