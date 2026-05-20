@@ -406,9 +406,19 @@ mid-ShareDialog 02-02 — recipient list rendering broken
         const p = provider.resolvePrompt(r, root);
         ok(`manual prompt for ${r} present`, typeof p === 'string' && p.length > 40);
       }
-      // Resolve a role end-to-end: superpowers won't be installed in temp dir,
-      // so we should get a fallback to manual.
-      const res = provider.resolveSkill('plan', root);
+      // Resolve a role end-to-end: superpowers must NOT be detected so we
+      // fall back to manual. existsAnywhere() probes ~/.claude, ~/.copilot, ...
+      // for sentinels, so sandbox the host via os.homedir monkey-patch (the
+      // dev machine may have a real Superpowers install).
+      const realHomedir = os.homedir;
+      const tmpHome = track(mktmp('F-home'));
+      let res;
+      try {
+        os.homedir = () => tmpHome;
+        res = provider.resolveSkill('plan', root);
+      } finally {
+        os.homedir = realHomedir;
+      }
       ok('plan role falls back when superpowers not installed',
         res.fallback === true && res.name === 'manual', JSON.stringify(res));
       ok('plan role still names a skill', typeof res.skill === 'string');

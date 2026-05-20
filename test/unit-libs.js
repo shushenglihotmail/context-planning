@@ -376,6 +376,39 @@ section('lib/provider: detectProvider with always:true');
   ok('unknown provider has reason',       d2.reason === 'unknown provider');
 }
 
+section('lib/provider: detectProvider with any_of sentinel matching');
+{
+  // Sandbox the search by monkey-patching os.homedir so existsAnywhere's
+  // ~/.copilot/, ~/.claude/, etc. probes resolve under a temp dir we control.
+  // The real user home almost certainly has Superpowers installed already,
+  // which would make the negative case flake.
+  const tmpHome = track(mktmp('detect-home'));
+  const realHomedir = os.homedir;
+  const cfg = provider.loadDefaults();
+  try {
+    os.homedir = () => tmpHome;
+
+    // Negative: nothing on disk yet -> all sentinels miss.
+    const miss = provider.detectProvider(cfg, 'superpowers');
+    ok('no sentinel on disk -> not installed', miss.installed === false);
+    ok('no sentinel on disk -> reason set',    miss.reason === 'no sentinel matched');
+
+    // Positive: create the Copilot CLI marketplace install layout.
+    // existsAnywhere probes <home>/.copilot/<candidate>, so the broad sentinel
+    // `installed-plugins/superpowers-marketplace/superpowers` resolves under it.
+    const sentinelRel = path.join('installed-plugins', 'superpowers-marketplace', 'superpowers');
+    const sentinelAbs = path.join(tmpHome, '.copilot', sentinelRel);
+    fs.mkdirSync(sentinelAbs, { recursive: true });
+
+    const hit = provider.detectProvider(cfg, 'superpowers');
+    ok('marketplace dir present -> installed', hit.installed === true);
+    ok('evidence points at marketplace dir',
+       typeof hit.evidence === 'string' && hit.evidence.endsWith(sentinelRel));
+  } finally {
+    os.homedir = realHomedir;
+  }
+}
+
 // ============================================================
 section('lib/milestone: aggregateSummaries (union/dedupe)');
 {

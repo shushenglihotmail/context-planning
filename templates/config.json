@@ -70,7 +70,10 @@
             ".claude/skills/superpowers",
             ".github/skills/brainstorming",
             ".github/skills/writing-plans",
-            ".github/skills/subagent-driven-development"
+            ".github/skills/subagent-driven-development",
+            "installed-plugins/superpowers-marketplace/superpowers",
+            "installed-plugins/superpowers-marketplace/superpowers/skills/writing-plans",
+            "installed-plugins/superpowers-marketplace/superpowers/skills/subagent-driven-development"
           ]
         },
         "skills": {

@@ -8,6 +8,27 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## v0.4.5 — Copilot CLI marketplace Superpowers detection
+
+**Fix:** `cp doctor` now correctly detects Superpowers installed via the
+Copilot CLI marketplace (`~/.copilot/installed-plugins/superpowers-marketplace/`).
+Previously the default sentinel list only matched Claude Code install
+layouts (`.claude/plugins/...` and `.github/skills/...`), so Copilot CLI
+users silently fell through to the manual provider for every workflow
+role.
+
+The fix is purely additive — three new sentinels in
+`templates/config.json` `cp.providers.superpowers.detect.any_of` cover
+the upstream marketplace install path with broad-then-specific
+granularity matching the existing Claude detection pattern. No changes
+to detection logic in `lib/provider.js`; `existsAnywhere()` already
+searched under `~/.copilot/`.
+
+Users with existing `.planning/config.json` files retain their values
+(the cp-block-merge in `loadConfig` is non-destructive); they should
+remove any local `installed-plugins/...` sentinel override they added
+manually to keep the config aligned with upstream defaults.
+
 ## [0.4.4] — 2026-05-20
 
 Hotfix wave surfaced by the `/cp-map-codebase --force` dogfood against
