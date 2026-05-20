@@ -8,6 +8,21 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## v0.7.1 — Published to npm
+
+- **Published to npm registry** for the first time. Install with
+  `npm install -g context-planning` instead of cloning + `npm link`.
+- README install section restructured: npm-first, source-as-secondary.
+- Added npm version badge.
+- New `docs/architecture.md` section: **Interaction with workflow providers**
+  — documents the cp ↔ provider return-path contract (DESIGN.md,
+  REVIEW-LOG.md, `key-decisions`, milestone roll-up) and the worked
+  `/cp-new-milestone` example.
+- `.planning/` is now tracked in git (cp dogfoods its own state layer so
+  contributors can audit milestone/phase artifacts).
+
+No code or behaviour changes.
+
 ## v0.7.0 — Design Capture (persistent design, review log, key-decisions hard-block)
 
 **Milestone goal:** Close three persistence gaps surfaced after the v0.6

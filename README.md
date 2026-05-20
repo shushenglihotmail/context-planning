@@ -6,6 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
+[![npm](https://img.shields.io/npm/v/context-planning?color=brightgreen)](https://www.npmjs.com/package/context-planning)
 [![ci](https://github.com/shushenglihotmail/context-planning/actions/workflows/ci.yml/badge.svg)](https://github.com/shushenglihotmail/context-planning/actions/workflows/ci.yml)
 [![tests](https://img.shields.io/badge/tests-751%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
@@ -47,14 +48,31 @@ every "do the work" step hands off to whatever skill set you have installed.
 
 ## Install
 
-### Node CLI
+### Node CLI (recommended — from npm)
 
 ```bash
-git clone https://github.com/yourname/context-planning
+npm install -g context-planning
+# exposes BOTH `cplan` and `cp` on PATH
+cp --version    # should print 0.7.x
+```
+
+### Node CLI (from source — for development)
+
+```bash
+git clone https://github.com/shushenglihotmail/context-planning
 cd context-planning
 npm install         # only dep: yaml
 npm test            # 328 assertions; should all pass
 npm link            # exposes BOTH `cplan` and `cp` on PATH (or use: node bin/cp.js ...)
+```
+
+### Updating an existing install
+
+```bash
+npm install -g context-planning@latest   # upgrade global CLI
+cd <your-project>
+cp install <harness> --force             # refresh harness skill files
+cp config refresh                        # merge new defaults into .planning/config.json
 ```
 
 ### Into an AI harness
