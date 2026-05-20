@@ -8,9 +8,9 @@ node_modules/
 Thumbs.db
 *.swp
 
-# Local scratch — keep these out of the cp repo itself; they're meant to live
-# inside cp-managed *projects*, not inside the cp plugin source.
-.planning/
+# cp dogfoods itself: .planning/ IS tracked here so contributors can see
+# how cp's own milestones / phases / SUMMARYs evolve. Other harnesses'
+# scratch dirs (.claude/, .copilot/) are not part of cp's source tree.
 .claude/
 .copilot/
 

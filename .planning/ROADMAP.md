@@ -1,0 +1,159 @@
+# Roadmap: context-planning
+
+## Overview
+
+<!-- One paragraph: the journey from here to shipped. -->
+
+## Phases
+
+<details>
+<summary>✅ v0.7 Design Capture (Phases 1-16) — SHIPPED 2026-05-20</summary>
+
+<details>
+<summary>✅ v0.6 Quality Wave (Phases 1-15) — SHIPPED 2026-05-20</summary>
+
+<details>
+<summary>✅ v0.5 — Generic provider/harness detection (Phases 1-10) — SHIPPED 2026-05-20</summary>
+
+<details>
+<summary>✅ v0.4 — Polish & Capture (Phases 1-5) — SHIPPED 2026-05-20</summary>
+
+<!--
+  Milestone heading shape (parsed by lib/milestone.js findMilestoneInRoadmap):
+    ### 🚧 v0.1 — name (In Progress)     (active)
+    ### 📋 v0.2 — name (Planned)          (queued)
+    ### ✅ v0.1 — name (Shipped YYYY-MM-DD) — wraps a <details> block after close-out
+
+  Phase heading shape (must follow a milestone heading):
+    ### Phase 1: name
+    ### Phase 2.1: name    (decimal = urgent insert between integers)
+
+  After /cp-complete-milestone the milestone heading is replaced with a collapsed
+  <details><summary>...</summary>...</details> block; phase headings remain inside.
+
+  Start your first milestone with:
+    cp scaffold-milestone "v0.1 — <your milestone name>"
+    cp scaffold-phase 1 --name "<phase name>" --plans <count>
+-->
+
+
+### Phase 1: cp-capture command
+
+Plans:
+- [x] 01-01: `lib/inbox.js` pure helpers + `test/unit-inbox.js` (45 assertions)
+- [x] 01-02: `cp capture` + `cp inbox` CLI handlers in `bin/cp.js`
+- [x] 01-03: `/cp-capture` slash command + `templates/INBOX.md`
+
+### Phase 2: Status-line hook
+
+Plans:
+- [x] 02-01: `cmdStatusline` handler in `bin/cp.js` with token format `%M %P %D %N %B`
+- [x] 02-02: `test/unit-statusline.js` (28 assertions) — silent-outside-project invariant + color gating
+
+### Phase 1.5: Map codebase
+
+Plans:
+- [x] 1.5-01: `lib/codebase-mapper.js` + 7 template stubs in `templates/codebase/`
+- [x] 1.5-02: `cp scaffold-codebase` + `cp codebase-status` CLI handlers
+- [x] 1.5-03: `/cp-map-codebase` slash command with 4-agent parallel dispatch protocol
+
+### Phase 3: Cursor + Aider installers
+
+Plans:
+- [x] 03-01: `install/cursor.js` with `buildRule()` frontmatter synthesis
+- [x] 03-02: `install/aider.js` with `buildContextBriefing()` + `patchAiderConfig()` + `test/unit-installers.js` (50 assertions)
+
+### Phase 4: git worktree integration
+
+Plans:
+- [x] 04-01: `lib/worktree.js` (~190 LOC) + `bin/cp.js cmdWorktree{Create,List,Remove}` + `test/unit-worktree.js` (56 assertions)
+
+### Phase 5: Dogfood hotfix
+
+Plans:
+- [x] 05-01: `install/aider.js` → switch to `yaml` parser + auto-migrate legacy fenced blocks (+8 test assertions)
+- [x] 05-02: `lib/worktree.js` → extract `runGitWorktreeAdd/Remove` + `listGitWorktrees` from `bin/cp.js` (+6 test assertions)
+
+</details>
+
+### Phase 6: Schema + detection core
+
+Plans:
+- [x] 06-01: Schema v2 in templates/config.json + lib/detect.js with expandRoot + detectProviderAtAnyHarness + detectAllInstalled
+- [x] 06-02: Slim lib/provider.js — move existsAnywhere/detectProvider to detect.js, rewire resolveSkill, re-export for back-compat
+- [x] 06-03: test/unit-detect.js — 6 host fixtures, ~40 assertions covering expandRoot + detection + legacy back-compat
+
+### Phase 7: cp doctor rewrite
+
+Plans:
+- [x] 07-01: Rewrite cmdDoctor in bin/cp.js — sectioned output (harnesses → providers → configured → roles), --json and --quiet flags
+- [x] 07-02: test/dryrun-doctor.js — ~25 assertions covering sectioned output, --json shape, --quiet, exit codes
+
+### Phase 8: Auto-heal merge + cp config refresh
+
+Plans:
+- [x] 08-01: lib/merge.js with mergeCpDefaults + loadConfig auto-write + cp config refresh command
+- [x] 08-02: test/unit-merge.js + test/dryrun-config-refresh.js — ~75 assertions covering merge rules + brownfield fixtures
+
+### Phase 9: Echo-provider stub + installer
+
+Plans:
+- [x] 09-01: echo-provider installer (cp install echo-provider --local) + SKILL.md stub
+- [x] 09-02: End-to-end verification: install echo-provider, switch workflow_provider, cp doctor shows all roles → echo
+
+### Phase 10: Migration docs + CHANGELOG
+
+Plans:
+- [x] 10-01: docs/MIGRATION-v0.5.md + CHANGELOG v0.5.0 + README badge update + version bump to 0.5.0
+
+</details>
+
+### Phase 11: Command decomposition
+
+Plans:
+- [x] 11-01: TBD
+- [x] 11-02: TBD
+- [x] 11-03: TBD
+
+### Phase 12: Dual-binary cplan + cp alias
+
+Plans:
+- [x] 12-01: TBD
+- [x] 12-02: TBD
+
+### Phase 13: GitHub Actions CI
+
+Plans:
+- [x] 13-01: TBD
+- [x] 13-02: TBD
+
+### Phase 14: Coverage with c8
+
+Plans:
+- [x] 14-01: TBD
+- [x] 14-02: TBD
+
+### Phase 15: Docs + v0.6.0 release
+
+Plans:
+- [x] 15-01: TBD
+
+</details>
+
+### Phase 16: design capture infrastructure
+
+Plans:
+- [x] 16-01: TBD
+- [x] 16-02: TBD
+- [x] 16-03: TBD
+
+</details>
+## Progress
+
+**Execution Order:**
+Phases execute in numeric order (decimal phases like 2.1 are urgent inserts between integers).
+
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| *(none yet — run `cp scaffold-phase 1 --name <name> --plans <count>`)* | | | | |
+
