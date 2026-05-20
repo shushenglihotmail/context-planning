@@ -66,7 +66,7 @@ function run(args = []) {
   const planningPresent = fs.existsSync(planningDir(root));
   const schemaVersion = cpBlock.version || 1;
 
-  console.log(`cp v${pkg.version}`);
+  console.log(`cp v${pkg.version}  (invocable as \`cplan\` or \`cp\`)`);
   console.log(`Repo root:    ${root}`);
   console.log(
     `.planning/:   ${planningPresent ? 'present' : 'missing (run `cp init`)'}`

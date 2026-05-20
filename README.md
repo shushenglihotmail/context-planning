@@ -1,4 +1,4 @@
-# context-planning (`cp`)
+# context-planning (`cplan` / `cp`)
 
 > **GSD's brain. Superpowers' hands.**
 > A lightweight, harness-agnostic plugin that keeps long-lived AI development
@@ -9,6 +9,12 @@
 [![tests](https://img.shields.io/badge/tests-751%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
+
+> **CLI binary names:** as of v0.6 the canonical command is **`cplan`**.
+> The original short name **`cp`** still works on every platform.
+> PowerShell users — Windows ships `cp` as an alias for `Copy-Item`, so
+> bare `cp` may not resolve to our binary unless you `Remove-Alias cp`.
+> Use `cplan` to avoid the clash entirely. Examples below show both.
 
 ---
 
@@ -47,7 +53,7 @@ git clone https://github.com/yourname/context-planning
 cd context-planning
 npm install         # only dep: yaml
 npm test            # 328 assertions; should all pass
-npm link            # exposes `cp` on PATH (or use: node bin/cp.js ...)
+npm link            # exposes BOTH `cplan` and `cp` on PATH (or use: node bin/cp.js ...)
 ```
 
 ### Into an AI harness

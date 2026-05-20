@@ -3,7 +3,7 @@
 const pkg = require('../../package.json');
 
 function usage() {
-  console.log(`cp v${pkg.version} — context-planning CLI
+  console.log(`cp v${pkg.version} — context-planning CLI (invocable as \`cplan\` or \`cp\`)
 
 Usage:
   cp install <harness>            Install into a harness (copilot | claude | cursor | aider)
