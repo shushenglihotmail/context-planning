@@ -6,7 +6,7 @@
 > handing the actual "how do I write this code" workflow to whatever
 > coding-agent skill set you already use.
 
-[![tests](https://img.shields.io/badge/tests-491%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-519%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -350,14 +350,17 @@ expects, eliminating the H3-vs-bullet template gotcha. Fresh
 `cp init` → `cp scaffold-milestone` → `cp scaffold-phase` → `cp tick` →
 `cp complete-milestone` round-trips without any hand-editing. 429 tests.
 
-**v0.3.x — `/cp-map-codebase`** (shipped) — cp-native codebase mapping. New
-`cp scaffold-codebase` + `cp codebase-status` CLI wrappers and a
-`/cp-map-codebase` slash command that dispatches 4 parallel sub-agents
-(tech / arch / quality / concerns) via the harness's native task tool to
-produce 7 GSD-compatible docs in `.planning/codebase/`. **No workflow
-provider involved** — proves that cp's state-layer ops (init, scaffold-*,
-map-codebase) don't need Superpowers; the provider is for *workflow* work
-(brainstorm, plan, execute, review, debug) only. 468 tests.
+**v0.3.x — `/cp-map-codebase` + safety hotfixes** (shipped) — cp-native
+codebase mapping. New `cp scaffold-codebase` + `cp codebase-status` CLI
+wrappers and a `/cp-map-codebase` slash command that dispatches 4 parallel
+sub-agents (tech / arch / quality / concerns) via the harness's native task
+tool to produce 7 GSD-compatible docs in `.planning/codebase/`. **No
+workflow provider involved** — proves cp's state-layer ops (init,
+scaffold-*, map-codebase) don't need Superpowers; the provider is for
+*workflow* work (brainstorm, plan, execute, review, debug) only. v0.3.2
+added atomic multi-file writes; v0.3.3 fixed `gitCommit` to never sweep the
+working tree (now stages only `.planning/` or an explicit paths list) and
+dropped the misleading short-form `PLAN.md` self-warning. 519 tests.
 
 **v0.4** — `/cp-capture` for inbox triage; status-line hook; optional
 Superpowers worktree integration; multi-workspace; Cursor and Aider installers.

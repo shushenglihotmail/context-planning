@@ -8,6 +8,68 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 Nothing yet — open an issue if you want something prioritised.
 
+## [0.3.3] — 2026-05-19
+
+Hotfix release that closes both **High** findings the live `/cp-map-codebase`
+dry-fire against cp itself surfaced (the same dogfood run that produced the
+v0.3.2 Critical). Same-day follow-up — no API churn beyond the deliberate
+`gitCommit` signature widening.
+
+### Fixed — `gitCommit` no longer sweeps the working tree (CONCERNS High)
+
+- `lib/lifecycle.js gitCommit(root, message)` used `git add -A`, which would
+  pull every dirty file in the working tree into a `cp:`-prefixed commit.
+  Hit live during v0.3.2 work: `cp scaffold-codebase` swept in unrelated
+  `README` / `CHANGELOG` / `bin/cp.js` edits under a misleading
+  "scaffold-codebase" commit, requiring a soft-reset and re-commit.
+- **New signature:** `gitCommit(root, message, options = {})` where
+  `options.paths` is an explicit array of paths to stage. When omitted, the
+  default is now `git add -- .planning/` (state-layer only) — NOT `add -A`.
+  Set `options.planningOnly: false` to opt back into the legacy wide stage.
+- **New helper `lib/lifecycle.pathsFromActions(actions)`** — extracts the
+  unique path list from any lifecycle op's `actions[]` so callers can scope
+  their commit to exactly what they touched.
+- All 6 auto-commit call sites in `bin/cp.js` (`cmdTick`, `cmdWriteSummary`,
+  `cmdScaffoldMilestone`, `cmdScaffoldPhase`, `cmdScaffoldCodebase`,
+  `cmdCompleteMilestone`) now pass `{ paths: lifecycle.pathsFromActions(r.actions) }`.
+  `completeMilestone` does the same internally.
+
+### Fixed — `cp doctor` no longer warns about its own canonical layout (CONCERNS High)
+
+- `lib/gsd-compat.js report()` unconditionally warned about short-form
+  `PLAN.md` / `SUMMARY.md` as "incompatible with GSD" — but cp emits both by
+  design (`scaffoldPhase` writes `PLAN.md`, `writeSummary` writes
+  `{NN-MM}-SUMMARY.md`). The warning fired on every project cp scaffolded,
+  including its own dogfood tree. Pure noise.
+- New behaviour: warn ONLY when a phase dir contains BOTH a short-form AND a
+  long-form sibling — the one case where the parser would actually have to
+  guess. The warning text now also explains short-form is cp-canonical and
+  long-form is GSD round-trip.
+- `.planning/codebase` removed from `GSD_SENTINELS` — cp also writes it now
+  (via `cp scaffold-codebase` / `/cp-map-codebase`, since v0.3.2). It is a
+  shared dir, not a GSD-only one.
+
+### Added — coverage
+
+- **`test/unit-gitcommit.js`** — 26 new assertions: `pathsFromActions` shape,
+  default-scope only stages `.planning/`, explicit paths scope correctly,
+  relative paths accepted, empty staging returns null, `planningOnly: false`
+  legacy mode preserved, end-to-end CLI runs (`scaffold-milestone`,
+  `scaffold-phase`, `scaffold-codebase`) do NOT commit a dirty sibling file.
+- **`test/unit-libs.js`** — short-form-PLAN cp-canonical (no warning) +
+  short+long coexist (warning) assertions added to the gsd-compat section.
+- Test totals: **519 assertions** across 9 suites, all green.
+
+### Changed
+
+- `lib/gsd-compat.js GSD_SENTINELS` no longer lists `.planning/codebase` —
+  cp also writes it (since v0.3.2). Comment updated with the precedent list.
+
+### Dogfood
+
+- Run `/cp-map-codebase --force` after upgrading to verify both rows clear
+  in the freshly regenerated `.planning/codebase/CONCERNS.md`.
+
 ## [0.3.2] — 2026-05-19
 
 This release ships **`/cp-map-codebase`** (cp-native, no Superpowers required)
@@ -188,7 +250,8 @@ live `/cp-map-codebase` dry-fire against cp itself surfaced.
 - 328 assertions across 6 test files (parser, gsd-import, complete-
   milestone, resume, round-trip, unit-lib).
 
-[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/shushenglihotmail/context-planning/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.3
 [0.3.2]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.2
 [0.3.0]: https://github.com/shushenglihotmail/context-planning/releases/tag/v0.3.0
 [0.2.0]: https://github.com/shushenglihotmail/context-planning/compare/fb25af1...3607082

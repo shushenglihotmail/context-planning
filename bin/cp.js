@@ -393,7 +393,9 @@ function cmdTick(args) {
   if (dryRun) return;
   if (!noCommit) {
     const verb = undo ? 'untick' : 'tick';
-    const commit = lifecycle.gitCommit(root, `cp: ${verb} plan ${planId}`);
+    const commit = lifecycle.gitCommit(root, `cp: ${verb} plan ${planId}`, {
+      paths: lifecycle.pathsFromActions(result.actions),
+    });
     if (commit) console.log(`committed ${commit}`);
   }
 }
@@ -485,7 +487,9 @@ function cmdScaffoldMilestone(args) {
   console.log(`Milestone:   ${r.milestone} [${r.status}]`);
   if (dryRun) return;
   if (!noCommit) {
-    const commit = lifecycle.gitCommit(root, `cp: scaffold-milestone ${r.milestone}`);
+    const commit = lifecycle.gitCommit(root, `cp: scaffold-milestone ${r.milestone}`, {
+      paths: lifecycle.pathsFromActions(r.actions),
+    });
     if (commit) console.log(`committed ${commit}`);
   }
 }
@@ -541,7 +545,9 @@ function cmdScaffoldPhase(args) {
   console.log(`Phase ${r.phaseNum} added to milestone "${r.milestone}"${r.plans.length ? ` (${r.plans.length} plan${r.plans.length === 1 ? '' : 's'}: ${r.plans.join(', ')})` : ''}`);
   if (dryRun) return;
   if (!noCommit) {
-    const commit = lifecycle.gitCommit(root, `cp: scaffold-phase ${r.phaseNum} (${name})`);
+    const commit = lifecycle.gitCommit(root, `cp: scaffold-phase ${r.phaseNum} (${name})`, {
+      paths: lifecycle.pathsFromActions(r.actions),
+    });
     if (commit) console.log(`committed ${commit}`);
   }
 }
@@ -581,7 +587,9 @@ function cmdScaffoldCodebase(args) {
   console.log(`Created:      ${r.created.length} stub(s)`);
   if (dryRun) return;
   if (!noCommit && r.actions.some((a) => a.kind === 'write' || a.kind === 'mkdir')) {
-    const commit = lifecycle.gitCommit(root, `cp: scaffold-codebase (${r.created.length} stubs)`);
+    const commit = lifecycle.gitCommit(root, `cp: scaffold-codebase (${r.created.length} stubs)`, {
+      paths: lifecycle.pathsFromActions(r.actions),
+    });
     if (commit) console.log(`committed     ${commit}`);
   }
   if (r.created.length > 0) {

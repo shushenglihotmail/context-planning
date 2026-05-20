@@ -253,7 +253,8 @@ try {
       r.config.gsdKeys.includes('mode') && r.config.gsdKeys.includes('project_code'));
     ok('research/ sentinel detected', r.sentinels.gsd['.planning/research'] === true);
     ok('seeds/ sentinel detected', r.sentinels.gsd['.planning/seeds'] === true);
-    ok('codebase/ sentinel absent', r.sentinels.gsd['.planning/codebase'] === false);
+    ok('codebase/ not a GSD sentinel (cp also writes it)',
+      r.sentinels.gsd['.planning/codebase'] === undefined);
     ok('phases scanned: 2', r.phases.length === 2);
     const p1 = r.phases.find((p) => p.dir === '01-foundation');
     const p2 = r.phases.find((p) => p.dir === '02-sharing');

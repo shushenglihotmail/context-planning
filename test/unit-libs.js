@@ -284,6 +284,26 @@ section('lib/gsd-compat: report warnings');
   ok('warns about GSD coexistence', r2.warnings.some((w) => /GSD sentinels detected/.test(w)));
 }
 
+// v0.3.3: short-form PLAN.md is cp-canonical — no warning unless it
+// COEXISTS with a long-form sibling (a real ambiguity).
+section('lib/gsd-compat: short-form PLAN.md is cp-canonical (v0.3.3)');
+{
+  const root = track(mktmp('compat-shortform'));
+  fs.mkdirSync(path.join(root, '.planning', 'phases', '01-mvp'), { recursive: true });
+  writeFile(path.join(root, '.planning', 'config.json'), JSON.stringify({ cp: {} }));
+  writeFile(path.join(root, '.planning', 'phases', '01-mvp', 'PLAN.md'), '# cp-canonical short-form\n');
+  const r = compat.report(root);
+  ok('cp-only short-form fires NO short/long warning',
+    !r.warnings.some((w) => /short-form/.test(w)));
+
+  // Now add a long-form sibling — should fire the conflict warning.
+  writeFile(path.join(root, '.planning', 'phases', '01-mvp', '01-01-PLAN.md'),
+    '---\nphase: x\n---\n');
+  const r2 = compat.report(root);
+  ok('mixed short+long fires conflict warning',
+    r2.warnings.some((w) => /BOTH short-form PLAN\.md AND long-form/.test(w)));
+}
+
 // ============================================================
 section('lib/frontmatter: round-trip + edge cases');
 {
