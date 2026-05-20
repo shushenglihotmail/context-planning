@@ -1282,13 +1282,17 @@ function normalizeArgv(argv) {
 function main(argv) {
   const normalized = normalizeArgv(argv.slice(2));
   const [cmd, ...rest] = normalized;
+
+  // v0.6: prefer the bin/commands/ registry. Falls through to the legacy
+  // switch below for handlers not yet extracted.
+  const registry = require('./commands');
+  if (cmd && Object.prototype.hasOwnProperty.call(registry, cmd)) {
+    return registry[cmd].run(rest);
+  }
+
   switch (cmd) {
     case 'install': return cmdInstall(rest);
-    case 'init': return cmdInit();
     case 'gsd-import': return cmdGsdImport(rest);
-    case 'doctor': return cmdDoctor(rest);
-    case 'status': return cmdStatus(rest);
-    case 'tick': return cmdTick(rest);
     case 'write-summary': return cmdWriteSummary(rest);
     case 'scaffold-milestone': return cmdScaffoldMilestone(rest);
     case 'scaffold-phase': return cmdScaffoldPhase(rest);
@@ -1300,9 +1304,8 @@ function main(argv) {
     case 'worktree': return cmdWorktree(rest);
     case 'complete-milestone': return cmdCompleteMilestone(rest);
     case 'config': return cmdConfig(rest);
-    case 'version':
     case '--version':
-    case '-v': return cmdVersion();
+    case '-v': return require('./commands/version').run();
     case 'help':
     case '--help':
     case '-h':
