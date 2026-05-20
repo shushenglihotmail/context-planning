@@ -137,6 +137,7 @@ decisions, patterns, and files touched — aggregated across every SUMMARY.md.
 | `/cp-progress`           | Read STATE + ROADMAP → "you are here, next is X" | — |
 | `/cp-resume`             | Restore from `.continue-here.md` + STATE | `execute` or whatever role was paused |
 | `/cp-complete-milestone` | Verify all phases done, aggregate SUMMARY frontmatter, append digest to MILESTONES.md, collapse milestone in ROADMAP, clear MILESTONE-CONTEXT.md, reset STATE | — |
+| `/cp-map-codebase`       | Scaffold `.planning/codebase/` (7 GSD-compatible docs: STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS); dispatch 4 parallel sub-agents to fill them. **cp-native** — no provider required. | Harness sub-agent dispatch (Copilot CLI `task` / Claude `Task` tool) |
 
 ### Node CLI (operational tooling — not used inside the AI loop)
 
@@ -158,6 +159,16 @@ cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>] [--no
                                 # .planning/phases/{NN-slug}/PLAN.md from
                                 # template. --plans pre-fills N empty
                                 # `- [ ] NN-MM` checkboxes.
+cp scaffold-codebase [--force] [--no-commit] [--dry-run]
+                                # Create .planning/codebase/ with 7 stub docs
+                                # (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE,
+                                # CONVENTIONS, TESTING, CONCERNS) matching GSD's
+                                # layout exactly. Filled by `/cp-map-codebase`.
+                                # Refuses to overwrite without --force.
+cp codebase-status [--json]     # Inventory .planning/codebase/: which docs
+                                # exist, line counts, which still look like
+                                # stubs (heuristic: <=40 lines OR contains
+                                # the "/cp-map-codebase" placeholder marker).
 cp tick <plan-id> [--undo] [--no-commit] [--dry-run]
                                 # Mark a plan done in ROADMAP + phase PLAN.md.
                                 # Idempotent. Commits unless --no-commit.
@@ -338,6 +349,15 @@ end-to-end smoke tested on the `linkmark` demo + `cp-cli-smoke` fixture.
 expects, eliminating the H3-vs-bullet template gotcha. Fresh
 `cp init` → `cp scaffold-milestone` → `cp scaffold-phase` → `cp tick` →
 `cp complete-milestone` round-trips without any hand-editing. 429 tests.
+
+**v0.3.x — `/cp-map-codebase`** (shipped) — cp-native codebase mapping. New
+`cp scaffold-codebase` + `cp codebase-status` CLI wrappers and a
+`/cp-map-codebase` slash command that dispatches 4 parallel sub-agents
+(tech / arch / quality / concerns) via the harness's native task tool to
+produce 7 GSD-compatible docs in `.planning/codebase/`. **No workflow
+provider involved** — proves that cp's state-layer ops (init, scaffold-*,
+map-codebase) don't need Superpowers; the provider is for *workflow* work
+(brainstorm, plan, execute, review, debug) only. 468 tests.
 
 **v0.4** — `/cp-capture` for inbox triage; status-line hook; optional
 Superpowers worktree integration; multi-workspace; Cursor and Aider installers.

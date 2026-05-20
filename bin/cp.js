@@ -28,6 +28,7 @@ const provider = require('../lib/provider');
 const compat = require('../lib/gsd-compat');
 const importer = require('../lib/import');
 const lifecycle = require('../lib/lifecycle');
+const codebaseMapper = require('../lib/codebase-mapper');
 
 function usage() {
   console.log(`cp v${pkg.version} — context-planning CLI
@@ -52,6 +53,13 @@ Usage:
   cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>]
                                   Add \`### Phase N: <name>\` under active milestone +
                                   create .planning/phases/{NN-slug}/PLAN.md
+  cp scaffold-codebase [--force] [--no-commit] [--dry-run]
+                                  Create .planning/codebase/ with 7 stub docs
+                                  (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE,
+                                  CONVENTIONS, TESTING, CONCERNS). Filled by
+                                  \`/cp-map-codebase\`.
+  cp codebase-status [--json]     Inventory .planning/codebase/ — which docs
+                                  exist, line counts, which still look like stubs
   cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
                                   Full milestone close-out (verify, aggregate digest,
                                   collapse in ROADMAP, clear context, reset STATE, commit)
@@ -538,6 +546,83 @@ function cmdScaffoldPhase(args) {
   }
 }
 
+function cmdScaffoldCodebase(args) {
+  const root = repoRoot();
+  let dryRun = false;
+  let force = false;
+  let noCommit = false;
+  for (let i = 0; i < args.length; i++) {
+    const a = args[i];
+    if (a === '--dry-run') dryRun = true;
+    else if (a === '--force') force = true;
+    else if (a === '--no-commit') noCommit = true;
+    else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
+    else { console.error(`unexpected arg: ${a}`); process.exit(2); }
+  }
+
+  let r;
+  try {
+    r = codebaseMapper.scaffoldCodebase(root, { dryRun, force });
+  } catch (e) {
+    console.error(`scaffold-codebase: ${e.message}`);
+    process.exit(1);
+  }
+
+  for (const a of r.actions) {
+    const rel = path.relative(root, a.path);
+    const mark = dryRun ? '·' : (a.kind === 'mkdir' ? '+' : '✓');
+    console.log(`${mark} ${a.kind.padEnd(5)} ${rel}`);
+  }
+  if (r.skipped.length) {
+    console.log(`\nSkipped ${r.skipped.length} existing file(s) — use --force to overwrite:`);
+    for (const s of r.skipped) console.log(`  = ${s}`);
+  }
+  console.log(`\nCodebase dir: ${path.relative(root, r.codebaseDir)}`);
+  console.log(`Created:      ${r.created.length} stub(s)`);
+  if (dryRun) return;
+  if (!noCommit && r.actions.some((a) => a.kind === 'write' || a.kind === 'mkdir')) {
+    const commit = lifecycle.gitCommit(root, `cp: scaffold-codebase (${r.created.length} stubs)`);
+    if (commit) console.log(`committed     ${commit}`);
+  }
+  if (r.created.length > 0) {
+    console.log(`\nNext: run /cp-map-codebase to fill the stubs with a real analysis.`);
+  }
+}
+
+function cmdCodebaseStatus(args) {
+  const root = repoRoot();
+  let json = false;
+  for (const a of args) {
+    if (a === '--json') json = true;
+    else { console.error(`unexpected arg: ${a}`); process.exit(2); }
+  }
+  const r = codebaseMapper.codebaseStatus(root);
+  if (json) {
+    console.log(JSON.stringify(r, null, 2));
+    return;
+  }
+  if (!r.dirExists) {
+    console.log(`.planning/codebase/ not present — run \`cp scaffold-codebase\` first.`);
+    process.exit(1);
+  }
+  console.log(`Codebase dir: ${path.relative(root, r.codebaseDir)}`);
+  console.log('');
+  console.log('  status  focus     file              lines   bytes');
+  console.log('  ------  --------  ----------------  ------  ------');
+  for (const row of r.rows) {
+    let status;
+    if (!row.exists) status = 'missing';
+    else if (row.looksStub) status = 'stub   ';
+    else status = 'filled ';
+    const lines = row.exists ? String(row.lines).padStart(5) : '    -';
+    const bytes = row.exists ? String(row.bytes).padStart(5) : '    -';
+    console.log(`  ${status} ${row.focus.padEnd(8)}  ${row.file.padEnd(16)} ${lines}  ${bytes}`);
+  }
+  console.log('');
+  console.log(`All present:  ${r.allExist ? '✓' : '✗'}`);
+  console.log(`All filled:   ${r.allFilled ? '✓' : '✗ (run /cp-map-codebase)'}`);
+}
+
 function cmdCompleteMilestone(args) {
   const root = repoRoot();
   let name = null;
@@ -615,6 +700,8 @@ function main(argv) {
     case 'write-summary': return cmdWriteSummary(rest);
     case 'scaffold-milestone': return cmdScaffoldMilestone(rest);
     case 'scaffold-phase': return cmdScaffoldPhase(rest);
+    case 'scaffold-codebase': return cmdScaffoldCodebase(rest);
+    case 'codebase-status': return cmdCodebaseStatus(rest);
     case 'complete-milestone': return cmdCompleteMilestone(rest);
     case 'config': return cmdConfig(rest);
     case 'version':

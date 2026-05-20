@@ -6,7 +6,50 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet — open an issue if you want something prioritised.
+### Added
+- **`/cp-map-codebase`** slash command — cp-native equivalent of GSD's
+  `gsd-map-codebase`. Dispatches 4 parallel sub-agents (tech / arch / quality /
+  concerns) via the host harness's native sub-agent primitive (Copilot CLI's
+  `task` tool, Claude Code's Task tool, etc.) to produce 7 docs in
+  `.planning/codebase/` (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE,
+  CONVENTIONS, TESTING, CONCERNS). Filenames and layout match GSD exactly so
+  `cp gsd-import` stays clean. Supports `--force` (overwrite) and `--fast`
+  (single-agent scan with optional `--focus`).
+- **`cp scaffold-codebase [--force] [--no-commit] [--dry-run]`** CLI wrapper —
+  creates `.planning/codebase/` and seeds 7 stub files from
+  `templates/codebase/*.md`. Idempotent: refuses to overwrite existing files
+  unless `--force`. Auto-commits unless `--no-commit`.
+- **`cp codebase-status [--json]`** CLI wrapper — inventories
+  `.planning/codebase/`: per-file existence, line count, byte size, and a
+  "looks-stub" heuristic (≤ 40 lines OR contains the placeholder marker).
+  Exits 1 if the dir is missing.
+- **`lib/codebase-mapper.js`** — pure file-I/O module exposing
+  `scaffoldCodebase`, `codebaseStatus`, `DOCS`, and `FOCUS_AREAS`
+  (the 4-way split the slash command consumes to build agent prompts).
+  Deliberately calls no LLM so it's unit-testable.
+- **`templates/codebase/{7 files}.md`** — minimal stubs with section
+  headers and HTML-comment guidance the mapper agents replace.
+- **`test/unit-codebase.js`** — 39 assertions covering scaffold happy path,
+  refuse-overwrite, `--force`, `--dry-run`, missing-`.planning/` error,
+  `codebaseStatus` shape, stub-vs-filled heuristic.
+
+### Changed
+- README "Slash commands" table gains `/cp-map-codebase` row; "Node CLI"
+  block adds `cp scaffold-codebase` + `cp codebase-status` entries; Roadmap
+  gains a "v0.3.x — `/cp-map-codebase`" milestone entry.
+
+### Design notes
+- **Why cp-native, not provider-delegated.** This work is upfront context
+  gathering that writes structured state — it has no analog in
+  Superpowers' workflow-skill catalogue (brainstorm / plan / execute /
+  review / debug / TDD / verify), and using a workflow-provider role here
+  would only add latency and lose the 4-way parallelism. cp owns it
+  directly, in the same way it owns `cp init` and `cp scaffold-*`.
+  The provider abstraction is for *workflow* work only.
+- **Brownfield bootstrap order:** `cp scaffold-codebase` → `/cp-map-codebase`
+  → `cp init`. Running `/cp-map-codebase` first gives `cp init` real context
+  to ground PROJECT.md against, matching the GSD recommendation for existing
+  codebases.
 
 ## [0.3.0] — 2026-05-19
 
