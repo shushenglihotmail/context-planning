@@ -67,6 +67,39 @@ The execute skill OWNS what happens during the work — TDD, verification,
 code review between tasks, deviations. Do not intervene unless it returns
 control.
 
+## Step 4.5 — Append to REVIEW-LOG.md (v0.7)
+
+After EACH review cycle returned by SP `subagent-driven-development`
+(spec-compliance OR code-quality), append one block to
+`.planning/phases/{phase-dir}/REVIEW-LOG.md` BEFORE the
+`<!-- REVIEW-LOG-ENTRIES-BELOW -->` marker is irrelevant — APPEND after
+the marker:
+
+```
+## {{DATE}} {{TIME}} — Plan {{PLAN-ID}} Task {{TASK-N}} — {{REVIEWER-ROLE}}
+
+**Verdict:** {approved | rejected | needs-revision}
+
+**Findings:**
+
+- {bullet list of substantive findings}
+
+**Resolution:**
+
+{what changed; commit SHA if applied; "N/A — accepted on first pass" allowed}
+
+---
+```
+
+Skip empty findings on clean approvals (use "Resolution: approved on
+first pass" and omit findings bullet list).
+
+If the file does not exist (older milestones), create it from
+`templates/REVIEW-LOG.md` with substituted frontmatter first.
+
+The cp aggregator counts these entries (via `aggregateSummaries`
+`reviewCount`) when rolling up the milestone summary.
+
 ## Step 5 — Verify Success Criteria
 
 When the execute skill reports the plan complete:
