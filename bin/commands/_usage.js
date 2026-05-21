@@ -56,6 +56,10 @@ Usage:
   cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
                                   Full milestone close-out (verify, aggregate digest,
                                   collapse in ROADMAP, clear context, reset STATE, commit)
+  cp state regen [--dry-run] [--quiet]
+                                  Regenerate derived block of STATE.md from
+                                  ROADMAP + phase tree. Run after pulling
+                                  colleagues' commits or hand-editing ROADMAP.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

@@ -30,4 +30,5 @@ module.exports = {
   inbox: require('./inbox'),
   statusline: require('./statusline'),
   worktree: require('./worktree'),
+  state: require('./state'),
 };
