@@ -13,7 +13,7 @@ Phase: 35 (v0.9 Onboarding)
 Plan: 35-01
 Status: Ready to execute
 Current focus: DESIGN.md lifecycle polish
-Last activity: write summary for plan 33-02 + state regen
+Last activity: tick plan 34-01
 
 Progress: [██████████] 99%
 
