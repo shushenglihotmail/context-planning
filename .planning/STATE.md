@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: -
-Plan: 64 of 64
-Status: Idle
-Current focus: -
-Last activity: prune phantom 30-03 + state regen
+Phase: 32 (v0.9 Onboarding)
+Plan: 32-01
+Status: Ready to execute
+Current focus: map-codebase auto-init
+Last activity: scaffold-phase 35 (DESIGN.md lifecycle polish)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█████████░] 93%
 
 ## Performance Metrics
 

@@ -35,6 +35,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - ✓ Quality wave: decompose `bin/cp.js` into per-command modules, dual-binary `cplan` + `cp`, GitHub Actions CI (Ubuntu+Windows × Node 20+22), c8 coverage with 80% threshold — v0.6
 - ✓ Design capture infrastructure (DESIGN.md, REVIEW-LOG.md, key-decisions hard-block, milestone DESIGN.md aggregation) — v0.7
 - ✓ npm publish (`context-planning@0.7.1`) + restructured Install docs — v0.7.1
+- ✓ Consistency stack: prevent / detect / repair drift via SHA pinning, auto key-files, file-existence block, derived STATE, audit + `audit --fix` (GSD-mimic), 4 repair commands (reconcile/supersede/deviate/--continue), agent literacy injection, opt-in git hooks + CI template — v0.8 (published as `context-planning@0.8.1`)
 
 ### Known minor issues
 - 5 MEDIUM concerns in `.planning/codebase/CONCERNS.md` open: `bin/cp.js`
@@ -45,7 +46,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - No CI yet (LOW concern) — `npm test` runs locally only.
 
 ### Active
-- Consistency stack: prevent / detect / repair drift between `.planning/` and code via SHA pinning, auto key-files, file-existence block, derived STATE, audit + `audit --fix` (GSD-mimic), 4 repair commands (reconcile/supersede/deviate/--continue), agent literacy injection, and opt-in git hooks (smart shim for monorepos) — v0.8
+- Onboarding: one-command starts for every entry path. `cp map-codebase` auto-inits in unfreshed repos (case 2); new `cp update` command mirrors `/gsd-update`'s `npx`-fronted one-liner so the documented invocation is `npx -y --package=context-planning@latest -- cp update` (case 4 — fetches AND refreshes per-repo state in one shot); README gains a 4-row onboarding decision matrix; per-phase DESIGN.md lifecycle gets polish so design intent survives milestone close consistently — v0.9
 
 ### Out of Scope
 - **No knowledge-graph layer** — gsd-graphify-style indexing is heavy and
