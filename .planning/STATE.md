@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 20 (v0.8 Consistency)
-Plan: 20-02
+Phase: 21 (v0.8 Consistency)
+Plan: 21-01
 Status: Ready to execute
-Current focus: Derived STATE.md
-Last activity: plan phase 20 (Derived STATE.md) - DESIGN + PLAN + STATE.md
+Current focus: Plan-time expected-key-files
+Last activity: tick plan 20-01
 
-Progress: [██████░░░░] 64%
+Progress: [███████░░░] 65%
 
 ## Performance Metrics
 
