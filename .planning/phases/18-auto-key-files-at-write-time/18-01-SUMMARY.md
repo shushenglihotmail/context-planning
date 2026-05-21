@@ -14,12 +14,7 @@ provides:
   - lib/milestone.js::_extractPhaseBaseCommit
   - lib/milestone.js::_autoFillKeyFiles
   - writeSummary autoKeyFiles option
-affects:
-  - lib/git.js
-  - lib/milestone.js
-  - lib/lifecycle.js
-  - test/unit-git-sha.js
-  - test/unit-lifecycle.js
+affects: []
 key-decisions:
   - Renames + copies normalised to status=M with new-path only (one entry, deliverable-focused)
   - Caller-supplied key-files entries are preserved verbatim and deduped against diff entries
@@ -28,7 +23,7 @@ key-decisions:
   - Both writeSummary code paths (lib/milestone.js + lib/lifecycle.js) extended in lockstep to avoid divergence
   - endSha computed once near top of writeSummary and reused for both stamping (P1) and diff (P2)
 patterns-established:
-  - "stderr notice format: `cp: key-files auto-filled (N files: X created, Y modified)`"
+  - "stderr notice format: cp: key-files auto-filled (N files: X created, Y modified)"
   - Pure helpers (_extractPhaseBaseCommit, _autoFillKeyFiles) exported for direct unit testing
   - "Test fixture pattern: seed file in base commit, stamp base-commit into PLAN.md, then make work commits between base and HEAD"
 requirements-completed:
@@ -37,7 +32,18 @@ duration: 1 session
 phase: 18
 plan: 18-01
 completed: 2026-05-21
-end-commit: aafbb2194e69d1717e1f980f4eee7f4374d8b6c9
+key-files:
+  created:
+    - test/dryrun-write-summary.js
+  modified:
+    - bin/commands/write-summary.js
+    - lib/git.js
+    - lib/lifecycle.js
+    - lib/milestone.js
+    - package.json
+    - test/unit-git-sha.js
+    - test/unit-lifecycle.js
+end-commit: abd8fecad10f2bc239d7e6541a18923a41cd40fd
 ---
 # Summary 18-01
 
