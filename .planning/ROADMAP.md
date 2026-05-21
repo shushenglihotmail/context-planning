@@ -279,6 +279,11 @@ Plans:
 
 Plans:
 - [ ] 37-01: TBD
+
+### Phase 38: Docs + v0.10.0 release
+
+Plans:
+- [ ] 38-01: TBD
 ## Progress
 
 **Execution Order:**
