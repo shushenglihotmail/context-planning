@@ -28,20 +28,43 @@ base-commit: 24dc5477596d9ab69bfa17d4e98222c5b8c26bc4
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Ship the testable foundation of `/cp-autonomous`: a pure orchestrator
+in `lib/autonomous.js` and a thin CLI wrapper in
+`bin/commands/autonomous.js` that together let `cp autonomous` walk an
+entire milestone's pending phases with smart-gate stop conditions and
+structured JSON output.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `cp autonomous --check --json` runs against the current repo,
+   prints a structured preview of what would run, exits 0 if nothing
+   pending or 1 if there are pending phases.
+2. `cp autonomous --scope=phase` with no in-progress milestone exits 2
+   with a clear `no-active-milestone` reason.
+3. `cp autonomous --scope=N-M` clamps to milestone end (never crosses
+   milestone boundaries).
+4. `test/unit-autonomous.js` ships with ≥15 assertions covering scope
+   parser, START resolver, milestone-cap, smart-gate triggers,
+   `.continue-here.md` writer, dry-run, and JSON shape — all passing.
+5. Full `npm test` chain stays green.
+6. `cp autonomous` (no args) is discoverable via `cp` (usage row) and
+   `cp autonomous --help` prints flag reference.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 36-01: {brief description}
+- [ ] 36-01: ship lib/autonomous.js + bin/commands/autonomous.js + unit tests + CLI registration
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- Per-phase delegation to `/cp-plan-phase` and `/cp-execute-phase`
+  happens VIA the skill layer in phase 37, not in lib. The lib in this
+  phase exposes the orchestration contract; the skill drives the
+  per-phase delegated work.
+- For phase 36, simulate the per-phase delegated work as a callable
+  parameter `opts.executePhase(phaseNum)` and `opts.planPhase(phaseNum)`
+  passed into `runAutonomous` — this keeps the lib pure and testable.
+  The skill layer in phase 37 wires real delegations in.
+- Smart-gate checks (test + audit) DO live in lib — they're CLI verbs
+  already, no agent reasoning needed.
+- Reuse the v0.9 `cp update` shape: same return-object pattern, same
+  `--json` flag semantics, same exit codes.
