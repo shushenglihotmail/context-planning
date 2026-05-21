@@ -6,7 +6,25 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-Nothing yet — open an issue if you want something prioritised.
+### Added (v0.8 in progress — Consistency milestone)
+
+- **`cp audit`** (Phase 24): read-only consistency checker for `.planning/`.
+  Nine built-in checks covering ticked-without-summary, summary-without-tick,
+  base-commit/end-commit completeness, expected-vs-actual key-files drift,
+  STATE.md staleness, and roadmap ↔ phase-dir alignment. Severity tiers
+  (HIGH/MEDIUM/LOW), exit codes 0/1/2, flags `--json --strict --milestone
+  <name> --phase <N> --quiet`. Read-only — `--fix` arrives in Phase 25.
+- **`scaffold-phase` prior-summary gate** (Phase 22): refuses if the
+  immediately preceding phase has ticked plans without SUMMARYs. `--force`
+  override prints a mandatory stderr notice for audit transparency.
+- **`write-summary` expected-key-files check** (Phase 21): warns when the
+  files touched between base/end commits don't match what PLAN.md declared.
+  `--strict-expected` upgrades to refusal, `--no-expected-check` opts out.
+- **Derived STATE.md** (Phase 20): STATE.md current-position block is now
+  regenerated from ROADMAP + git, with `cp state regen` to refresh.
+- **SHA pinning** (Phase 17): every PLAN.md gets `base-commit` at scaffold;
+  every SUMMARY.md gets `end-commit` at write. Foundation for drift
+  detection.
 
 ## v0.7.1 — Published to npm
 
