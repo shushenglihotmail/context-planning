@@ -883,6 +883,32 @@ section('scaffoldMilestone errors on missing ## Phases');
   ok('throws with clear message when ## Phases missing', threw);
 }
 
+// v0.9 P36 regression: scaffoldMilestone must insert at the END of the
+// `## Phases` section, not at the top. The top-insert bug caused
+// complete-milestone to scoop all prior content into the new milestone.
+section('scaffoldMilestone inserts at end of ## Phases section');
+{
+  const root = freshProject('sm-tail');
+  // Seed roadmap with a prior collapsed milestone + loose phase heading +
+  // a later `## Progress` H2 so we can verify the new heading lands
+  // between the last sibling and the next H2 boundary.
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n' +
+    '<details>\n<summary>✅ v0.1 Past (Phases 1-2) — SHIPPED 2026-05-01</summary>\n\n' +
+    '### Phase 1: old\n\n### Phase 2: old\n\n</details>\n\n' +
+    '## Progress\n\n- something\n');
+  const r = lifecycle.scaffoldMilestone(root, 'v0.2 Next');
+  ok('scaffold ok', r.ok);
+  const content = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  const newIdx = content.indexOf('### 🚧 v0.2 Next');
+  const detailsCloseIdx = content.lastIndexOf('</details>');
+  const progressIdx = content.indexOf('## Progress');
+  ok('new heading appears AFTER existing </details> block',
+    newIdx > detailsCloseIdx);
+  ok('new heading appears BEFORE the next ## H2',
+    newIdx < progressIdx && newIdx !== -1);
+}
+
 // ---------- scaffoldPhase ----------
 
 section('scaffoldPhase happy path');
