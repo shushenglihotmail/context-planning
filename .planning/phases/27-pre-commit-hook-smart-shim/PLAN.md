@@ -1,33 +1,26 @@
----
-phase: "27"
-name: Pre-commit hook smart shim
-milestone: v0.8 Consistency
-status: in-progress
-created: 2026-05-21
----
+# Phase 27 Plan — Pre-commit hook smart shim
 
-# Phase 27: Pre-commit hook smart shim
-
-**Milestone**: v0.8 Consistency
-**Created**: 2026-05-21
-
-## Goal
-
-{Describe what this phase delivers in 1-2 sentences.}
-
-## Success Criteria
-
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+**Base commit**: ad95718
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
+- [ ] 27-01: lib/hooks.js + bin/cp-hook.js (pre-commit dispatch)
+- [ ] 27-02: cp install --hooks / --uninstall-hooks + tests
 
-- [ ] 27-01: {brief description}
-- [ ] 27-02: {brief description}
+### 27-01 expected-key-files
 
-## Notes
+- created:
+  - lib/hooks.js
+  - bin/cp-hook.js
+  - test/unit-hooks.js
+- modified:
+  - package.json
 
-<!-- Free-form during phase execution. -->
+### 27-02 expected-key-files
+
+- created:
+  - test/dryrun-install-hooks.js
+- modified:
+  - bin/commands/install.js
+  - bin/commands/_usage.js
+  - package.json
