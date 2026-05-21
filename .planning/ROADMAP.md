@@ -197,6 +197,13 @@ Plans:
 - [ ] 24-01: TBD
 - [ ] 24-02: TBD
 - [ ] 24-03: TBD
+
+### Phase 25: cplan audit --fix loop
+
+Plans:
+- [ ] 25-01: TBD
+- [ ] 25-02: TBD
+- [ ] 25-03: TBD
 ## Progress
 
 **Execution Order:**
