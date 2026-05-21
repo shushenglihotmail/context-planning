@@ -6,6 +6,9 @@
 
 ## Phases
 
+### 🚧 v0.8 Consistency (In Progress)
+
+
 <details>
 <summary>✅ v0.7 Design Capture (Phases 1-16) — SHIPPED 2026-05-20</summary>
 
