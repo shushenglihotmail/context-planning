@@ -33,7 +33,7 @@ caller-supplied phantoms get blocked. Eliminates drift cause #1.
 ## Plans
 
 - [x] 19-01: `_checkKeyFilesExist` helper + writeSummary hard-block (both paths)
-- [ ] 19-02: `--no-file-check` CLI flag + dry-run integration test
+- [x] 19-02: `--no-file-check` CLI flag + dry-run integration test
 
 ---
 
