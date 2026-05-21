@@ -13,6 +13,7 @@ function run(args = []) {
   let overwrite = false;
   let dryRun = false;
   let autoKeyFiles = true;
+  let checkFileExistence = true;
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--from') fromPath = args[++i];
@@ -20,12 +21,13 @@ function run(args = []) {
     else if (a === '--overwrite') overwrite = true;
     else if (a === '--dry-run') dryRun = true;
     else if (a === '--no-auto-key-files') autoKeyFiles = false;
+    else if (a === '--no-file-check') checkFileExistence = false;
     else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
     else if (!planId) planId = a;
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
   if (!planId || !fromPath) {
-    console.error('Usage: cp write-summary <plan-id> --from <json> [--body <md>] [--overwrite] [--dry-run] [--no-auto-key-files]');
+    console.error('Usage: cp write-summary <plan-id> --from <json> [--body <md>] [--overwrite] [--dry-run] [--no-auto-key-files] [--no-file-check]');
     process.exit(2);
   }
   let data;
@@ -38,7 +40,7 @@ function run(args = []) {
   const body = bodyPath ? fs.readFileSync(bodyPath, 'utf8') : undefined;
   let r;
   try {
-    r = milestone.writeSummary(root, planId, data, { dryRun, body, overwrite, autoKeyFiles });
+    r = milestone.writeSummary(root, planId, data, { dryRun, body, overwrite, autoKeyFiles, checkFileExistence });
   } catch (err) {
     if (err && (err.name === 'ValidationError' || err.code === 'EVALIDATION')) {
       process.stderr.write(err.message + '\n');

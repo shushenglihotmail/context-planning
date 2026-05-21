@@ -87,6 +87,44 @@ section('cp write-summary usage string lists --no-auto-key-files');
   ok('exit code 2', r.status === 2);
   ok('usage mentions --no-auto-key-files',
     /--no-auto-key-files/.test(r.stderr), `stderr=${JSON.stringify(r.stderr)}`);
+  ok('usage mentions --no-file-check',
+    /--no-file-check/.test(r.stderr), `stderr=${JSON.stringify(r.stderr)}`);
+}
+
+// ---------- v0.8 P3 (Phase 19): file-existence hard-block via CLI ----------
+
+section('cp write-summary blocks phantom key-files path (v0.8 P3)');
+{
+  const dir = mkFixture('p3-phantom');
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({
+    subsystem: 'x',
+    'key-decisions': ['x'],
+    'key-files': { created: ['lib/phantom-cli.js'], modified: [] },
+  }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--no-auto-key-files'], dir);
+  ok('exit code 2', r.status === 2, `stderr=${r.stderr}`);
+  ok('stderr says missing on disk', /missing on disk/.test(r.stderr));
+  ok('stderr names lib/phantom-cli.js',
+    /lib\/phantom-cli\.js/.test(r.stderr), `stderr=${r.stderr}`);
+  ok('summary NOT written',
+    !fs.existsSync(path.join(dir, '.planning', 'phases', '01-greet', '01-01-SUMMARY.md')));
+}
+
+section('cp write-summary --no-file-check bypasses P3 hard-block');
+{
+  const dir = mkFixture('p3-opt-out');
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({
+    subsystem: 'x',
+    'key-decisions': ['x'],
+    'key-files': { created: ['lib/phantom-cli.js'], modified: [] },
+  }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--no-auto-key-files', '--no-file-check'], dir);
+  ok('exit code 0 with --no-file-check', r.status === 0, `stderr=${r.stderr}`);
+  const summary = fs.readFileSync(path.join(dir, '.planning', 'phases', '01-greet', '01-01-SUMMARY.md'), 'utf8');
+  ok('summary preserves phantom path when opted out',
+    /lib\/phantom-cli\.js/.test(summary));
 }
 
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
