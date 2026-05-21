@@ -17,8 +17,6 @@ Last activity: 2026-05-21 — shipped phase 19 (file-existence hard-block)
 
 Progress: [██░░░░░░░░] 20%
 
-Progress: [██░░░░░░░░] 13%
-
 ## Performance Metrics
 
 **Velocity:**
