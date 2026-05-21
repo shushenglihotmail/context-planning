@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 18 — Auto key-files at write-time (v0.8 Consistency)
+**Current focus:** Phase 19 — File-existence hard-block (v0.8 Consistency)
 
 ## Current Position
 
-Phase: 18 (v0.8 Consistency)
-Plan: 1 of 2
-Status: Ready to execute
-Current focus: Phase 18 — Auto key-files at write-time
-Last activity: 2026-05-21 — planned phase 18 (auto-key-files at write-time)
+Phase: 19 (v0.8 Consistency)
+Plan: 0 of TBD
+Status: Ready to plan
+Current focus: Phase 19 — File-existence hard-block
+Last activity: 2026-05-21 — shipped phase 18 (auto key-files at write-time)
 
-Progress: [█░░░░░░░░░] 6%
+Progress: [██░░░░░░░░] 13%
 
 ## Performance Metrics
 
