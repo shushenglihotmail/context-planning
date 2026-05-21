@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 25 (v0.8 Consistency)
-Plan: 25-03
+Phase: 26 (v0.8 Consistency)
+Plan: 26-01
 Status: Ready to execute
-Current focus: cplan audit --fix loop
-Last activity: write SUMMARYs for plans 25-01 and 25-02
+Current focus: Repair commands
+Last activity: prune phantom 25-03 from ROADMAP (phase 25 is 2 plans)
 
-Progress: [████████░░] 79%
+Progress: [████████░░] 80%
 
 ## Performance Metrics
 
