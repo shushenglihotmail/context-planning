@@ -174,6 +174,12 @@ Plans:
 Plans:
 - [ ] 20-01: TBD
 - [ ] 20-02: TBD
+
+### Phase 21: Plan-time expected-key-files
+
+Plans:
+- [ ] 21-01: TBD
+- [ ] 21-02: TBD
 ## Progress
 
 **Execution Order:**
