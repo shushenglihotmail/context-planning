@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 29 (v0.8 Consistency)
-Plan: 29-01
+Plan: 29-02
 Status: Ready to execute
 Current focus: CI template + backfill
-Last activity: write SUMMARY for plan 28-01
+Last activity: plan phase 29 (CI template + reconcile backfill)
 
-Progress: [█████████░] 89%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
