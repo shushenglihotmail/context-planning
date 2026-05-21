@@ -275,6 +275,82 @@ section('lib/milestone: aggregateSummaries empty review counts');
 }
 
 // =============================================================
+// v0.9 P35: renderDigest surfaces Phase designs + Reviews sections
+section('lib/milestone: renderDigest emits Phase designs section');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('render-design');
+  const phasePath = path.join(root, '.planning', 'phases', '32-test');
+  fs.mkdirSync(phasePath, { recursive: true });
+  // Non-stub design (no placeholder).
+  fs.writeFileSync(
+    path.join(phasePath, 'DESIGN.md'),
+    '# Design: Phase 32\n\n## Status\n\nAccepted on 2026-05-21.\n\n## Decision\n\nReal decision content here.\n',
+  );
+  const summaries = [
+    { phase: '32', plan: '01', phasePath, data: { subsystem: 'tooling', 'key-decisions': ['d1'] } },
+  ];
+  const agg = milestone.aggregateSummaries(summaries);
+  const digest = milestone.renderDigest('v0.9 Test', '2026-05-21', ['32'], agg, { '32': 'Test phase' });
+  ok('digest contains **Phase designs:** heading', digest.includes('**Phase designs:**'));
+  ok('digest lists phase 32 design', /Phase 32 — `.*DESIGN\.md`/.test(digest));
+}
+
+section('lib/milestone: renderDigest skips stub designs');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('render-stub');
+  const phasePath = path.join(root, '.planning', 'phases', '33-stub');
+  fs.mkdirSync(phasePath, { recursive: true });
+  // Stub design — left as template.
+  fs.writeFileSync(
+    path.join(phasePath, 'DESIGN.md'),
+    '# Design: Phase 33\n\n## Status\n\n{Proposed | Accepted on YYYY-MM-DD | ...}\n',
+  );
+  const summaries = [
+    { phase: '33', plan: '01', phasePath, data: { subsystem: 'tooling', 'key-decisions': ['d1'] } },
+  ];
+  const agg = milestone.aggregateSummaries(summaries);
+  ok('aggregate still records the ref', agg.phaseDesignRefs.length === 1);
+  const digest = milestone.renderDigest('v0.9 Stub Test', '2026-05-21', ['33'], agg, {});
+  ok('digest omits Phase designs section when only stubs exist',
+    !digest.includes('**Phase designs:**'));
+}
+
+section('lib/milestone: renderDigest emits Reviews section with count');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('render-reviews');
+  const phasePath = path.join(root, '.planning', 'phases', '34-review-test');
+  fs.mkdirSync(phasePath, { recursive: true });
+  fs.writeFileSync(
+    path.join(phasePath, 'REVIEW-LOG.md'),
+    '# REVIEW-LOG\n\n## 2026-05-20 — first review\n\nNotes.\n\n## 2026-05-21 — second review\n\nMore notes.\n',
+  );
+  const summaries = [
+    { phase: '34', plan: '01', phasePath, data: { subsystem: 'tooling', 'key-decisions': ['d1'] } },
+  ];
+  const agg = milestone.aggregateSummaries(summaries);
+  const digest = milestone.renderDigest('v0.9 Review Test', '2026-05-21', ['34'], agg, {});
+  ok('digest contains **Reviews:** line', digest.includes('**Reviews:**'));
+  ok('digest reports correct entry count', /Reviews:\*\* 2 entries across 1 phase/.test(digest));
+}
+
+section('lib/milestone: renderDigest omits Reviews section when no entries');
+{
+  const milestone = require('../lib/milestone');
+  const root = mktmp('render-no-reviews');
+  const phasePath = path.join(root, '.planning', 'phases', '35-no-reviews');
+  fs.mkdirSync(phasePath, { recursive: true });
+  const summaries = [
+    { phase: '35', plan: '01', phasePath, data: { subsystem: 'tooling', 'key-decisions': ['d1'] } },
+  ];
+  const agg = milestone.aggregateSummaries(summaries);
+  const digest = milestone.renderDigest('v0.9 Quiet', '2026-05-21', ['35'], agg, {});
+  ok('digest omits Reviews when empty', !digest.includes('**Reviews:**'));
+}
+
+// =============================================================
 // Cleanup
 for (const d of tracked) fs.rmSync(d, { recursive: true, force: true });
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
