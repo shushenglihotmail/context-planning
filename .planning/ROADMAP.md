@@ -267,6 +267,9 @@ Plans:
 - [x] 35-01: TBD
 
 </details>
+
+### 🚧 v0.10 Autonomy (In Progress)
+
 ## Progress
 
 **Execution Order:**
