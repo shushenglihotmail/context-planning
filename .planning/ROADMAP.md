@@ -214,7 +214,7 @@ Plans:
 ### Phase 27: Pre-commit hook smart shim
 
 Plans:
-- [ ] 27-01: TBD
+- [x] 27-01: TBD
 - [ ] 27-02: TBD
 
 ### Phase 28: Post-commit hook tick auto
