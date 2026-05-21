@@ -268,7 +268,8 @@ Plans:
 
 </details>
 
-### 🚧 v0.10 Autonomy (In Progress)
+<details>
+<summary>✅ v0.10 Autonomy (Phases 36-38) — SHIPPED 2026-05-21</summary>
 
 ### Phase 36: cp autonomous CLI + lib helper
 
@@ -284,6 +285,8 @@ Plans:
 
 Plans:
 - [x] 38-01: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**

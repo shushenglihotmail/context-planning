@@ -412,3 +412,27 @@
 - Phase 33: cp update command — see `.planning/phases/33-cp-update-command/`
 - Phase 34: README onboarding decision matrix — see `.planning/phases/34-readme-onboarding-decision-matrix/`
 - Phase 35: DESIGN.md lifecycle polish — see `.planning/phases/35-design-md-lifecycle-polish/`
+
+## v0.10 Autonomy  — shipped 2026-05-21
+
+**Phases:** 36-38    **Plans:** 3    **Duration:** —
+
+**Key decisions:**
+- Lib stays pure: planPhase/executePhase callbacks supplied by skill layer keeps unit tests fast and avoids recursive npm test  _(phase 36)_
+- Smart gates live in lib (test/audit are CLI verbs, no agent reasoning needed); deviation detected via callback throw  _(phase 36)_
+- Mirror cp update shape: same flag set, same exit code semantics, same JSON return shape  _(phase 36)_
+- Skill is outer orchestrator; CLI runAutonomous reserved for --check + lib unit tests  _(phase 37)_
+- Smart gates in skill loop (after each plan tick) use cp audit + config.test_command — no agent reasoning needed  _(phase 37)_
+- Stop UX uses ask_user with reason-tailored choices; never exit session  _(phase 37)_
+- No installer.js edit — install/*.js auto-walk commands/cp/  _(phase 37)_
+- Bump to 0.10.0 (MINOR — additive only, no breaking changes)  _(phase 38)_
+- CHANGELOG entry links design spec + milestone DESIGN for traceability  _(phase 38)_
+- README documents both the slash skill primary path AND the bare CLI --check path  _(phase 38)_
+
+**Files (created):** bin/commands/autonomous.js, lib/autonomous.js, test/unit-autonomous.js, commands/cp/autonomous.md
+**Files (modified):** bin/commands/_usage.js, bin/commands/index.js, package.json, CHANGELOG.md, README.md
+
+**Phase summaries:**
+- Phase 36: cp autonomous CLI + lib helper — see `.planning/phases/36-cp-autonomous-cli-lib-helper/`
+- Phase 37: /cp-autonomous slash skill — see `.planning/phases/37-cp-autonomous-slash-skill/`
+- Phase 38: Docs + v0.10.0 release — see `.planning/phases/38-docs-v0-10-0-release/`
