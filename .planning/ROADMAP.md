@@ -203,7 +203,6 @@ Plans:
 Plans:
 - [x] 25-01: TBD
 - [x] 25-02: TBD
-- [ ] 25-03: TBD
 
 ### Phase 26: Repair commands
 
