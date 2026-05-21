@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 11 — Command decomposition (v0.6 Quality Wave)
+**Current focus:** Phase 17 — SHA pinning foundation (v0.8 Consistency)
 
 ## Current Position
 
-Phase: 0 (ready for next milestone)
-Plan: 0
-Status: Idle
-Current focus: Phase 11 — Command decomposition
-Last activity: 2026-05-20 — shipped v0.7 Design Capture
+Phase: 17 (v0.8 Consistency)
+Plan: 1 of 2
+Status: Ready to plan
+Current focus: Phase 17 — SHA pinning foundation
+Last activity: 2026-05-21 — started milestone v0.8 Consistency (phases 17-31)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -74,6 +74,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-20
-Stopped at: shipped v0.7 Design Capture
+Last session: 2026-05-21
+Stopped at: started v0.8 Consistency milestone (15 phases scaffolded)
 Resume file: None

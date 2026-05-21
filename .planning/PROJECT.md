@@ -31,6 +31,10 @@ pick up exactly where work left off without re-reading the whole repo.**
 - ✓ Cursor (`.cursor/rules/*.mdc`) + Aider (`.aider.conf.yml`) installers — v0.4.2
 - ✓ `cp worktree {create,list,remove}` with Superpowers hand-off opt-in — v0.4.3
 - ✓ Aider YAML-parser fix (preserves user `read:`) + worktree shell-out extraction — v0.4.4
+- ✓ Generic provider/harness detection — harnesses × providers cross-product with trailing-`*` glob, sectioned `cp doctor`, brownfield auto-heal merge — v0.5
+- ✓ Quality wave: decompose `bin/cp.js` into per-command modules, dual-binary `cplan` + `cp`, GitHub Actions CI (Ubuntu+Windows × Node 20+22), c8 coverage with 80% threshold — v0.6
+- ✓ Design capture infrastructure (DESIGN.md, REVIEW-LOG.md, key-decisions hard-block, milestone DESIGN.md aggregation) — v0.7
+- ✓ npm publish (`context-planning@0.7.1`) + restructured Install docs — v0.7.1
 
 ### Known minor issues
 - 5 MEDIUM concerns in `.planning/codebase/CONCERNS.md` open: `bin/cp.js`
@@ -41,8 +45,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - No CI yet (LOW concern) — `npm test` runs locally only.
 
 ### Active
-- ✓ Generic provider/harness detection — harnesses × providers cross-product with trailing-`*` glob, sectioned `cp doctor`, brownfield auto-heal merge — v0.5
-- Quality wave: decompose `bin/cp.js` into per-command modules, dual-binary `cplan` + `cp`, GitHub Actions CI (Ubuntu+Windows × Node 20+22), c8 coverage with 80% threshold — v0.6
+- Consistency stack: prevent / detect / repair drift between `.planning/` and code via SHA pinning, auto key-files, file-existence block, derived STATE, audit + `audit --fix` (GSD-mimic), 4 repair commands (reconcile/supersede/deviate/--continue), agent literacy injection, and opt-in git hooks (smart shim for monorepos) — v0.8
 
 ### Out of Scope
 - **No knowledge-graph layer** — gsd-graphify-style indexing is heavy and
@@ -82,7 +85,11 @@ pick up exactly where work left off without re-reading the whole repo.**
 | Single `lib/lifecycle.js` for "user-facing" ops | The 6 underlying GSD lib contracts have sharp edges (kebab-vs-snake, descriptor returns, single PLAN.md across both ROADMAP and phase) — wrapping them shields the agent | v0.2 CLI wrappers |
 | Drop bullet-style `## Milestones` in ROADMAP | Parser wanted H3 in `## Phases`; templates contradicted parser | v0.3 template fix |
 | `.planning/` is committed | Treats planning as source code (reviewable, diffable) | Default since v0.1 |
+| `.planning/` includes design docs (PLAN-DESIGN.md, milestone DESIGN.md, REVIEW-LOG.md) | Stateless LLMs need design rationale, not just task lists, to resume work coherently | v0.7 design-capture infra |
+| SHA pinning is foundation for consistency (`base-commit`/`end-commit` on PLAN/SUMMARY) | Deterministic audit requires deterministic phase boundaries; fuzzy "since last summary" heuristics produce false positives | v0.8 P1 |
+| Drift defense is layered (prevent + detect + repair, not just one) | Prevention misses drift caused by manual ops; detection without repair leaves user hand-editing markdown; repair without prevention is whack-a-mole | v0.8 milestone |
+| Agent literacy is always-on after `cp install`; agents always suggest, never refuse | Refusal-based gating is user-hostile; hooks are the enforcement safety net | v0.8 P11 |
 
 ---
-*Last updated: 2026-05-20 — started v0.6 Quality Wave*
+*Last updated: 2026-05-21 — started v0.8 Consistency milestone (phases 17-31)*
 
