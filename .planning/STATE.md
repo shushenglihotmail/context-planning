@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 20 (v0.8 Consistency)
-Plan: 0 of TBD
-Status: Ready to plan
+Plan: 1 of 2
+Status: Ready to execute
 Current focus: Phase 20 — Derived STATE.md
-Last activity: 2026-05-21 — shipped phase 19 (file-existence hard-block)
+Last activity: 2026-05-21 — planned phase 20 (derived STATE.md)
 
 Progress: [██░░░░░░░░] 20%
 
