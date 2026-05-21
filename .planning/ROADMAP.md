@@ -190,6 +190,13 @@ Plans:
 
 Plans:
 - [ ] 23-01: TBD
+
+### Phase 24: cplan audit detection
+
+Plans:
+- [ ] 24-01: TBD
+- [ ] 24-02: TBD
+- [ ] 24-03: TBD
 ## Progress
 
 **Execution Order:**
