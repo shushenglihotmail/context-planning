@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 21 (v0.8 Consistency)
-Plan: 21-01
+Plan: 21-02
 Status: Ready to execute
 Current focus: Plan-time expected-key-files
-Last activity: advance curated 'Current focus' to phase 21
+Last activity: plan phase 21 (Plan-time expected-key-files) — DESIGN + PLAN + STATE.md
 
-Progress: [███████░░░] 65%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 

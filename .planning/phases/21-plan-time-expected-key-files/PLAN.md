@@ -41,7 +41,7 @@ deviation in `key-decisions`. Hard-block only when
 
 ## Plans
 
-- [ ] 21-01: lib helpers + writeSummary integration + templates
+- [x] 21-01: lib helpers + writeSummary integration + templates
 - [ ] 21-02: CLI flags + dryrun integration test
 
 ## Notes
