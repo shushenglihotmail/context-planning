@@ -250,6 +250,7 @@ verb when a finding appears.
 | `/cp-new-milestone <name>` | Append milestone shell to ROADMAP, write MILESTONE-CONTEXT.md | `brainstorm` → spec the milestone → break into phases |
 | `/cp-plan-phase <N>`     | Create `phases/{NN-slug}/`, scaffold `PLAN.md` | `plan` → produce per-plan files |
 | `/cp-execute-phase <N>`  | For each plan: hand off, on success tick ROADMAP, write SUMMARY.md, update STATE.md | `execute` → write & verify code |
+| `/cp-autonomous [START] [--scope=…]` | Drive all pending phases of the active milestone without per-phase approval. Smart-gated on test fail / audit HIGH / executor deviation; stops cleanly to `.planning/.continue-here.md` and prompts inline. | Delegates to `/cp-plan-phase` + `/cp-execute-phase` per phase |
 | `/cp-quick <task>`       | Create `quick/{YYYYMMDD-slug}/PLAN.md`, atomic-commit on done | `execute_simple` → quick fix |
 | `/cp-progress`           | Read STATE + ROADMAP → "you are here, next is X" | — |
 | `/cp-resume`             | Restore from `.continue-here.md` + STATE | `execute` or whatever role was paused |
@@ -330,6 +331,14 @@ cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
                                 # → collapse milestone in ROADMAP → clear
                                 # MILESTONE-CONTEXT.md → reset STATE → commit.
                                 # Use --dry-run to preview the actions list.
+cp autonomous [START] [--scope=phase|N|N-M|milestone] [--check] [--json] [--quiet]
+                                # v0.10: walk pending phases of the active
+                                # milestone autonomously. START = phase
+                                # number, milestone name, or omit to
+                                # auto-detect. --check previews phases that
+                                # would run. The bare CLI is most useful
+                                # for --check; the full agent-driven loop is
+                                # `/cp-autonomous` (slash skill).
 cp config get [<key>]           # Print a cp config value (or the whole cp block)
 cp config set <key> <value>     # Update cp.<key>
 cp version                      # Print version

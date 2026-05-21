@@ -6,6 +6,51 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-05-21 — Autonomy
+
+### Added
+
+- **`cp autonomous` CLI verb.** New driver that walks pending phases of
+  the active milestone with smart-gate stops. Flags: optional
+  positional `START` (phase number, milestone name, or auto-detect from
+  STATE.md), `--scope=phase|N|N-M|milestone` (defaults to milestone;
+  count + range forms clamp to milestone end), `--check` (preview;
+  exits 1 if anything would run), `--json`, `--quiet`. Exit codes:
+  0 success / 1 stopped or check-found / 2 hard error. The lib stays
+  pure — `planPhase` / `executePhase` callbacks are supplied by the
+  slash skill, which keeps unit tests fast and avoids recursive npm
+  test invocation.
+- **`/cp-autonomous` slash skill.** Outer orchestrator that pre-flights
+  with `cp autonomous --check --json`, then walks each in-scope phase:
+  if PLAN.md is a scaffold stub it delegates to `/cp-plan-phase`,
+  otherwise it loops `/cp-execute-phase` (one plan per call) with
+  per-plan smart gates. On a stop trigger it writes
+  `.planning/.continue-here.md`, prints a stop block, and prompts the
+  user inline via `ask_user` with reason-tailored choices — the
+  session is never exited. Auto-installed by all four harness
+  installers on next `cp install`.
+- **Smart-gate triggers.** The autonomous loop halts on four conditions:
+  `test-failure` (configured `cp.behavior.test_command` non-zero exit),
+  `audit-high` (`cp audit --json` reports `summary.high > 0`),
+  `deviation` (`/cp-execute-phase` returns failure), and `plan-failed`
+  (`/cp-plan-phase` did not fill the stub). Each writes a
+  reason-specific `.continue-here.md` block.
+- **Milestone hard-cap.** Even with `--scope=milestone` or
+  `--scope=50`, the driver stops at the active milestone's last phase.
+  Cross-milestone drives are intentionally out of scope — milestone
+  closure has its own UAT gate.
+- **README + CHANGELOG documentation** for the new verb + skill, plus a
+  CLI table entry showing the `--scope` value taxonomy.
+- **22 new unit assertions** in `test/unit-autonomous.js` covering the
+  scope parser, START resolution, milestone-cap clamping, dry-run,
+  real loop with stubbed callbacks, deviation gate, and
+  `.continue-here.md` writer.
+
+### Design
+
+- Design spec: `docs/superpowers/specs/2026-05-21-v0-10-cp-autonomous-design.md`
+- Milestone DESIGN: `.planning/milestones/v0-10-autonomy/DESIGN.md`
+
 ## [0.9.0] - 2026-05-21 — Onboarding
 
 ### Added
