@@ -211,6 +211,12 @@ Plans:
 - [ ] 26-01: TBD
 - [ ] 26-02: TBD
 - [ ] 26-03: TBD
+
+### Phase 27: Pre-commit hook smart shim
+
+Plans:
+- [ ] 27-01: TBD
+- [ ] 27-02: TBD
 ## Progress
 
 **Execution Order:**
