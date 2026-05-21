@@ -32,4 +32,5 @@ module.exports = {
   worktree: require('./worktree'),
   state: require('./state'),
   audit: require('./audit'),
+  reconcile: require('./reconcile'),
 };

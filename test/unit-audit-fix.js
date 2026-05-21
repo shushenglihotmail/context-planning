@@ -52,14 +52,15 @@ section('classify: partitions into auto/manual/skip');
     { id: 'state-stale', severity: 'LOW' },
     { id: 'summary-without-tick', severity: 'MEDIUM', planId: '01-01' },
     { id: 'ticked-without-summary', severity: 'HIGH', fix: 'cp write-summary' },
-    { id: 'missing-base-commit', severity: 'MEDIUM', fix: 'cp reconcile --infer-shas' },
+    { id: 'missing-base-commit', severity: 'MEDIUM', fix: 'cp reconcile --infer-shas', phaseNum: '1' },
+    { id: 'phantom-id', severity: 'LOW', fix: 'manual' },
   ];
   const r = auditFix.classify(findings);
-  ok('2 auto', r.auto.length === 2);
-  ok('auto includes state-stale + summary-without-tick',
-    r.auto.some(f => f.id === 'state-stale') && r.auto.some(f => f.id === 'summary-without-tick'));
-  ok('2 manual', r.manual.length === 2);
-  ok('manual suggestion uses finding.fix', r.manual[0].suggestion.startsWith('cp '));
+  ok('3 auto (state-stale + summary-without-tick + missing-base-commit)', r.auto.length === 3);
+  ok('auto includes reconcile-backed missing-base-commit',
+    r.auto.some(f => f.id === 'missing-base-commit'));
+  ok('2 manual (ticked-without-summary + phantom-id)', r.manual.length === 2);
+  ok('manual suggestion uses finding.fix', r.manual[0].suggestion.startsWith('cp ') || r.manual[0].suggestion === 'manual');
   ok('skip empty by default', r.skip.length === 0);
 }
 
@@ -161,6 +162,8 @@ section('FIXERS registry shape');
 {
   ok('has state-stale', typeof auditFix.FIXERS['state-stale'] === 'function');
   ok('has summary-without-tick', typeof auditFix.FIXERS['summary-without-tick'] === 'function');
+  ok('has missing-base-commit (reconcile)', typeof auditFix.FIXERS['missing-base-commit'] === 'function');
+  ok('has missing-end-commit (reconcile)', typeof auditFix.FIXERS['missing-end-commit'] === 'function');
   ok('no fixer for ticked-without-summary (manual)', auditFix.FIXERS['ticked-without-summary'] === undefined);
 }
 

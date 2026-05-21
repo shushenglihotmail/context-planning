@@ -75,6 +75,13 @@ Usage:
                                   One atomic commit per fix, --max caps fixes
                                   (default 5). Exit 0 all clean, 1 any failed,
                                   2 manual findings remain.
+  cp reconcile <phaseNum> [--infer-shas] [--accept] [--plan NN-MM]
+                          [--dry-run] [--json] [--no-commit]
+                                  Repair drift for a phase (v0.8 P10).
+                                  --infer-shas fills missing base-commit
+                                  and end-commit from git log. --accept
+                                  rewrites expected-key-files from SUMMARY
+                                  (destructive). One atomic commit per change.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config
