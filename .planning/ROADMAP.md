@@ -163,6 +163,11 @@ Plans:
 Plans:
 - [ ] 18-01: TBD
 - [ ] 18-02: TBD
+
+### Phase 19: File-existence hard-block
+
+Plans:
+- [ ] 19-01: TBD
 ## Progress
 
 **Execution Order:**
