@@ -249,6 +249,12 @@ Plans:
 
 Plans:
 - [ ] 32-01: TBD
+
+### Phase 33: cp update command
+
+Plans:
+- [ ] 33-01: TBD
+- [ ] 33-02: TBD
 ## Progress
 
 **Execution Order:**
