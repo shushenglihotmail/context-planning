@@ -244,6 +244,11 @@ Plans:
 - [x] 31-02: TBD
 
 </details>
+
+### Phase 32: map-codebase auto-init
+
+Plans:
+- [ ] 32-01: TBD
 ## Progress
 
 **Execution Order:**
