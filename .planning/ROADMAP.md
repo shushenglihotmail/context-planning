@@ -180,6 +180,11 @@ Plans:
 Plans:
 - [ ] 21-01: TBD
 - [ ] 21-02: TBD
+
+### Phase 22: scaffold-phase prior-summary check
+
+Plans:
+- [ ] 22-01: TBD
 ## Progress
 
 **Execution Order:**
