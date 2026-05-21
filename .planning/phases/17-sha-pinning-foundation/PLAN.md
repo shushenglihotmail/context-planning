@@ -40,7 +40,7 @@ breakage to v0.7 artefacts.
 ## Plans
 
 - [x] 17-01: `lib/git.js::headSha` helper + scaffoldPhase extension (stamps `base-commit` on PLAN.md) + unit tests
-- [ ] 17-02: writeSummary extension (stamps `end-commit` on SUMMARY.md) + template updates + round-trip parse test
+- [x] 17-02: writeSummary extension (stamps `end-commit` on SUMMARY.md) + template updates + round-trip parse test
 
 ## Notes
 

@@ -156,7 +156,7 @@ Plans:
 
 Plans:
 - [x] 17-01: TBD
-- [ ] 17-02: TBD
+- [x] 17-02: TBD
 
 ### Phase 18: Auto key-files at write-time
 
