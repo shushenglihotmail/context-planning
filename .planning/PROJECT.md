@@ -36,6 +36,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - ✓ Design capture infrastructure (DESIGN.md, REVIEW-LOG.md, key-decisions hard-block, milestone DESIGN.md aggregation) — v0.7
 - ✓ npm publish (`context-planning@0.7.1`) + restructured Install docs — v0.7.1
 - ✓ Consistency stack: prevent / detect / repair drift via SHA pinning, auto key-files, file-existence block, derived STATE, audit + `audit --fix` (GSD-mimic), 4 repair commands (reconcile/supersede/deviate/--continue), agent literacy injection, opt-in git hooks + CI template — v0.8 (published as `context-planning@0.8.1`)
+- ✓ Onboarding wave: `cp map-codebase` auto-init (case-2 one-liner), `cp update` + `/cp-update` skill mirroring `/gsd-update`'s npx one-liner (case-4), README "Choose your starting path" 4-row decision matrix, milestone digest surfaces phase DESIGN.md + REVIEW-LOG.md refs, scaffoldMilestone tail-insert bug fix — v0.9 (published as `context-planning@0.9.0`)
 
 ### Known minor issues
 - 5 MEDIUM concerns in `.planning/codebase/CONCERNS.md` open: `bin/cp.js`
@@ -46,7 +47,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - No CI yet (LOW concern) — `npm test` runs locally only.
 
 ### Active
-- Onboarding: one-command starts for every entry path. `cp map-codebase` auto-inits in unfreshed repos (case 2); new `cp update` command mirrors `/gsd-update`'s `npx`-fronted one-liner so the documented invocation is `npx -y --package=context-planning@latest -- cp update` (case 4 — fetches AND refreshes per-repo state in one shot); README gains a 4-row onboarding decision matrix; per-phase DESIGN.md lifecycle gets polish so design intent survives milestone close consistently — v0.9
+- Autonomy: ship `/cp-autonomous` slash skill + `cp autonomous` CLI that loops `plan-phase → execute-phase → tick → write-summary → state regen` across pending phases of the active milestone. Bounded to a single milestone. Smart-gated on test failure, audit HIGH, and executor deviation; stops cleanly via `.planning/.continue-here.md` so `/cp-resume` picks up. Closes the gap where every milestone today must be hand-driven step by step. — v0.10
 
 ### Out of Scope
 - **No knowledge-graph layer** — gsd-graphify-style indexing is heavy and
@@ -92,5 +93,5 @@ pick up exactly where work left off without re-reading the whole repo.**
 | Agent literacy is always-on after `cp install`; agents always suggest, never refuse | Refusal-based gating is user-hostile; hooks are the enforcement safety net | v0.8 P11 |
 
 ---
-*Last updated: 2026-05-21 — started v0.8 Consistency milestone (phases 17-31)*
+*Last updated: 2026-05-21 — started v0.10 Autonomy milestone (phases 36-38)*
 
