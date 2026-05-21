@@ -167,7 +167,7 @@ Plans:
 ### Phase 19: File-existence hard-block
 
 Plans:
-- [ ] 19-01: TBD
+- [x] 19-01: TBD
 
 ### Phase 20: Derived STATE.md
 

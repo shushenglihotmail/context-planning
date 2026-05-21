@@ -5,15 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 19 — File-existence hard-block (v0.8 Consistency)
+**Current focus:** Phase 20 — Derived STATE.md (v0.8 Consistency)
 
 ## Current Position
 
-Phase: 19 (v0.8 Consistency)
-Plan: 1 of 2
-Status: Ready to execute
-Current focus: Phase 19 — File-existence hard-block
-Last activity: 2026-05-21 — planned phase 19 (file-existence hard-block)
+Phase: 20 (v0.8 Consistency)
+Plan: 0 of TBD
+Status: Ready to plan
+Current focus: Phase 20 — Derived STATE.md
+Last activity: 2026-05-21 — shipped phase 19 (file-existence hard-block)
+
+Progress: [██░░░░░░░░] 20%
 
 Progress: [██░░░░░░░░] 13%
 
