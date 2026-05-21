@@ -140,6 +140,10 @@ section('tickPlan');
 section('writeSummary');
 {
   const root = freshProject('summary');
+  // v0.8 P3: create the files this test references so existence check passes.
+  fs.mkdirSync(path.join(root, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'src', 'a.js'), '// stub\n');
+  fs.writeFileSync(path.join(root, 'src', 'b.js'), '// stub\n');
 
   // Write with kebab-case keys.
   const r1 = lifecycle.writeSummary(root, '01-01', {
@@ -310,6 +314,8 @@ section('writeSummary auto-fills key-files from git diff (v0.8 P2)');
 section('writeSummary auto-fill unions with caller-supplied key-files');
 {
   const { root } = projectWithBaseCommit('union');
+  // v0.8 P3 would block lib/caller.js + docs/preset.md (caller phantoms);
+  // this test cares about union semantics, not existence — opt out.
   const result = lifecycle.writeSummary(root, '01-01', {
     subsystem: 'greet',
     'key-decisions': ['x'],
@@ -317,7 +323,7 @@ section('writeSummary auto-fill unions with caller-supplied key-files');
       created: ['lib/caller.js', 'lib/new.js'], // overlap with diff
       modified: ['docs/preset.md'],
     },
-  });
+  }, { checkFileExistence: false });
   const kf = fm.parse(fs.readFileSync(result.path, 'utf8')).frontmatter['key-files'];
   // Caller arrays preserved; diff entries appended without duplicates.
   ok('caller created entries preserved', kf.created.includes('lib/caller.js'));
@@ -373,6 +379,163 @@ section('writeSummary silently skips auto-fill when PLAN.md has no base-commit')
   ok('result.autoFill.added === 0', r.autoFill && r.autoFill.added === 0);
 }
 
+// ---------- v0.8 P3 (Phase 19): file-existence hard-block ----------
+
+section('writeSummary blocks phantom path in key-files.created (v0.8 P3)');
+{
+  const root = freshProject('p3-phantom-created');
+  let err = null;
+  try {
+    lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'x',
+      'key-decisions': ['x'],
+      'key-files': { created: ['lib/phantom.js'], modified: [] },
+    });
+  } catch (e) { err = e; }
+  ok('throws ValidationError', err && err.name === 'ValidationError',
+    `err=${err && err.message}`);
+  ok('error message mentions missing on disk',
+    err && /missing on disk/.test(err.message));
+  ok('error message names lib/phantom.js',
+    err && /lib\/phantom\.js \(created\)/.test(err.message),
+    `msg=${err && err.message}`);
+  ok('error message suggests --no-file-check',
+    err && /--no-file-check/.test(err.message));
+}
+
+section('writeSummary blocks phantom path in key-files.modified (v0.8 P3)');
+{
+  const root = freshProject('p3-phantom-modified');
+  let err = null;
+  try {
+    lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'x',
+      'key-decisions': ['x'],
+      'key-files': { created: [], modified: ['docs/missing.md'] },
+    });
+  } catch (e) { err = e; }
+  ok('throws ValidationError on modified phantom', err && err.name === 'ValidationError');
+  ok('names docs/missing.md (modified)',
+    err && /docs\/missing\.md \(modified\)/.test(err.message));
+}
+
+section('writeSummary error message lists ALL missing paths (v0.8 P3)');
+{
+  const root = freshProject('p3-multi');
+  let err = null;
+  try {
+    lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'x',
+      'key-decisions': ['x'],
+      'key-files': {
+        created: ['lib/a.js', 'lib/b.js'],
+        modified: ['c.md'],
+      },
+    });
+  } catch (e) { err = e; }
+  ok('all three phantoms named', err &&
+    /lib\/a\.js/.test(err.message) &&
+    /lib\/b\.js/.test(err.message) &&
+    /c\.md/.test(err.message),
+    `msg=${err && err.message}`);
+}
+
+section('writeSummary { checkFileExistence: false } opts out (v0.8 P3)');
+{
+  const root = freshProject('p3-opt-out');
+  const r = lifecycle.writeSummary(root, '01-01', {
+    subsystem: 'x',
+    'key-decisions': ['x'],
+    'key-files': { created: ['lib/phantom.js'], modified: [] },
+  }, { checkFileExistence: false });
+  const parsed = fm.parse(fs.readFileSync(r.path, 'utf8')).frontmatter;
+  ok('summary written despite phantom path', r.action === 'written');
+  ok('phantom path preserved in frontmatter',
+    parsed['key-files'] && parsed['key-files'].created.includes('lib/phantom.js'));
+}
+
+section('writeSummary passes when all key-files exist (v0.8 P3)');
+{
+  const root = freshProject('p3-happy');
+  fs.mkdirSync(path.join(root, 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'lib', 'real.js'), 'module.exports = 1;\n');
+  fs.writeFileSync(path.join(root, 'README.md'), '# r\n');
+  let err = null;
+  let r;
+  try {
+    r = lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'x',
+      'key-decisions': ['x'],
+      'key-files': { created: ['lib/real.js'], modified: ['README.md'] },
+    });
+  } catch (e) { err = e; }
+  ok('no error when paths exist', !err, err && err.message);
+  ok('summary written', r && r.action === 'written');
+}
+
+section('writeSummary auto-fill entries never trigger P3 block');
+{
+  const { root } = projectWithBaseCommit('p3-autofill');
+  // No caller-supplied key-files; auto-fill should pick up real diff entries.
+  let err = null;
+  let r;
+  try {
+    r = lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'x',
+      'key-decisions': ['x'],
+    });
+  } catch (e) { err = e; }
+  ok('no error — auto-fill entries are diff-derived', !err, err && err.message);
+  const parsed = fm.parse(fs.readFileSync(r.path, 'utf8')).frontmatter;
+  ok('summary has key-files',
+    parsed['key-files'] && (parsed['key-files'].created.length + parsed['key-files'].modified.length) > 0);
+}
+
+section('writeSummary blocks caller phantom even alongside valid auto-fill');
+{
+  const { root } = projectWithBaseCommit('p3-mixed');
+  let err = null;
+  try {
+    lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'x',
+      'key-decisions': ['x'],
+      'key-files': { created: ['lib/phantom-mixed.js'], modified: [] },
+    });
+  } catch (e) { err = e; }
+  ok('throws on caller phantom despite valid auto-fill entries',
+    err && err.name === 'ValidationError');
+  ok('error names the phantom only (auto-fill entries are real)',
+    err && /lib\/phantom-mixed\.js/.test(err.message) &&
+    !/lib\/new\.js/.test(err.message),
+    `msg=${err && err.message}`);
+}
+
+section('_checkKeyFilesExist helper is pure (no mutation)');
+{
+  const root = freshProject('p3-helper-pure');
+  const input = {
+    'key-files': { created: ['lib/phantom.js'], modified: [] },
+  };
+  const before = JSON.stringify(input);
+  const result = milestone._checkKeyFilesExist(input, root);
+  ok('helper returns { missing: [...] }', Array.isArray(result.missing));
+  ok('1 missing entry', result.missing.length === 1);
+  ok('missing entry has path + kind',
+    result.missing[0].path === 'lib/phantom.js' && result.missing[0].kind === 'created');
+  ok('input not mutated', JSON.stringify(input) === before);
+}
+
+section('_checkKeyFilesExist opts out cleanly');
+{
+  const root = freshProject('p3-helper-opt-out');
+  const result = milestone._checkKeyFilesExist(
+    { 'key-files': { created: ['lib/phantom.js'], modified: [] } },
+    root,
+    { checkFileExistence: false }
+  );
+  ok('opt-out returns empty missing', result.missing.length === 0);
+}
+
 // ---------- statusReport ----------
 
 section('statusReport');
@@ -419,6 +582,10 @@ section('completeMilestone');
 {
   // Complete flow.
   const root = freshProject('complete');
+  // v0.8 P3: pre-create src/a.js + src/b.js so the existence check passes.
+  fs.mkdirSync(path.join(root, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'src', 'a.js'), '// stub\n');
+  fs.writeFileSync(path.join(root, 'src', 'b.js'), '// stub\n');
   lifecycle.tickPlan(root, '01-01');
   lifecycle.tickPlan(root, '01-02');
   lifecycle.writeSummary(root, '01-01', { subsystem: 'g', tags: ['cli'], requires: [], provides: ['hello'], 'key-files': { created: ['src/a.js'], modified: [] }, 'requirements-completed': ['hello'], 'key-decisions': ['x'], 'patterns-established': [], duration: '2min' });
