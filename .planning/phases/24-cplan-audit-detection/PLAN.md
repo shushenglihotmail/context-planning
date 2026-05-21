@@ -47,7 +47,7 @@ and a recommended fix. JSON + human output; exit codes for CI.
 
 - [x] 24-01: `lib/audit.js` check registry + runAudit + unit tests
 - [x] 24-02: `bin/commands/audit.js` CLI + dryrun tests + register in index/usage
-- [ ] 24-03: dogfood audit on this repo, capture findings, brief docs update
+- [x] 24-03: dogfood audit on this repo, capture findings, brief docs update
 
 ## Notes
 

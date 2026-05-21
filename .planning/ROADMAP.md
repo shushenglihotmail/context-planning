@@ -196,7 +196,7 @@ Plans:
 Plans:
 - [x] 24-01: TBD
 - [x] 24-02: TBD
-- [ ] 24-03: TBD
+- [x] 24-03: TBD
 
 ### Phase 25: cplan audit --fix loop
 
