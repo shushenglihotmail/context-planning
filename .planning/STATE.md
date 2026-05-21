@@ -13,7 +13,7 @@ Phase: 21 (v0.8 Consistency)
 Plan: 21-01
 Status: Ready to execute
 Current focus: Plan-time expected-key-files
-Last activity: tick plan 20-02
+Last activity: advance curated 'Current focus' to phase 21
 
 Progress: [███████░░░] 65%
 
