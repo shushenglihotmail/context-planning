@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 23 (v0.8 Consistency)
-Plan: 23-01
+Phase: 25 (v0.8 Consistency)
+Plan: 25-01
 Status: Ready to execute
-Current focus: complete-milestone audit gate
-Last activity: write SUMMARYs for plans 24-01, 24-02, 24-03
+Current focus: cplan audit --fix loop
+Last activity: plan phase 23 (complete-milestone audit gate)
 
-Progress: [███████░░░] 74%
+Progress: [████████░░] 76%
 
 ## Performance Metrics
 

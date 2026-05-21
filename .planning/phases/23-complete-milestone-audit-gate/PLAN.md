@@ -38,7 +38,7 @@ hatches with mandatory stderr override notice on `--no-audit`.
 
 ## Plans
 
-- [ ] 23-01: Wire audit.runAudit into completeMilestone + CLI flags + tests
+- [x] 23-01: Wire audit.runAudit into completeMilestone + CLI flags + tests
 
 ## Notes
 

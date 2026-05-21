@@ -189,7 +189,7 @@ Plans:
 ### Phase 23: complete-milestone audit gate
 
 Plans:
-- [ ] 23-01: TBD
+- [x] 23-01: TBD
 
 ### Phase 24: cplan audit detection
 
