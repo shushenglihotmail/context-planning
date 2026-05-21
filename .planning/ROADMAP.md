@@ -228,6 +228,13 @@ Plans:
 Plans:
 - [ ] 29-01: TBD
 - [ ] 29-02: TBD
+
+### Phase 30: Agent literacy injection
+
+Plans:
+- [ ] 30-01: TBD
+- [ ] 30-02: TBD
+- [ ] 30-03: TBD
 ## Progress
 
 **Execution Order:**
