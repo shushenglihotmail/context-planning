@@ -13,7 +13,7 @@ Phase: 28 (v0.8 Consistency)
 Plan: 28-01
 Status: Ready to execute
 Current focus: Post-commit hook tick auto
-Last activity: tick plan 27-02
+Last activity: write SUMMARYs for phase 27
 
 Progress: [█████████░] 88%
 
