@@ -148,6 +148,27 @@ Goal: ship a usable CLI that can add, list, and search bookmarks.
 …and `MILESTONES.md` gets an auto-generated digest with subsystems,
 decisions, patterns, and files touched — aggregated across every SUMMARY.md.
 
+## Drift defense (v0.8)
+
+Plan/state docs and the codebase drift apart over time. v0.8 ships a
+three-layer defense stack — **prevent → detect → repair** — so you
+can keep them in sync.
+
+| Layer | Verbs | What it does |
+|---|---|---|
+| **Detect** | `cp audit` | 9 consistency checks (LOW/MEDIUM/HIGH); `--severity high` is CI-safe |
+| **Repair (auto)** | `cp audit --fix` | Safe fixers for `state-stale`, `summary-without-tick`, `missing-base-commit`, `missing-end-commit` |
+| **Repair (manual)** | `cp reconcile`, `cp supersede`, `cp deviate`, `cp scaffold-phase --continue` | SHA backfill, rescope tracking, intentional divergence, work carry-forward |
+| **Prevent** | `cp install --hooks`, `cp install --ci` | Pre-commit gate + GitHub Actions workflow |
+
+See **[`docs/drift-playbook.md`](docs/drift-playbook.md)** for the full
+walkthrough including migration guide for pre-v0.8 projects and a
+finding-id → verb lookup table.
+
+The drift-defense verb list is also injected into your AI harness's
+ambient instructions on `cp install`, so the agent surfaces the right
+verb when a finding appears.
+
 ## Command surface
 
 ### Slash commands (live inside your AI harness)
