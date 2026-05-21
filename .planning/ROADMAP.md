@@ -151,6 +151,12 @@ Plans:
 - [x] 16-03: TBD
 
 </details>
+
+### Phase 17: SHA pinning foundation
+
+Plans:
+- [ ] 17-01: TBD
+- [ ] 17-02: TBD
 ## Progress
 
 **Execution Order:**
