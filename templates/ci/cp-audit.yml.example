@@ -1,0 +1,40 @@
+# cp:ci v1
+# context-planning audit gate for pull requests.
+# Installed by `cp install --ci`. Safe to edit — install refuses to
+# overwrite a user-modified file unless --force is passed.
+#
+# What it does:
+#   - Runs `cp audit --severity high` against every push + PR.
+#   - Fails the build if HIGH findings exist (drift between PLAN.md /
+#     SUMMARY.md / git history).
+#   - Use `cp audit --fix` locally to auto-repair common issues, or
+#     `cp reconcile <phase> --infer-shas` for SHA backfill.
+
+name: cp audit
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  audit:
+    name: cp audit (severity=high)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          # cp audit walks git log for base/end commits — full history needed.
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install cp
+        run: npm install -g context-planning
+
+      - name: Run cp audit
+        run: cp audit --severity high

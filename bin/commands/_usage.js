@@ -7,8 +7,9 @@ function usage() {
 
 Usage:
   cp install <harness>            Install into a harness (copilot | claude | cursor | aider)
-  cp install --hooks [--force]    Install cp git hooks (pre-commit) into enclosing git repo
+  cp install --hooks [--force]    Install cp git hooks (pre-commit, post-commit) into git repo
   cp install --uninstall-hooks    Remove cp-owned git hooks
+  cp install --ci [--force]       Install GitHub Actions audit workflow (.github/workflows/cp-audit.yml)
   cp init                         Scaffold .planning/ in this repo
   cp gsd-import [--root <dir>] [--json] [--apply]
                                   Read-only audit of any planning project
