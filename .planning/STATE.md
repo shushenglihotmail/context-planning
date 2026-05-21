@@ -13,7 +13,7 @@ Phase: 25 (v0.8 Consistency)
 Plan: 25-01
 Status: Ready to execute
 Current focus: cplan audit --fix loop
-Last activity: tick plan 23-01
+Last activity: write SUMMARY for plan 23-01
 
 Progress: [████████░░] 76%
 
