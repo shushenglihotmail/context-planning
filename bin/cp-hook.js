@@ -23,7 +23,7 @@
 const path = require('path');
 const fs = require('fs');
 const { spawnSync } = require('child_process');
-const { gitRoot, findCpProjects } = require('../lib/hooks');
+const { gitRoot, findCpProjects, lastCommitInfo } = require('../lib/hooks');
 const { loadConfig, cpGet } = require('../lib/provider');
 
 function actionFor(event, cfg) {
@@ -31,43 +31,106 @@ function actionFor(event, cfg) {
     return cpGet(cfg, 'behavior.pre_commit', 'audit-high');
   }
   if (event === 'post-commit') {
+    // Default off: tick-auto subtly mutates history with a follow-up commit.
     return cpGet(cfg, 'behavior.post_commit', 'off');
   }
   return 'off';
 }
 
-function runAction(action, projectRoot) {
+function _parsePlanIdFromSubject(subject) {
+  if (typeof subject !== 'string') return null;
+  // Match: cp(NN-MM): ... or cp(NN-MM-anything): ...
+  // Explicitly REJECT cp(reconcile):, cp(supersede):, cp(deviate):, cp: ...
+  // by requiring the first capture to start with a digit.
+  const m = subject.match(/^cp\((\d+-\d+)(?:-[^)]*)?\):/);
+  if (!m) return null;
+  return m[1];
+}
+
+function runAction(action, projectRoot, event) {
   if (action === 'off' || !action) {
     return { code: 0, stdout: '', stderr: '', skipped: true };
   }
-  let args;
-  if (action === 'audit-high') {
-    args = ['audit', '--severity', 'high', '--quiet'];
-  } else if (action === 'audit-any') {
-    args = ['audit', '--quiet'];
-  } else if (action === 'tick-auto') {
-    // Phase 28 will wire this; placeholder so post-commit can route.
-    args = ['_unknown-action', action];
-  } else {
+  // Pre-commit actions go through cp CLI as a child process.
+  if (action === 'audit-high' || action === 'audit-any') {
+    const args =
+      action === 'audit-high'
+        ? ['audit', '--severity', 'high', '--quiet']
+        : ['audit', '--quiet'];
+    const cpJs = path.join(__dirname, 'cp.js');
+    const r = spawnSync(process.execPath, [cpJs, ...args], {
+      cwd: projectRoot,
+      encoding: 'utf8',
+    });
+    return {
+      code: r.status == null ? 1 : r.status,
+      stdout: r.stdout || '',
+      stderr: r.stderr || '',
+      skipped: false,
+    };
+  }
+  // Post-commit tick-auto runs in-process (no recursive commit needed yet —
+  // tickPlan handles the follow-up commit via state regeneration).
+  if (action === 'tick-auto' && event === 'post-commit') {
+    return _runTickAuto(projectRoot);
+  }
+  return {
+    code: 0,
+    stdout: '',
+    stderr: `cp-hook: unknown action '${action}' for ${event} — skipping\n`,
+    skipped: true,
+  };
+}
+
+/**
+ * Post-commit tick-auto: parse the last commit subject, look up the plan's
+ * expected-key-files, tick the plan if coverage matches.
+ *
+ * Runs lifecycle.tickPlan + commits the tick in a follow-up commit so the
+ * user's original commit stays untouched.
+ */
+function _runTickAuto(projectRoot) {
+  const info = lastCommitInfo(projectRoot);
+  if (!info) return { code: 0, stdout: '', stderr: '', skipped: true };
+
+  const planId = _parsePlanIdFromSubject(info.subject);
+  if (!planId) return { code: 0, stdout: '', stderr: '', skipped: true };
+
+  // If the commit was already a tick commit (`cp: tick plan NN-MM`), no-op.
+  if (/^cp:\s+tick\s+plan\s+/.test(info.subject)) {
+    return { code: 0, stdout: '', stderr: '', skipped: true };
+  }
+
+  const lifecycle = require('../lib/lifecycle');
+  let decision;
+  try {
+    decision = lifecycle.tryAutoTick(projectRoot, planId, info.files);
+  } catch (e) {
     return {
       code: 0,
       stdout: '',
-      stderr: `cp-hook: unknown action '${action}' — skipping\n`,
+      stderr: `cp-hook(post-commit): tryAutoTick error: ${e.message}\n`,
       skipped: true,
     };
   }
-  // Invoke the cp CLI directly via node + bin/cp.js to avoid PATH lookup
-  // (Windows .cmd shims occasionally trip up under `git commit -m`).
+
+  if (decision.decision !== 'tick') {
+    return { code: 0, stdout: '', stderr: '', skipped: true };
+  }
+
+  // Run cp tick NN-MM via the CLI so it goes through the normal commit
+  // path (audit-clean state regen + atomic commit message).
   const cpJs = path.join(__dirname, 'cp.js');
-  const r = spawnSync(process.execPath, [cpJs, ...args], {
+  const r = spawnSync(process.execPath, [cpJs, 'tick', planId], {
     cwd: projectRoot,
     encoding: 'utf8',
   });
   return {
-    code: r.status == null ? 1 : r.status,
+    code: r.status == null ? 0 : r.status,
     stdout: r.stdout || '',
     stderr: r.stderr || '',
     skipped: false,
+    autoTicked: planId,
   };
 }
 
@@ -99,9 +162,17 @@ function main() {
       cfg = {};
     }
     const action = actionFor(event, cfg);
-    const res = runAction(action, proj);
+    const res = runAction(action, proj, event);
     if (res.skipped) continue;
+    if (res.autoTicked) {
+      process.stderr.write(
+        `cp-hook(post-commit): auto-ticked plan ${res.autoTicked}\n`
+      );
+    }
     if (res.code !== 0) {
+      // post-commit failures don't block (commit already happened) but
+      // are still reported on stderr and surface as non-zero so CI can
+      // notice. Pre-commit failures DO block.
       aggregateCode = res.code;
       const rel = path.relative(root, proj) || '.';
       process.stderr.write(
@@ -119,4 +190,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { actionFor, runAction };
+module.exports = { actionFor, runAction, _parsePlanIdFromSubject, _runTickAuto };

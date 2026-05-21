@@ -141,20 +141,21 @@ section('installHooks — refuses to overwrite user-owned hook');
   fs.writeFileSync(hookFile, '#!/bin/sh\necho user hook\n');
 
   const r = hooks.installHooks(root);
-  ok('refused install', r.installed.length === 0);
-  ok('skipped with reason', r.skipped.length === 1 && r.skipped[0].reason === 'user-owned');
+  // pre-commit skipped (user-owned); post-commit installed cleanly.
+  ok('pre-commit not in installed', !r.installed.some((h) => h.name === 'pre-commit'));
+  ok('pre-commit in skipped', r.skipped.some((s) => s.name === 'pre-commit' && s.reason === 'user-owned'));
 
   const after = fs.readFileSync(hookFile, 'utf8');
   ok('user content preserved', after.includes('echo user hook'));
 
   // --force overrides.
   const r2 = hooks.installHooks(root, { force: true });
-  ok('force installed', r2.installed.length === 1);
+  ok('force installed pre-commit', r2.installed.some((h) => h.name === 'pre-commit'));
   ok('force wrote sentinel', fs.readFileSync(hookFile, 'utf8').includes(hooks.HOOK_SENTINEL));
 
   // uninstall now owns it and removes
   const u = hooks.uninstallHooks(root);
-  ok('uninstall removes after force', u.removed.length === 1);
+  ok('uninstall removes pre-commit after force', u.removed.some((h) => h.name === 'pre-commit'));
 }
 
 section('uninstallHooks — leaves user-owned hook alone');
