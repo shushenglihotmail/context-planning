@@ -3,32 +3,28 @@ phase: "31"
 name: Docs + v0.8.0 release
 milestone: v0.8 Consistency
 status: in-progress
-created: 2026-05-21
-base-commit: 04623f85ffee7c76c1ac15f2a5029055629fdb2f
+created: 2026-05-22
+base-commit: d21ef62e12738e51ac258b22fa53186f4335d366
+expected-key-files:
+  "31-01":
+    - docs/drift-playbook.md
+    - README.md
+  "31-02":
+    - CHANGELOG.md
+    - package.json
 ---
 
-# Phase 31: Docs + v0.8.0 release
+# Phase 31 — Docs + v0.8.0 release
 
-**Milestone**: v0.8 Consistency
-**Created**: 2026-05-21
-
-## Goal
-
-{Describe what this phase delivers in 1-2 sentences.}
-
-## Success Criteria
-
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+**Design**: see [DESIGN.md](./DESIGN.md)
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 31-01: {brief description}
-- [ ] 31-02: {brief description}
+- [ ] 31-01: docs/drift-playbook.md + README "Drift defense" section
+- [ ] 31-02: CHANGELOG finalize + version bump + npm publish prep
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+After 31-02 ticks, user runs `npm publish` interactively (2FA, account
+credentials). Then `cp complete-milestone v0-8-consistency` rolls up
+to MILESTONES.md.
