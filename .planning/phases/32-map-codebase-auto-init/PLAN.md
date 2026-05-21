@@ -48,7 +48,7 @@ the normal mapping flow. No silent side-effects.
 
 ## Plans
 
-- [ ] 32-01: skill rewrite — add Step 0 (auto-init), update brownfield note,
+- [x] 32-01: skill rewrite — add Step 0 (auto-init), update brownfield note,
        refresh installer-test fixtures if they pin specific skill content
 
 ## Notes

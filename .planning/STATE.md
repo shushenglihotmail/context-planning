@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 32 (v0.9 Onboarding)
-Plan: 32-01
+Phase: 33 (v0.9 Onboarding)
+Plan: 33-01
 Status: Ready to execute
-Current focus: map-codebase auto-init
-Last activity: scaffold-phase 35 (DESIGN.md lifecycle polish)
+Current focus: cp update command
+Last activity: plan phase 32 (map-codebase auto-init)
 
-Progress: [█████████░] 93%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 

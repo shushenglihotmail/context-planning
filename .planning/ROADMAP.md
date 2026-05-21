@@ -248,7 +248,7 @@ Plans:
 ### Phase 32: map-codebase auto-init
 
 Plans:
-- [ ] 32-01: TBD
+- [x] 32-01: TBD
 
 ### Phase 33: cp update command
 
