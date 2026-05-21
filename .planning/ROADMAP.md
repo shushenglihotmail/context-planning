@@ -204,6 +204,13 @@ Plans:
 - [ ] 25-01: TBD
 - [ ] 25-02: TBD
 - [ ] 25-03: TBD
+
+### Phase 26: Repair commands
+
+Plans:
+- [ ] 26-01: TBD
+- [ ] 26-02: TBD
+- [ ] 26-03: TBD
 ## Progress
 
 **Execution Order:**
