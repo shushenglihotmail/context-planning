@@ -44,7 +44,7 @@ opt-out and a one-line stderr notice. Eliminates drift cause #1
 ## Plans
 
 - [x] 18-01: `lib/git.js::diffNameOnly` helper + `_autoFillKeyFiles` step in writeSummary (both lib paths) + tests
-- [ ] 18-02: `bin/commands/write-summary.js --no-auto-key-files` CLI flag + dry-run test + dogfood verification
+- [x] 18-02: `bin/commands/write-summary.js --no-auto-key-files` CLI flag + dry-run test + dogfood verification
 
 ## Notes
 

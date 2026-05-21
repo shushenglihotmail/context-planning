@@ -162,7 +162,7 @@ Plans:
 
 Plans:
 - [x] 18-01: TBD
-- [ ] 18-02: TBD
+- [x] 18-02: TBD
 
 ### Phase 19: File-existence hard-block
 
