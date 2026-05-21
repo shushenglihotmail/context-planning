@@ -41,7 +41,7 @@ fixer registry for phase 26 to extend.
 
 ## Plans
 
-- [ ] 25-01: lib/audit-fix.js classify + applyFixes + 2 fixers + unit tests
+- [x] 25-01: lib/audit-fix.js classify + applyFixes + 2 fixers + unit tests
 - [ ] 25-02: --fix CLI flag wiring + dryrun integration tests
 
 ## Notes
