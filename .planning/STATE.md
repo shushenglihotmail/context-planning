@@ -13,7 +13,7 @@ Phase: 38 (v0.10 Autonomy)
 Plan: 38-01
 Status: Ready to execute
 Current focus: Docs + v0.10.0 release
-Last activity: plan phase 37
+Last activity: tick plan 37-01
 
 Progress: [███████░░░] 67%
 
