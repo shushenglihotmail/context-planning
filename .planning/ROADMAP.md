@@ -185,6 +185,11 @@ Plans:
 
 Plans:
 - [ ] 22-01: TBD
+
+### Phase 23: complete-milestone audit gate
+
+Plans:
+- [ ] 23-01: TBD
 ## Progress
 
 **Execution Order:**
