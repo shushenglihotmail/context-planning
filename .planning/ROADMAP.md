@@ -6,8 +6,8 @@
 
 ## Phases
 
-### 🚧 v0.8 Consistency (In Progress)
-
+<details>
+<summary>✅ v0.8 Consistency (Phases 1-31) — SHIPPED 2026-05-21</summary>
 
 <details>
 <summary>✅ v0.7 Design Capture (Phases 1-16) — SHIPPED 2026-05-20</summary>
@@ -239,6 +239,8 @@ Plans:
 Plans:
 - [x] 31-01: TBD
 - [x] 31-02: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**

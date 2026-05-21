@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 31 (v0.8 Consistency)
+Phase: -
 Plan: 64 of 64
-Status: Phase complete
-Current focus: Docs + v0.8.0 release
-Last activity: write SUMMARYs for phase 31 + state regen
+Status: Idle
+Current focus: -
+Last activity: prune phantom 30-03 + state regen
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -75,5 +75,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: started v0.8 Consistency milestone (15 phases scaffolded)
+Stopped at: shipped v0.8 Consistency
 Resume file: None
