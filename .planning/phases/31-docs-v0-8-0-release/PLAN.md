@@ -21,7 +21,7 @@ expected-key-files:
 ## Plans
 
 - [x] 31-01: docs/drift-playbook.md + README "Drift defense" section
-- [ ] 31-02: CHANGELOG finalize + version bump + npm publish prep
+- [x] 31-02: CHANGELOG finalize + version bump + npm publish prep
 
 ## Notes
 
