@@ -536,6 +536,168 @@ section('_checkKeyFilesExist opts out cleanly');
   ok('opt-out returns empty missing', result.missing.length === 0);
 }
 
+// ---------- v0.8 P5: plan-time expected-key-files (Phase 21) ----------
+
+section('_extractExpectedKeyFiles helper');
+{
+  const root = freshProject('p5-extract');
+  const phaseDir = path.join(root, '.planning', 'phases', '01-greet');
+  // Default fixture PLAN.md has no expected-key-files → null.
+  ok('no field → null', milestone._extractExpectedKeyFiles(phaseDir, '01-01') === null);
+
+  // Flat array shape.
+  const planPath = path.join(phaseDir, 'PLAN.md');
+  fs.writeFileSync(planPath, `---\nphase: 1\nname: Greet\nplans: [01-01]\nexpected-key-files:\n  - lib/foo.js\n  - test/foo.js\n  - lib/foo.js\n---\n# Phase 1\n`);
+  const flat = milestone._extractExpectedKeyFiles(phaseDir, '01-01');
+  ok('flat array returned', Array.isArray(flat) && flat.length === 2, `got ${JSON.stringify(flat)}`);
+  ok('flat array deduped', flat.includes('lib/foo.js') && flat.includes('test/foo.js'));
+
+  // Object shape — own plan only (no other SUMMARYs).
+  fs.writeFileSync(planPath, `---\nphase: 1\nname: Greet\nexpected-key-files:\n  01-01:\n    - lib/a.js\n  01-02:\n    - lib/b.js\n---\n# Phase 1\n`);
+  const objMine = milestone._extractExpectedKeyFiles(phaseDir, '01-01');
+  ok('object: only own plan when no other SUMMARYs', objMine.length === 1 && objMine[0] === 'lib/a.js',
+    `got ${JSON.stringify(objMine)}`);
+
+  // Object shape — sibling plan's SUMMARY exists → union.
+  fs.writeFileSync(path.join(phaseDir, '01-02-SUMMARY.md'), '---\nphase: 1\n---\n# sib\n');
+  const objUnion = milestone._extractExpectedKeyFiles(phaseDir, '01-01');
+  ok('object: unions sibling plan with existing SUMMARY', objUnion.length === 2 && objUnion.includes('lib/a.js') && objUnion.includes('lib/b.js'));
+
+  // Malformed (not array/object) → null.
+  fs.writeFileSync(planPath, `---\nphase: 1\nexpected-key-files: "not an array"\n---\n`);
+  ok('string scalar → null (malformed)', milestone._extractExpectedKeyFiles(phaseDir, '01-01') === null);
+
+  // Missing PLAN.md → null.
+  ok('missing PLAN.md → null', milestone._extractExpectedKeyFiles(path.join(root, 'no-such'), '01-01') === null);
+}
+
+section('_diffExpectedVsActual helper');
+{
+  // Match.
+  const a = milestone._diffExpectedVsActual(['lib/a.js', 'lib/b.js'], {
+    'key-files': { created: ['lib/a.js'], modified: ['lib/b.js'] },
+  });
+  ok('match: no unexpected', a.unexpected.length === 0);
+  ok('match: no missing', a.missingExpected.length === 0);
+
+  // Unexpected.
+  const b = milestone._diffExpectedVsActual(['lib/a.js'], {
+    'key-files': { created: ['lib/a.js', 'lib/b.js'], modified: [] },
+  });
+  ok('unexpected: lib/b.js flagged', b.unexpected.length === 1 && b.unexpected[0] === 'lib/b.js');
+  ok('unexpected: no missing', b.missingExpected.length === 0);
+
+  // Missing expected.
+  const c = milestone._diffExpectedVsActual(['lib/a.js', 'lib/b.js'], {
+    'key-files': { created: ['lib/a.js'], modified: [] },
+  });
+  ok('missing: lib/b.js flagged', c.missingExpected.length === 1 && c.missingExpected[0] === 'lib/b.js');
+
+  // Both.
+  const d = milestone._diffExpectedVsActual(['lib/a.js', 'lib/c.js'], {
+    'key-files': { created: ['lib/a.js'], modified: ['lib/d.js'] },
+  });
+  ok('both: 1 unexpected, 1 missing', d.unexpected.length === 1 && d.missingExpected.length === 1);
+
+  // .planning/ paths filtered from actual side.
+  const e = milestone._diffExpectedVsActual(['lib/a.js'], {
+    'key-files': { created: ['lib/a.js'], modified: ['.planning/STATE.md'] },
+  });
+  ok('.planning/ paths ignored', e.unexpected.length === 0);
+
+  // null expected → both empty (disabled).
+  const f = milestone._diffExpectedVsActual(null, { 'key-files': { created: ['lib/a.js'], modified: [] } });
+  ok('null expected → diff empty', f.unexpected.length === 0 && f.missingExpected.length === 0);
+}
+
+section('writeSummary records expected-vs-actual drift (v0.8 P5)');
+{
+  const { root } = projectWithBaseCommit('p5-drift');
+  // Add expected-key-files mismatch: claim only lib/x.js but actual has lib/new.js + README.md.
+  const planPath = path.join(root, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  fs.writeFileSync(planPath, orig.replace(/^---\n/, '---\nexpected-key-files:\n  - lib/x.js\n'));
+  execSync('git add -A && git commit -q -m "add expected-key-files"', { cwd: root });
+
+  let result;
+  const stderr = captureStderr(() => {
+    result = lifecycle.writeSummary(root, '01-01', { 'key-decisions': ['x'] });
+  });
+  ok('writeSummary returns expectedDrift object', result.expectedDrift && typeof result.expectedDrift === 'object');
+  ok('unexpected includes lib/new.js', result.expectedDrift.unexpected.includes('lib/new.js'));
+  ok('missingExpected includes lib/x.js', result.expectedDrift.missingExpected.includes('lib/x.js'));
+  ok('stderr has drift notice', /expected-vs-actual drift/.test(stderr), `stderr=${JSON.stringify(stderr)}`);
+  // key-decisions should now include the drift sentence appended.
+  const written = fm.parse(fs.readFileSync(result.path, 'utf8')).frontmatter;
+  ok('key-decisions includes drift sentence',
+    Array.isArray(written['key-decisions']) &&
+    written['key-decisions'].some((d) => /expected-vs-actual drift/.test(d)),
+    `got ${JSON.stringify(written['key-decisions'])}`);
+}
+
+section('writeSummary silent when no expected-key-files');
+{
+  const { root } = projectWithBaseCommit('p5-silent');
+  let result;
+  const stderr = captureStderr(() => {
+    result = lifecycle.writeSummary(root, '01-01', { 'key-decisions': ['x'] });
+  });
+  ok('expectedDrift is null', result.expectedDrift === null);
+  ok('no drift notice', !/expected-vs-actual drift/.test(stderr));
+}
+
+section('writeSummary silent when expected matches actual');
+{
+  const { root } = projectWithBaseCommit('p5-match');
+  // Set expected to exactly the files the fixture changes: lib/new.js + README.md.
+  const planPath = path.join(root, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  fs.writeFileSync(planPath, orig.replace(/^---\n/,
+    '---\nexpected-key-files:\n  - lib/new.js\n  - README.md\n'));
+  execSync('git add -A && git commit -q -m "expected matches"', { cwd: root });
+  let result;
+  const stderr = captureStderr(() => {
+    result = lifecycle.writeSummary(root, '01-01', { 'key-decisions': ['x'] });
+  });
+  ok('expectedDrift is null', result.expectedDrift === null);
+  ok('no drift notice in stderr', !/expected-vs-actual drift/.test(stderr));
+}
+
+section('writeSummary --strict-expected throws on drift');
+{
+  const { root } = projectWithBaseCommit('p5-strict');
+  const planPath = path.join(root, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  fs.writeFileSync(planPath, orig.replace(/^---\n/, '---\nexpected-key-files:\n  - lib/x.js\n'));
+  execSync('git add -A && git commit -q -m "drift"', { cwd: root });
+  let thrown = null;
+  try {
+    captureStderr(() => {
+      lifecycle.writeSummary(root, '01-01', { 'key-decisions': ['x'] }, { strictExpected: true });
+    });
+  } catch (e) { thrown = e; }
+  ok('throws when --strict-expected and drift present', thrown !== null);
+  ok('error is ValidationError', thrown && thrown instanceof milestone.ValidationError);
+  ok('error message mentions drift', thrown && /expected-vs-actual drift/.test(thrown.message));
+}
+
+section('writeSummary { expectedCheck: false } opts out');
+{
+  const { root } = projectWithBaseCommit('p5-opt-out');
+  const planPath = path.join(root, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  fs.writeFileSync(planPath, orig.replace(/^---\n/, '---\nexpected-key-files:\n  - lib/x.js\n'));
+  execSync('git add -A && git commit -q -m "drift"', { cwd: root });
+  let result;
+  const stderr = captureStderr(() => {
+    result = lifecycle.writeSummary(root, '01-01', { 'key-decisions': ['x'] }, { expectedCheck: false });
+  });
+  ok('opt-out: expectedDrift is null', result.expectedDrift === null);
+  ok('opt-out: no stderr notice', !/expected-vs-actual drift/.test(stderr));
+  const written = fm.parse(fs.readFileSync(result.path, 'utf8')).frontmatter;
+  ok('opt-out: key-decisions not appended', !written['key-decisions'].some((d) => /expected-vs-actual drift/.test(d)));
+}
+
 // ---------- statusReport ----------
 
 section('statusReport');
