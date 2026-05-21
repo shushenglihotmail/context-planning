@@ -255,6 +255,11 @@ Plans:
 Plans:
 - [ ] 33-01: TBD
 - [ ] 33-02: TBD
+
+### Phase 34: README onboarding decision matrix
+
+Plans:
+- [ ] 34-01: TBD
 ## Progress
 
 **Execution Order:**
