@@ -5,7 +5,7 @@
 ## Plans
 
 - [x] 27-01: lib/hooks.js + bin/cp-hook.js (pre-commit dispatch)
-- [ ] 27-02: cp install --hooks / --uninstall-hooks + tests
+- [x] 27-02: cp install --hooks / --uninstall-hooks + tests
 
 ### 27-01 expected-key-files
 
