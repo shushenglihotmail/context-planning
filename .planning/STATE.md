@@ -13,7 +13,7 @@ Phase: 33 (v0.9 Onboarding)
 Plan: 33-01
 Status: Ready to execute
 Current focus: cp update command
-Last activity: plan phase 32 (map-codebase auto-init)
+Last activity: write summary for plan 32-01
 
 Progress: [█████████░] 94%
 
