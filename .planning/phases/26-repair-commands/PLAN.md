@@ -64,7 +64,7 @@ most common drift findings auto-fix.
 ## Plans
 
 - [x] 26-01: `cp reconcile` + reconcile-backed FIXERS for missing SHAs
-- [ ] 26-02: `cp supersede` + `cp deviate` lifecycle helpers + CLIs
+- [x] 26-02: `cp supersede` + `cp deviate` lifecycle helpers + CLIs
 - [ ] 26-03: `scaffold-phase --continue` + docs + legacy backfill dogfood
 
 ## Notes
