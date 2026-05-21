@@ -235,6 +235,12 @@ Plans:
 - [ ] 30-01: TBD
 - [ ] 30-02: TBD
 - [ ] 30-03: TBD
+
+### Phase 31: Docs + v0.8.0 release
+
+Plans:
+- [ ] 31-01: TBD
+- [ ] 31-02: TBD
 ## Progress
 
 **Execution Order:**
