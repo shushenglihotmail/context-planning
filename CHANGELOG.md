@@ -6,6 +6,19 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-05-21 — README polish (npm-page facing)
+
+- README: `cp --version` example now prints `0.8.x` (was stale `0.7.x`).
+- README: test-suite count refreshed to `~1400 assertions` (was stale `328`).
+- README "Updating an existing install" section expanded with:
+  - Explicit explanation of `--force` semantics (collision-safe-by-default
+    vs. version-bump intent).
+  - v0.8 upgrade note: `--force` is REQUIRED to inject the new
+    drift-defense literacy block into the harness's ambient instruction
+    file (`.github/context-planning.md` / `.claude/CLAUDE.md` / etc.).
+  - How to verify the block landed (`grep cp:drift-defense v1`).
+- No code changes — patch release purely for the npm package page README.
+
 ## [0.8.0] - 2026-05-21 — Consistency milestone
 
 The "drift defense" release. Plan/state docs and the codebase drift

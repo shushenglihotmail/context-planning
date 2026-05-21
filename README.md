@@ -53,7 +53,7 @@ every "do the work" step hands off to whatever skill set you have installed.
 ```bash
 npm install -g context-planning
 # exposes BOTH `cplan` and `cp` on PATH
-cp --version    # should print 0.7.x
+cp --version    # should print 0.8.x
 ```
 
 ### Node CLI (from source — for development)
@@ -62,7 +62,7 @@ cp --version    # should print 0.7.x
 git clone https://github.com/shushenglihotmail/context-planning
 cd context-planning
 npm install         # only dep: yaml
-npm test            # 328 assertions; should all pass
+npm test            # ~1400 assertions; should all pass
 npm link            # exposes BOTH `cplan` and `cp` on PATH (or use: node bin/cp.js ...)
 ```
 
@@ -70,10 +70,27 @@ npm link            # exposes BOTH `cplan` and `cp` on PATH (or use: node bin/cp
 
 ```bash
 npm install -g context-planning@latest   # upgrade global CLI
+
+# In every repo where you previously ran `cp install`:
 cd <your-project>
-cp install <harness> --force             # refresh harness skill files
-cp config refresh                        # merge new defaults into .planning/config.json
+cp install <harness> --force             # refresh harness skill files + ambient instructions
+cp config refresh                        # merge new config defaults into .planning/config.json
 ```
+
+**Why `--force`?** `cp install` is collision-safe by default — if a skill
+file or ambient instruction file differs from what the new version ships,
+it assumes you hand-edited it and refuses to overwrite (printing
+`LOCALLY MODIFIED — kept`). On a clean version bump that's a false
+positive; `--force` says "this is cp-owned content, replace it." If you
+actually customised a cp file, copy it out before forcing.
+
+**v0.8 upgrade note:** the drift-defense literacy block
+(`<!-- cp:drift-defense v1 -->`) is injected into your harness's ambient
+instruction file (`.github/context-planning.md` for Copilot CLI,
+`.claude/CLAUDE.md` for Claude Code, etc.) so the AI agent learns the
+new `cp audit` / `cp reconcile` / `cp supersede` / `cp deviate` verbs.
+This requires `--force` because the file existed without that block
+in v0.7. After upgrade, search for `cp:drift-defense v1` to confirm.
 
 ### Into an AI harness
 
