@@ -220,7 +220,7 @@ Plans:
 ### Phase 28: Post-commit hook tick auto
 
 Plans:
-- [ ] 28-01: TBD
+- [x] 28-01: TBD
 
 ### Phase 29: CI template + backfill
 

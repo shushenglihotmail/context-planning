@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 28 (v0.8 Consistency)
-Plan: 28-01
+Phase: 29 (v0.8 Consistency)
+Plan: 29-01
 Status: Ready to execute
-Current focus: Post-commit hook tick auto
-Last activity: write SUMMARYs for phase 27
+Current focus: CI template + backfill
+Last activity: plan phase 28 (post-commit hook tick auto)
 
-Progress: [█████████░] 88%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 

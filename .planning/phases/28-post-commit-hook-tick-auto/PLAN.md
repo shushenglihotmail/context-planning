@@ -4,7 +4,7 @@
 
 ## Plans
 
-- [ ] 28-01: tick-auto wiring (lib + shim + tests)
+- [x] 28-01: tick-auto wiring (lib + shim + tests)
 
 ### 28-01 expected-key-files
 
