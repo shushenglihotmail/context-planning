@@ -13,6 +13,7 @@ function run(args = []) {
   let dryRun = false;
   let noCommit = false;
   let force = false;
+  let continueFromPrior = false;
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--name') name = args[++i];
@@ -21,18 +22,19 @@ function run(args = []) {
     else if (a === '--dry-run') dryRun = true;
     else if (a === '--no-commit') noCommit = true;
     else if (a === '--force') force = true;
+    else if (a === '--continue') continueFromPrior = true;
     else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
     else if (!num) num = a;
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
   if (!num || !name) {
-    console.error('Usage: cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>] [--no-commit] [--dry-run] [--force]');
+    console.error('Usage: cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>] [--no-commit] [--dry-run] [--force] [--continue]');
     process.exit(2);
   }
 
   let r;
   try {
-    r = lifecycle.scaffoldPhase(root, num, { dryRun, name, plans, milestone: milestoneName, force });
+    r = lifecycle.scaffoldPhase(root, num, { dryRun, name, plans, milestone: milestoneName, force, continueFromPrior });
   } catch (e) {
     console.error(`scaffold-phase: ${e.message}`);
     process.exit(1);
@@ -62,6 +64,8 @@ function run(args = []) {
 
   if (force) {
     process.stderr.write('cp: --force used, skipping prior-summary check\n');
+  } else if (continueFromPrior) {
+    process.stderr.write('cp: --continue used, bypassing prior-summary check; "Continues from" note added to new PLAN.md\n');
   }
 
   for (const a of r.actions) {

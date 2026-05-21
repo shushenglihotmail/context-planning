@@ -53,8 +53,30 @@ Create `install/<name>.js` exporting `install({pluginRoot, repoRoot, force})`. U
   `CHECKS`. Reuses `milestone._extractExpectedKeyFiles`,
   `state.regenerate({ dryRun: true })`, `git.shaExists`. CLI wrapper:
   `bin/commands/audit.js`. See `.planning/phases/24-cplan-audit-detection/`.
+- `lib/audit-fix.js` — `cp audit --fix` orchestrator. Pluggable `FIXERS`
+  registry partitioned into auto/manual/skip via `classify()`, applied
+  via `applyFixes()` with one atomic commit per fix. Built-in fixers:
+  `state-stale`, `summary-without-tick`, `missing-base-commit`,
+  `missing-end-commit`. CLI: `bin/commands/audit.js` `--fix` branch.
+  See `.planning/phases/25-cplan-audit-fix-loop/`.
+- `lib/reconcile.js` — repair operations for SHA backfill and
+  expected-key-files rewrite. Exports `inferBaseCommit`, `inferEndCommit`,
+  `acceptExpectedKeyFiles`, and `reconcileFinding` (dispatch by finding
+  id). CLI: `bin/commands/reconcile.js`. Plugged into `audit-fix.FIXERS`
+  for `missing-base-commit` / `missing-end-commit`. See
+  `.planning/phases/26-repair-commands/`.
+- `lib/lifecycle.js::supersedePlan` — marks a plan `[~]` and appends a
+  "Superseded by" note (v0.8 P10). CLI: `bin/commands/supersede.js`.
+- `lib/lifecycle.js::recordDeviation` — appends a dated `## Deviation`
+  block to phase PLAN.md (v0.8 P10). CLI: `bin/commands/deviate.js`.
+- `lib/lifecycle.js::scaffoldPhase` — `continueFromPrior` option bypasses
+  the prior-summary gate (distinct from `--force`) and stamps a
+  "Continues from phase N-1" note in the new PLAN.md (v0.8 P10).
 - `lib/lifecycle.js::_priorPhaseAudit` — phase-22 gate that blocks
   `scaffold-phase N` when phase N-1 has ticked plans missing SUMMARYs.
+- `lib/lifecycle.js::completeMilestone` — phase-23 audit gate; refuses
+  on HIGH (always) and MEDIUM (unless `--audit-warn`); `--no-audit`
+  bypasses with mandatory stderr override.
 - `lib/milestone.js` — owns SHA-pinned base/end commits on PLAN.md /
   SUMMARY.md (v0.8 P1) and the expected-key-files contract.
 - `lib/state.js::regenerate` — derived STATE.md (v0.8 P4); the audit

@@ -8,6 +8,31 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added (v0.8 in progress — Consistency milestone)
 
+- **Repair commands** (Phase 26): four new verbs to fix drift detected by
+  `cp audit`:
+  - **`cp reconcile <N>`** — `--infer-shas` fills missing `base-commit` /
+    `end-commit` in PLAN/SUMMARY by inferring from `cp(NN-MM):` commit
+    log; `--accept` rewrites a plan's `expected-key-files` from actual
+    SUMMARY `key-files` (destructive). Atomic commit per change.
+  - **`cp supersede <planId> --by <newPlanId>`** — replaces plan checkbox
+    with `[~]` and appends a "Superseded by" note to PLAN.md.
+  - **`cp deviate <N> --summary "<text>"`** — appends a dated
+    `## Deviation YYYY-MM-DD` block to phase PLAN.md.
+  - **`cp scaffold-phase --continue`** — bypasses prior-summary gate
+    (distinct from `--force`) and stamps a "Continues from phase N-1"
+    note in the new PLAN.md.
+  - `lib/audit-fix.js` FIXERS registry extended with reconcile-backed
+    entries for `missing-base-commit` and `missing-end-commit` so
+    `cp audit --fix` auto-applies them.
+- **`cp audit --fix`** (Phase 25): classify findings into auto/manual/skip,
+  apply auto-fixers with one atomic commit per fix. Flags `--max N`
+  (default 5), `--severity high|medium|all`, `--dry-run`. Exit codes
+  0 (clean) / 1 (any failed) / 2 (manual findings remain). Pluggable
+  `FIXERS` registry — phase 26 appends reconcile-backed entries.
+- **`complete-milestone` audit gate** (Phase 23): runs `cp audit` as
+  a refuse-on-HIGH/MEDIUM gate before milestone close-out. `--audit-warn`
+  downgrades MEDIUM to warning; `--no-audit` bypasses entirely (with
+  mandatory stderr override notice). Fail-closed on audit error.
 - **`cp audit`** (Phase 24): read-only consistency checker for `.planning/`.
   Nine built-in checks covering ticked-without-summary, summary-without-tick,
   base-commit/end-commit completeness, expected-vs-actual key-files drift,

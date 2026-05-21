@@ -22,11 +22,14 @@ Usage:
   cp scaffold-milestone <name> [--planned] [--no-commit] [--dry-run]
                                   Add \`### 🚧 <name> (In Progress)\` heading to ROADMAP
                                   (use --planned for \`### 📋 <name> (Planned)\`)
-  cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>] [--force]
+  cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>]
+                                      [--force] [--continue]
                                   Add \`### Phase N: <name>\` under active milestone +
                                   create .planning/phases/{NN-slug}/PLAN.md.
                                   Refuses if phase N-1 has ticked plans without
-                                  SUMMARY.md (--force to override; v0.8 P6).
+                                  SUMMARY.md (--force silently overrides;
+                                  --continue bypasses and adds a "Continues from"
+                                  note to the new PLAN.md; v0.8 P6/P10).
   cp scaffold-codebase [--force] [--no-commit] [--dry-run]
                                   Create .planning/codebase/ with 7 stub docs
                                   (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE,
