@@ -46,6 +46,20 @@ built-in `manual` provider if Superpowers isn't installed.
 **Net result:** ~8 commands, the markdown state docs you already love, and
 every "do the work" step hands off to whatever skill set you have installed.
 
+## Choose your starting path
+
+Four ways to land on cp, four one-command starts:
+
+| Your situation | One command to start | Outcome |
+|---|---|---|
+| **1. Greenfield** — no code yet | `/cp-new-project` | Brainstorms project intent, scaffolds `.planning/`, queues first milestone |
+| **2. Existing code, no planning** | `/cp-map-codebase` | Auto-inits `.planning/` (with notice), then maps the codebase into 7 docs via 4 parallel sub-agents |
+| **3. Existing code + GSD planning** | `cp init && cp gsd-import` | Additive only — leaves all GSD files untouched, adds a `cp:` config block so cp verbs work on existing GSD state |
+| **4. Existing cp + version bump** | `npx -y --package=context-planning@latest -- cp update` | Fetches latest cp + refreshes per-repo state (skill files, config defaults, drift fixes) in one shot |
+
+Once you've started, every path converges on the same `/cp-plan-phase N`
+→ `/cp-execute-phase N` → `/cp-complete-milestone` loop.
+
 ## Install
 
 ### Node CLI (recommended — from npm)
