@@ -49,6 +49,7 @@ requirementsCompleted:
   - "v0.7 spec: phase DESIGN.md persistence"
   - "v0.7 spec: MILESTONE-CONTEXT promote-on-close"
 completed: 2026-05-20
+end-commit: cb965e80415fcd6217d78e61fe7f8ae78a24d725
 ---
 # Summary 16-01
 

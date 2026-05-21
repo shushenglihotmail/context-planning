@@ -10,7 +10,9 @@ outcome: Shipped as part of v0.4.3 (v0.4.3).
 phase: 4
 plan: 04-01
 completed: 2026-05-20
-key-decisions: ['Worktrees live as sibling directories tracked in WORKTREES.md with cp-slug branch defaults and optional provider integration.']
+key-decisions:
+  - Worktrees live as sibling directories tracked in WORKTREES.md with cp-slug branch defaults and optional provider integration.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 04-01
 

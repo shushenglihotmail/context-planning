@@ -4,6 +4,7 @@ name: GitHub Actions CI
 milestone: v0.6 Quality Wave
 status: in-progress
 created: 2026-05-20
+base-commit: 5f302e50ffe95aa65a16a61da731f0a6c81303cc
 ---
 
 # Phase 13: GitHub Actions CI

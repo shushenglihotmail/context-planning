@@ -8,7 +8,9 @@ files_touched: []
 phase: 13
 plan: 13-01
 completed: 2026-05-20
-key-decisions: ['CI runs a cross-platform GitHub Actions matrix on Ubuntu and Windows across Node 20 and 22 to catch environment-specific regressions.']
+key-decisions:
+  - CI runs a cross-platform GitHub Actions matrix on Ubuntu and Windows across Node 20 and 22 to catch environment-specific regressions.
+end-commit: 5f302e50ffe95aa65a16a61da731f0a6c81303cc
 ---
 # Summary 13-01
 

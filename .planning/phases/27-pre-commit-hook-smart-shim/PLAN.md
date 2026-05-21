@@ -1,3 +1,6 @@
+---
+base-commit: 7a5395d6cad12d9e2c850bf127c518801fdd1a78
+---
 # Phase 27 Plan — Pre-commit hook smart shim
 
 **Base commit**: ad95718

@@ -8,7 +8,9 @@ files_touched: []
 phase: 14
 plan: 14-02
 completed: 2026-05-20
-key-decisions: ['Coverage enforcement runs as a dedicated CI job after the test matrix and publishes the report as an artifact.']
+key-decisions:
+  - Coverage enforcement runs as a dedicated CI job after the test matrix and publishes the report as an artifact.
+end-commit: 59abae5fecfc35ef21b6d7bbc179c67322a1f8ca
 ---
 # Summary 14-02
 

@@ -7,7 +7,9 @@ outcome: Rewrote cmdDoctor with 5 sections (harnesses, providers, configured, ro
 phase: 7
 plan: 07-01
 completed: 2026-05-20
-key-decisions: ['cp doctor became a sectioned diagnostic with JSON and quiet modes instead of a single free-form report.']
+key-decisions:
+  - cp doctor became a sectioned diagnostic with JSON and quiet modes instead of a single free-form report.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 07-01
 

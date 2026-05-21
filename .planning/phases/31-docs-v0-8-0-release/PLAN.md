@@ -4,6 +4,7 @@ name: Docs + v0.8.0 release
 milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
+base-commit: 04623f85ffee7c76c1ac15f2a5029055629fdb2f
 ---
 
 # Phase 31: Docs + v0.8.0 release

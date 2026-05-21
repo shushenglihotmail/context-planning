@@ -4,6 +4,7 @@ name: Command decomposition
 milestone: v0.6 Quality Wave
 status: in-progress
 created: 2026-05-20
+base-commit: 31f2f3793b54fe176f5906e5492c2a2733abd4f0
 ---
 
 # Phase 11: Command decomposition

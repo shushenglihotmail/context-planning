@@ -39,6 +39,7 @@ patternsEstablished:
 requirementsCompleted:
   - "v0.7 spec: key-decisions hard-block"
 completed: 2026-05-20
+end-commit: 88d995d583f2be3eaedc4c51b0ffe5a7c351f7ad
 ---
 # Summary 16-03
 

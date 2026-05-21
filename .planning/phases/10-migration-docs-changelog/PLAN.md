@@ -4,6 +4,7 @@ name: Migration docs + CHANGELOG
 milestone: v0.5 — Generic provider/harness detection
 status: in-progress
 created: 2026-05-20
+base-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 
 # Phase 10: Migration docs + CHANGELOG

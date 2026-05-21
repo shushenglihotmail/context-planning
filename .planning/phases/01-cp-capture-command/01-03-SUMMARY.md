@@ -9,7 +9,9 @@ outcome: Shipped as part of v0.4.0 (8209bcc).
 phase: 1
 plan: 01-03
 completed: 2026-05-20
-key-decisions: ['The slash flow and seeded INBOX template share a fixed destination vocabulary so human and CLI triage follow the same routing model.']
+key-decisions:
+  - The slash flow and seeded INBOX template share a fixed destination vocabulary so human and CLI triage follow the same routing model.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 01-03
 

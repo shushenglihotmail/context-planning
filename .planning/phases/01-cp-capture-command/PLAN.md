@@ -4,6 +4,7 @@ name: cp-capture command
 milestone: v0.4 — Polish & Capture
 status: in-progress
 created: 2026-05-19
+base-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 
 # Phase 1: cp-capture command

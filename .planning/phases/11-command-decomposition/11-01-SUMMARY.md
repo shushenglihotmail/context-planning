@@ -8,7 +8,9 @@ files_touched: []
 phase: 11
 plan: 11-01
 completed: 2026-05-20
-key-decisions: ['The first extraction wave moved core handlers into bin commands modules behind registry-first dispatch while preserving legacy fall-through.']
+key-decisions:
+  - The first extraction wave moved core handlers into bin commands modules behind registry-first dispatch while preserving legacy fall-through.
+end-commit: 31f2f3793b54fe176f5906e5492c2a2733abd4f0
 ---
 # Summary 11-01
 

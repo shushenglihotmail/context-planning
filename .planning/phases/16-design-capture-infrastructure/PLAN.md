@@ -4,6 +4,7 @@ name: design capture infrastructure
 milestone: v0.7 Design Capture
 status: in-progress
 created: 2026-05-20
+base-commit: 3cb8ff54c3bba30f78882e450aa8870667d5cf87
 ---
 
 # Phase 16: design capture infrastructure

@@ -4,6 +4,7 @@ name: Agent literacy injection
 milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
+base-commit: 3788b8bacbce468bc50cf998e7a8bd876a57420e
 ---
 
 # Phase 30: Agent literacy injection

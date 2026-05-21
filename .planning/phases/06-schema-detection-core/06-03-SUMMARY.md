@@ -7,7 +7,9 @@ outcome: 47 assertions covering expandRoot, detection, legacy back-compat. Fixed
 phase: 6
 plan: 06-03
 completed: 2026-05-20
-key-decisions: ['Claude detection uses flat plugin_roots semantics and the new detect behavior is locked down with dedicated unit coverage.']
+key-decisions:
+  - Claude detection uses flat plugin_roots semantics and the new detect behavior is locked down with dedicated unit coverage.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 06-03
 

@@ -7,7 +7,9 @@ outcome: Moved existsAnywhere/detectProvider to detect.js. resolveSkill delegate
 phase: 6
 plan: 06-02
 completed: 2026-05-20
-key-decisions: ['lib provider resolution now delegates to detect.js while keeping back-compat exports intact.']
+key-decisions:
+  - lib provider resolution now delegates to detect.js while keeping back-compat exports intact.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 06-02
 

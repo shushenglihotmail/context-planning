@@ -8,7 +8,9 @@ files_touched: []
 phase: 14
 plan: 14-01
 completed: 2026-05-20
-key-decisions: ['c8 became the single coverage tool with enforced 85 line and 75 branch thresholds wired into npm scripts.']
+key-decisions:
+  - c8 became the single coverage tool with enforced 85 line and 75 branch thresholds wired into npm scripts.
+end-commit: 5902cf3709259c345c8cb79e3af3d90fc36a3387
 ---
 # Summary 14-01
 

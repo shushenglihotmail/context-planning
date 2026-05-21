@@ -4,6 +4,7 @@ name: Dual-binary cplan + cp alias
 milestone: v0.6 Quality Wave
 status: in-progress
 created: 2026-05-20
+base-commit: a709a75710391d7521f752e0e27ef582230a7930
 ---
 
 # Phase 12: Dual-binary `cplan` + `cp` alias

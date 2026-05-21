@@ -7,7 +7,9 @@ outcome: New lib/merge.js (~150 LOC) with mergeCpDefaults. loadConfig auto-write
 phase: 8
 plan: 08-01
 completed: 2026-05-20
-key-decisions: ['Config loading now auto-heals brownfield defaults through mergeCpDefaults and exposes a manual cp config refresh escape hatch.']
+key-decisions:
+  - Config loading now auto-heals brownfield defaults through mergeCpDefaults and exposes a manual cp config refresh escape hatch.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 08-01
 

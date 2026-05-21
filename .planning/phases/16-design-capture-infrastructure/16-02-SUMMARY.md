@@ -43,6 +43,7 @@ patternsEstablished:
 requirementsCompleted:
   - "v0.7 spec: SP subagent review chain persistence"
 completed: 2026-05-20
+end-commit: 0feabf7f683095478f8aa085894e73ca1b9b2df7
 ---
 # Summary 16-02
 

@@ -8,7 +8,9 @@ files_touched: []
 phase: 12
 plan: 12-02
 completed: 2026-05-20
-key-decisions: ['Docs, help text, and doctor output treat cplan as the canonical name while preserving cp as a supported alias.']
+key-decisions:
+  - Docs, help text, and doctor output treat cplan as the canonical name while preserving cp as a supported alias.
+end-commit: 2c983567d752b091a9c077ebee895e0ce585e09b
 ---
 # Summary 12-02
 

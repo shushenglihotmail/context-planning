@@ -10,7 +10,9 @@ outcome: Shipped as part of v0.4.4 (97c2b6d).
 phase: 5
 plan: 05-01
 completed: 2026-05-20
-key-decisions: ['Aider config edits switched from regex block replacement to YAML parse-stringify so existing read entries survive migration.']
+key-decisions:
+  - Aider config edits switched from regex block replacement to YAML parse-stringify so existing read entries survive migration.
+end-commit: 9d57b67aaefc56cfc9ee2c78c9a79471b79c4b3b
 ---
 # Summary 05-01
 
