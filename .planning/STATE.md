@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 19 (v0.8 Consistency)
-Plan: 0 of TBD
-Status: Ready to plan
+Plan: 1 of 2
+Status: Ready to execute
 Current focus: Phase 19 — File-existence hard-block
-Last activity: 2026-05-21 — shipped phase 18 (auto key-files at write-time)
+Last activity: 2026-05-21 — planned phase 19 (file-existence hard-block)
 
 Progress: [██░░░░░░░░] 13%
 
