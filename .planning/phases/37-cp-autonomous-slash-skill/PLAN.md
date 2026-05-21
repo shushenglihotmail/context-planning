@@ -53,7 +53,7 @@ cleanly via `.continue-here.md` + inline prompt.
 
 ## Plans
 
-- [ ] 37-01: Author commands/cp/autonomous.md (the source skill prose) +
+- [x] 37-01: Author commands/cp/autonomous.md (the source skill prose) +
       regenerate installer copies via `cp install <harness> --force`,
       add to docs index. Smoke: install into a fixture repo for one
       harness and grep for the skill file.

@@ -278,7 +278,7 @@ Plans:
 ### Phase 37: /cp-autonomous slash skill
 
 Plans:
-- [ ] 37-01: TBD
+- [x] 37-01: TBD
 
 ### Phase 38: Docs + v0.10.0 release
 

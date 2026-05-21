@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 37 (v0.10 Autonomy)
-Plan: 37-01
+Phase: 38 (v0.10 Autonomy)
+Plan: 38-01
 Status: Ready to execute
-Current focus: /cp-autonomous slash skill
-Last activity: tick plan 36-01
+Current focus: Docs + v0.10.0 release
+Last activity: plan phase 37
 
-Progress: [███░░░░░░░] 33%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
