@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 26 (v0.8 Consistency)
-Plan: 26-01
+Plan: 26-02
 Status: Ready to execute
 Current focus: Repair commands
-Last activity: prune phantom 25-03 from ROADMAP (phase 25 is 2 plans)
+Last activity: plan phase 26 (repair commands: reconcile/supersede/deviate/continue)
 
-Progress: [████████░░] 80%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
