@@ -51,7 +51,7 @@ milestone (complete-milestone, commit, push).
 
 ## Plans
 
-- [ ] 38-01: README + CHANGELOG + version bump + milestone close.
+- [x] 38-01: README + CHANGELOG + version bump + milestone close.
 
 ## Notes
 
