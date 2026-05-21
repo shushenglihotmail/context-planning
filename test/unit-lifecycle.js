@@ -237,6 +237,142 @@ section('writeSummary omits end-commit cleanly in a non-git directory');
   ok('SUMMARY still parses (forward-compat)', parsed.phase === 1 && parsed.plan === '01-01');
 }
 
+// ---------- v0.8 P2: auto key-files at write-time ----------
+
+/**
+ * Build a fixture where PLAN.md carries a base-commit and the working
+ * tree has new commits modifying both source files and .planning/ files.
+ * Returns the project root.
+ */
+function projectWithBaseCommit(suffix) {
+  const root = freshProject(`autofill-${suffix}`);
+  // Seed a tracked README.md so we can test the modify path below.
+  fs.writeFileSync(path.join(root, 'README.md'), '# initial\n');
+  execSync('git add -A && git commit -q -m "seed readme"', { cwd: root });
+  const baseSha = execSync('git rev-parse HEAD', { cwd: root, encoding: 'utf8' }).trim();
+  // Stamp base-commit into PLAN.md.
+  const planPath = path.join(root, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  fs.writeFileSync(
+    planPath,
+    orig.replace(/^---\n/, `---\nbase-commit: ${baseSha}\n`)
+  );
+  execSync('git add -A && git commit -q -m "stamp base"', { cwd: root });
+  // Now produce real source-file changes between baseSha and HEAD.
+  fs.mkdirSync(path.join(root, 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'lib', 'new.js'), 'module.exports = 1;\n');
+  fs.writeFileSync(path.join(root, 'README.md'), '# touched\n');
+  fs.appendFileSync(path.join(root, '.planning', 'STATE.md'), '\n# touched\n');
+  execSync('git add -A && git commit -q -m "phase work"', { cwd: root });
+  return { root, baseSha };
+}
+
+function captureStderr(fn) {
+  const origWrite = process.stderr.write.bind(process.stderr);
+  const captured = [];
+  process.stderr.write = (chunk, ...rest) => {
+    captured.push(String(chunk));
+    return true;
+  };
+  try { fn(); } finally { process.stderr.write = origWrite; }
+  return captured.join('');
+}
+
+section('writeSummary auto-fills key-files from git diff (v0.8 P2)');
+{
+  const { root } = projectWithBaseCommit('happy');
+  let result;
+  const stderr = captureStderr(() => {
+    result = lifecycle.writeSummary(root, '01-01', {
+      subsystem: 'greet',
+      'key-decisions': ['decided x'],
+    });
+  });
+  const parsed = fm.parse(fs.readFileSync(result.path, 'utf8')).frontmatter;
+  const kf = parsed['key-files'] || {};
+  ok('key-files.created includes lib/new.js',
+    Array.isArray(kf.created) && kf.created.includes('lib/new.js'),
+    `created=${JSON.stringify(kf.created)}`);
+  ok('key-files.modified includes README.md',
+    Array.isArray(kf.modified) && kf.modified.includes('README.md'),
+    `modified=${JSON.stringify(kf.modified)}`);
+  ok('.planning/ files filtered out',
+    !(kf.created || []).some((p) => p.startsWith('.planning/')) &&
+    !(kf.modified || []).some((p) => p.startsWith('.planning/')),
+    `kf=${JSON.stringify(kf)}`);
+  ok('stderr notice emitted',
+    /cp: key-files auto-filled \(\d+ files/.test(stderr),
+    `stderr=${JSON.stringify(stderr)}`);
+  ok('writeSummary result includes autoFill summary',
+    result.autoFill && typeof result.autoFill.added === 'number' && result.autoFill.added > 0);
+}
+
+section('writeSummary auto-fill unions with caller-supplied key-files');
+{
+  const { root } = projectWithBaseCommit('union');
+  const result = lifecycle.writeSummary(root, '01-01', {
+    subsystem: 'greet',
+    'key-decisions': ['x'],
+    'key-files': {
+      created: ['lib/caller.js', 'lib/new.js'], // overlap with diff
+      modified: ['docs/preset.md'],
+    },
+  });
+  const kf = fm.parse(fs.readFileSync(result.path, 'utf8')).frontmatter['key-files'];
+  // Caller arrays preserved; diff entries appended without duplicates.
+  ok('caller created entries preserved', kf.created.includes('lib/caller.js'));
+  ok('lib/new.js de-duped (single occurrence)',
+    kf.created.filter((p) => p === 'lib/new.js').length === 1);
+  ok('caller modified preserved', kf.modified.includes('docs/preset.md'));
+  ok('diff modified merged in', kf.modified.includes('README.md'));
+}
+
+section('writeSummary { autoKeyFiles: false } opts out (v0.8 P2)');
+{
+  const { root } = projectWithBaseCommit('opt-out');
+  let stderr;
+  const result = (() => {
+    let r;
+    stderr = captureStderr(() => {
+      r = lifecycle.writeSummary(root, '01-01', {
+        subsystem: 'greet',
+        'key-decisions': ['x'],
+      }, { autoKeyFiles: false });
+    });
+    return r;
+  })();
+  const parsed = fm.parse(fs.readFileSync(result.path, 'utf8')).frontmatter;
+  ok('no key-files written when caller did not supply any',
+    !parsed['key-files'] || (
+      (!parsed['key-files'].created || parsed['key-files'].created.length === 0) &&
+      (!parsed['key-files'].modified || parsed['key-files'].modified.length === 0)
+    ),
+    `kf=${JSON.stringify(parsed['key-files'])}`);
+  ok('no auto-fill stderr notice on opt-out',
+    !/auto-filled/.test(stderr), `stderr=${JSON.stringify(stderr)}`);
+  ok('result.autoFill.added === 0', result.autoFill && result.autoFill.added === 0);
+}
+
+section('writeSummary silently skips auto-fill when PLAN.md has no base-commit');
+{
+  // freshProject's PLAN.md has no base-commit by default.
+  const root = freshProject('autofill-no-base');
+  let stderr;
+  const r = (() => {
+    let res;
+    stderr = captureStderr(() => {
+      res = lifecycle.writeSummary(root, '01-01', {
+        subsystem: 'greet',
+        'key-decisions': ['x'],
+      });
+    });
+    return res;
+  })();
+  ok('no stderr notice when base-commit absent',
+    !/auto-filled/.test(stderr), `stderr=${JSON.stringify(stderr)}`);
+  ok('result.autoFill.added === 0', r.autoFill && r.autoFill.added === 0);
+}
+
 // ---------- statusReport ----------
 
 section('statusReport');

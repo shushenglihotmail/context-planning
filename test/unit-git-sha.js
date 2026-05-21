@@ -99,5 +99,55 @@ section('headSha never throws');
   ok('no exception across bad cwd / missing opts', !threw);
 }
 
+// ---------- diffNameOnly (v0.8 P2) ----------
+
+function mkRepoWithDiff(suffix) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `cp-git-diff-${suffix}-`));
+  execSync('git init -q -b main', { cwd: dir });
+  execSync('git config user.email t@l', { cwd: dir });
+  execSync('git config user.name t', { cwd: dir });
+  // base commit: README.md only
+  fs.writeFileSync(path.join(dir, 'README.md'), '# t\n');
+  execSync('git add README.md', { cwd: dir });
+  execSync('git commit -q -m base', { cwd: dir });
+  const base = execSync('git rev-parse HEAD', { cwd: dir, encoding: 'utf8' }).trim();
+  // end commit: add lib/foo.js (A), modify README.md (M), add a file with a space (A)
+  fs.mkdirSync(path.join(dir, 'lib'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'lib', 'foo.js'), 'module.exports = 1;\n');
+  fs.writeFileSync(path.join(dir, 'README.md'), '# t v2\n');
+  fs.writeFileSync(path.join(dir, 'a b.txt'), 'spaced\n');
+  execSync('git add -A', { cwd: dir });
+  execSync('git commit -q -m end', { cwd: dir });
+  const end = execSync('git rev-parse HEAD', { cwd: dir, encoding: 'utf8' }).trim();
+  return { dir, base, end };
+}
+
+section('diffNameOnly returns status + path entries');
+{
+  const { dir, base, end } = mkRepoWithDiff('happy');
+  const diff = git.diffNameOnly(base, end, { cwd: dir });
+  ok('returns array', Array.isArray(diff));
+  ok('has 3 entries (lib/foo.js, README.md, "a b.txt")', diff.length === 3,
+    `got ${diff.length}: ${JSON.stringify(diff)}`);
+  const byPath = Object.fromEntries(diff.map((e) => [e.path, e.status]));
+  ok('lib/foo.js is A (added)', byPath['lib/foo.js'] === 'A');
+  ok('README.md is M (modified)', byPath['README.md'] === 'M');
+  ok('NUL-separated parser handles space in filename', byPath['a b.txt'] === 'A');
+}
+
+section('diffNameOnly returns [] on invalid inputs');
+{
+  const { dir, end } = mkRepoWithDiff('bad');
+  ok('returns [] for null base', git.diffNameOnly(null, end, { cwd: dir }).length === 0);
+  ok('returns [] for empty end', git.diffNameOnly('abc', '', { cwd: dir }).length === 0);
+  ok('returns [] for non-existent base SHA', git.diffNameOnly('0000000000000000000000000000000000000000', end, { cwd: dir }).length === 0);
+}
+
+section('diffNameOnly returns [] when base == end');
+{
+  const { dir, end } = mkRepoWithDiff('same');
+  ok('empty diff for same SHA both sides', git.diffNameOnly(end, end, { cwd: dir }).length === 0);
+}
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) process.exit(1);
