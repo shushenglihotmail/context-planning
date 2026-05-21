@@ -253,7 +253,7 @@ Plans:
 ### Phase 33: cp update command
 
 Plans:
-- [ ] 33-01: TBD
+- [x] 33-01: TBD
 - [ ] 33-02: TBD
 
 ### Phase 34: README onboarding decision matrix

@@ -57,7 +57,7 @@ Closes case-4 onboarding (existing cp project, version bump).
 
 ## Plans
 
-- [ ] 33-01: `cp update` CLI subcommand
+- [x] 33-01: `cp update` CLI subcommand
        Implement `bin/commands/update.js` + register in `bin/commands/index.js`.
        Add `lib/update.js` for the orchestration (harness detect, refresh
        loop). Add `cp update` row to `bin/commands/_usage.js`. Unit tests
