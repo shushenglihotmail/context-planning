@@ -233,7 +233,6 @@ Plans:
 Plans:
 - [x] 30-01: TBD
 - [x] 30-02: TBD
-- [ ] 30-03: TBD
 
 ### Phase 31: Docs + v0.8.0 release
 

@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 30 (v0.8 Consistency)
-Plan: 30-03
-Status: Ready to execute
-Current focus: Agent literacy injection
-Last activity: tick plan 31-02
+Phase: 31 (v0.8 Consistency)
+Plan: 64 of 64
+Status: Phase complete
+Current focus: Docs + v0.8.0 release
+Last activity: write SUMMARYs for phase 31 + state regen
 
-Progress: [██████████] 98%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
