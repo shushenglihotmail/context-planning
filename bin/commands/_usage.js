@@ -70,6 +70,11 @@ Usage:
                                   Read-only drift sweep (v0.8 Tier 3 detect).
                                   Reports findings with severity / location /
                                   fix. Exit 0 clean, 1 LOW/MED, 2 HIGH or strict.
+  cp audit --fix [--max N] [--severity high|medium|all] [--dry-run]
+                                  Classify + auto-fix loop (v0.8 Tier 3 repair).
+                                  One atomic commit per fix, --max caps fixes
+                                  (default 5). Exit 0 all clean, 1 any failed,
+                                  2 manual findings remain.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config
