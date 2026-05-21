@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 20 — Derived STATE.md (v0.8 Consistency)
+**Current focus:** Phase 21 — Plan-time expected-key-files (v0.8 Consistency)
 
 ## Current Position
 
