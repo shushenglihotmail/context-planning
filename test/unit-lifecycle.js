@@ -1015,6 +1015,120 @@ section('scaffold + tick + complete round-trip');
 
 // ---------- end scaffolding tests ----------
 
+// ---------- v0.8 P6 (Phase 22): _priorPhaseAudit + scaffoldPhase guard ----------
+
+section('_priorPhaseAudit: returns null when no prior phase exists');
+{
+  const root = freshProject('p6-noprior');
+  // Seeded phase is 01-greet; query phase '1' → no prior.
+  const audit = lifecycle._priorPhaseAudit(root, '1');
+  ok('null when N == smallest phase', audit === null,
+    `got ${JSON.stringify(audit)}`);
+}
+
+section('_priorPhaseAudit: returns null when phases/ missing');
+{
+  const root = freshProject('p6-nophasesdir');
+  fs.rmSync(path.join(root, '.planning', 'phases'), { recursive: true, force: true });
+  const audit = lifecycle._priorPhaseAudit(root, '2');
+  ok('null when phases/ missing', audit === null);
+}
+
+section('_priorPhaseAudit: empty ticked when no x checkboxes');
+{
+  const root = freshProject('p6-noticks');
+  // Add phase 2 so that querying '3' finds phase '2' (which has no plans
+  // ticked in freshProject defaults).
+  lifecycle.scaffoldPhase(root, '2', { name: 'Two', plans: 1 });
+  const audit = lifecycle._priorPhaseAudit(root, '3');
+  ok('priorPhase = "2"', audit && audit.priorPhase === '2',
+    `got ${JSON.stringify(audit)}`);
+  ok('ticked is empty', audit.ticked.length === 0);
+  ok('no missing summaries', audit.missingSummaries.length === 0);
+}
+
+section('_priorPhaseAudit: detects ticked-without-summary plans');
+{
+  const root = freshProject('p6-drift');
+  // Tick both seeded plans without writing SUMMARY.
+  lifecycle.tickPlan(root, '01-01', { noCommit: true });
+  lifecycle.tickPlan(root, '01-02', { noCommit: true });
+  // Add phase 2 so the audit for phase 3 sees phase 2... but wait, we want
+  // the audit for phase 2 to see phase 1. Use phase '2'.
+  const audit = lifecycle._priorPhaseAudit(root, '2');
+  ok('priorPhase = "1"', audit && audit.priorPhase === '1');
+  ok('both plans ticked', audit.ticked.length === 2,
+    `ticked=${JSON.stringify(audit.ticked)}`);
+  ok('both summaries missing', audit.missingSummaries.length === 2);
+  ok('missing list correct', audit.missingSummaries.includes('01-01') && audit.missingSummaries.includes('01-02'));
+}
+
+section('_priorPhaseAudit: clear after SUMMARYs written');
+{
+  const root = freshProject('p6-clean');
+  lifecycle.tickPlan(root, '01-01', { noCommit: true });
+  lifecycle.tickPlan(root, '01-02', { noCommit: true });
+  lifecycle.writeSummary(root, '01-01', { subsystem: 'g', 'key-decisions': ['d'] });
+  lifecycle.writeSummary(root, '01-02', { subsystem: 'g', 'key-decisions': ['d'] });
+  const audit = lifecycle._priorPhaseAudit(root, '2');
+  ok('no missing summaries when all SUMMARY files exist', audit.missingSummaries.length === 0,
+    `missing=${JSON.stringify(audit.missingSummaries)}`);
+}
+
+section('scaffoldPhase refuses when prior phase has missing SUMMARYs');
+{
+  const root = freshProject('p6-refuse');
+  lifecycle.tickPlan(root, '01-01', { noCommit: true });
+  // No SUMMARY written. Try to scaffold phase 2.
+  const r = lifecycle.scaffoldPhase(root, '2', { name: 'Two', plans: 1 });
+  ok('not ok', !r.ok);
+  ok('reason = prior-phase-incomplete', r.reason === 'prior-phase-incomplete',
+    `reason=${r.reason}`);
+  ok('priorPhase = 1', r.priorPhase === '1');
+  ok('missingSummaries includes 01-01', r.missingSummaries.includes('01-01'));
+  ok('actions empty', r.actions.length === 0);
+  // Verify ROADMAP NOT mutated
+  const roadmap = fs.readFileSync(path.join(root, '.planning', 'ROADMAP.md'), 'utf8');
+  ok('ROADMAP unchanged (no Phase 2 heading)', !/^### Phase 2:/m.test(roadmap));
+  // Verify no phase 2 dir
+  const phaseDirs = fs.readdirSync(path.join(root, '.planning', 'phases'));
+  ok('no phase 2 dir created', !phaseDirs.some((d) => /^02-/.test(d)));
+}
+
+section('scaffoldPhase succeeds when prior phase fully summarised');
+{
+  const root = freshProject('p6-allow');
+  lifecycle.tickPlan(root, '01-01', { noCommit: true });
+  lifecycle.tickPlan(root, '01-02', { noCommit: true });
+  lifecycle.writeSummary(root, '01-01', { subsystem: 'g', 'key-decisions': ['d'] });
+  lifecycle.writeSummary(root, '01-02', { subsystem: 'g', 'key-decisions': ['d'] });
+  const r = lifecycle.scaffoldPhase(root, '2', { name: 'Two', plans: 1 });
+  ok('ok', r.ok, `${JSON.stringify(r)}`);
+  ok('phaseNum = 2', r.phaseNum === '2');
+}
+
+section('scaffoldPhase --force bypasses the audit');
+{
+  const root = freshProject('p6-force');
+  lifecycle.tickPlan(root, '01-01', { noCommit: true });
+  // Don't write SUMMARY. Force should still let it through.
+  const r = lifecycle.scaffoldPhase(root, '2', { name: 'Two', plans: 1, force: true });
+  ok('ok with --force', r.ok, `${JSON.stringify(r)}`);
+}
+
+section('scaffoldPhase first phase (no prior) succeeds even without summaries');
+{
+  const root = freshProject('p6-firstphase');
+  // Wipe seeded phase 1 dir so phase 1 is brand-new.
+  fs.rmSync(path.join(root, '.planning', 'phases', '01-greet'), { recursive: true, force: true });
+  // Also need to clear the seeded `### Phase 1:` from ROADMAP so it's not "phase exists"
+  // Rebuild ROADMAP empty-shape:
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n### 🚧 v0.1 Hi (In Progress)\n\n## Progress\n\n');
+  const r = lifecycle.scaffoldPhase(root, '1', { name: 'First', plans: 1 });
+  ok('ok for first phase', r.ok, `${JSON.stringify(r)}`);
+}
+
 
 if (failed > 0) process.exit(1);
 console.log('All lifecycle checks passed.');
