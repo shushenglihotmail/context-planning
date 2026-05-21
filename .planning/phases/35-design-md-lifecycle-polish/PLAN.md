@@ -28,20 +28,40 @@ base-commit: 2ea34fe3891544f90492c847cbbe645c963e6f42
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Close the long-standing gap (inbox #1 from v0.7) where per-phase
+DESIGN.md and REVIEW-LOG.md are tracked by the aggregator but never
+surfaced in the milestone digest. After this phase, every shipped
+milestone in MILESTONES.md links to its phases' design and review
+artifacts so future readers can drill into the "why" not just the "what".
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `renderDigest()` in `lib/milestone.js` emits two new sections after
+   "Phase summaries:":
+   - **Phase designs:** — one bullet per phase that has a non-stub
+     DESIGN.md, linking to the file.
+   - **Reviews:** — `N entries across M phases` line plus one bullet per
+     phase with a non-empty REVIEW-LOG.md.
+2. Both sections are emitted only when their data is non-empty (no
+   "(none)" placeholders).
+3. Existing milestone digest format remains backward-compatible (no
+   reordering of existing sections).
+4. Unit test in `test/unit-design.js` confirms the new lines render
+   correctly when refs are present and disappear when refs are empty.
+5. `dryrun-complete-milestone.js` still parses generated digest cleanly.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 35-01: {brief description}
+- [ ] 35-01: extend renderDigest with Phase designs + Reviews sections
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- Stub detection for DESIGN.md: scan the file body — if it still contains
+  the template placeholder `{Proposed | Accepted on YYYY-MM-DD | ...}` or
+  has no `## Decision` section content, consider it a stub. Skip stubs
+  to avoid noisy "Phase 1 design — see (template)" entries.
+- REVIEW-LOG.md count comes from existing `reviewCount` field; per-phase
+  bullets come from existing `reviewLogRefs[]`.
+- Out of scope: changing the cp-plan-phase Step 3.5 prompt for manual
+  provider. The skill already handles that case; further polish belongs
+  in v0.10 if the empty-DESIGN problem persists.
