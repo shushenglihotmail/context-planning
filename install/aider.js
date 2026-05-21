@@ -25,13 +25,13 @@
 const fs = require('fs');
 const path = require('path');
 const YAML = require('yaml');
-const { listCommandFiles, writeFileSafe, homeDir } = require('./common');
+const { listCommandFiles, writeFileSafe, homeDir, buildDriftDefenseBlock } = require('./common');
 
 const CP_CONFIG_MARK_START = '# >>> context-planning (cp) — managed by cp installer';
 const CP_CONFIG_MARK_END   = '# <<< context-planning (cp)';
 const CP_READ_ENTRY        = '.aider/CP-CONTEXT.md';
 
-function buildContextBriefing(commandFiles) {
+function buildContextBriefing(commandFiles, pluginRoot) {
   const lines = [
     '# context-planning (cp) — Aider briefing',
     '',
@@ -84,6 +84,9 @@ function buildContextBriefing(commandFiles) {
   lines.push('- After completing a plan, ALWAYS run `cp tick <plan-id>` and `cp write-summary <plan-id>`.');
   lines.push('- `cp` auto-commits its state edits scoped to `.planning/` only — won\'t sweep your dirty source files into a "cp:" commit.');
   lines.push('');
+  if (pluginRoot) {
+    lines.push(buildDriftDefenseBlock(pluginRoot));
+  }
   return lines.join('\n') + '\n';
 }
 
@@ -150,7 +153,7 @@ function install({ pluginRoot, repoRoot, force = false }) {
 
   // 1. Briefing file
   const briefingPath = path.join(target, 'CP-CONTEXT.md');
-  const briefing = buildContextBriefing(commandFiles);
+  const briefing = buildContextBriefing(commandFiles, pluginRoot);
   const userModified = [];
   let written = 0;
   let identical = 0;

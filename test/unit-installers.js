@@ -86,6 +86,12 @@ section('cursor installer e2e');
   const ctxBody = fs.readFileSync(path.join(rulesDir, 'context-planning.mdc'), 'utf8');
   ok('ambient rule: alwaysApply: true', /alwaysApply:\s*true/.test(ctxBody));
   ok('ambient rule: mentions cp', /context-planning/.test(ctxBody));
+  ok('ambient rule: includes drift-defense block',
+    /cp:drift-defense v1/.test(ctxBody) && /Drift defense/.test(ctxBody));
+  ok('ambient rule: lists cp audit verb',
+    /cp audit/.test(ctxBody));
+  ok('ambient rule: lists cp reconcile verb',
+    /cp reconcile/.test(ctxBody));
 
   // Per-command rule
   const cmdFile = files.find((f) => f.startsWith('cp-new-milestone'));
@@ -129,6 +135,19 @@ section('aider.buildContextBriefing structure');
   ok('briefing mentions /cp-plan-phase', /\/cp-plan-phase/.test(briefing));
   ok('briefing has CLI cheat-sheet', /cp init/.test(briefing) && /cp tick/.test(briefing));
   ok('briefing trailing newline', briefing.endsWith('\n'));
+  ok('briefing without pluginRoot omits drift block',
+    !/cp:drift-defense v1/.test(briefing));
+}
+
+section('aider.buildContextBriefing with pluginRoot injects drift block');
+{
+  const briefing = aiderInstaller.buildContextBriefing(
+    [{ name: 'new-milestone' }],
+    REPO
+  );
+  ok('drift block present', /cp:drift-defense v1/.test(briefing));
+  ok('drift block lists cp audit', /cp audit/.test(briefing));
+  ok('drift block lists cp reconcile', /cp reconcile/.test(briefing));
 }
 
 // =============================================================
@@ -216,6 +235,9 @@ section('aider installer e2e');
 
   ok('.aider/CP-CONTEXT.md exists',
     fs.existsSync(path.join(root, '.aider', 'CP-CONTEXT.md')));
+  const ctxBody = fs.readFileSync(path.join(root, '.aider', 'CP-CONTEXT.md'), 'utf8');
+  ok('aider CP-CONTEXT.md has drift block',
+    /cp:drift-defense v1/.test(ctxBody));
   ok('.aider/cp-commands/ exists',
     fs.existsSync(path.join(root, '.aider', 'cp-commands')));
   ok('.aider.conf.yml exists',

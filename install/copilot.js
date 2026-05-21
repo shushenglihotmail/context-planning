@@ -14,7 +14,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { listCommandFiles, writeFile, writeFileSafe, homeDir } = require('./common');
+const { listCommandFiles, writeFile, writeFileSafe, homeDir, buildDriftDefenseBlock } = require('./common');
 
 function install({ pluginRoot, repoRoot, force = false }) {
   const target = process.env.CP_INSTALL_SCOPE === 'user'
@@ -63,7 +63,8 @@ function install({ pluginRoot, repoRoot, force = false }) {
 - Only invoke cp commands when the user explicitly asks. Don't apply cp
   workflows unbidden.
 <!-- /context-planning -->
-`;
+
+${buildDriftDefenseBlock(pluginRoot)}`;
   const ctxR = writeFileSafe(ctxDest, ctxBody, { force });
   if (ctxR.status === 'user-modified') userModified.push(path.basename(ctxDest));
 

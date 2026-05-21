@@ -19,7 +19,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { listCommandFiles, writeFile, writeFileSafe, homeDir } = require('./common');
+const { listCommandFiles, writeFile, writeFileSafe, homeDir, buildDriftDefenseBlock, stripDriftBlock } = require('./common');
 
 const CP_BLOCK_BEGIN = '<!-- context-planning (cp) — managed by cp installer -->';
 const CP_BLOCK_END = '<!-- /context-planning -->';
@@ -85,11 +85,16 @@ ${CP_BLOCK_END}
     'g'
   );
   existing = existing.replace(blockRe, '');
+  // Also strip any previous drift-defense block — it's appended after the
+  // CP_BLOCK and must be refreshed in lockstep.
+  existing = stripDriftBlock(existing);
   // Trim trailing newlines so we get a clean join.
   existing = existing.replace(/\s+$/, '');
+  const driftBlock = buildDriftDefenseBlock(pluginRoot);
+  const combined = block + '\n' + driftBlock;
   const merged = existing
-    ? existing + '\n\n' + block
-    : block;
+    ? existing + '\n\n' + combined
+    : combined;
 
   writeFile(claudeMdPath, merged);
 

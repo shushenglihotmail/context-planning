@@ -167,6 +167,16 @@ section('install/copilot: e2e collision protection');
   ok('re-install: zero new writes', r2.written === 0, `wrote ${r2.written}`);
   ok('re-install: all identical', r2.identical > 0);
 
+  // Drift-defense literacy: copilot ambient instruction file should carry it.
+  const copCtx = path.join(fakeRepo, '.github', 'context-planning.md');
+  if (fs.existsSync(copCtx)) {
+    const ctxBody = fs.readFileSync(copCtx, 'utf8');
+    ok('copilot ctx: drift-defense block present',
+      /cp:drift-defense v1/.test(ctxBody));
+    ok('copilot ctx: drift-defense lists cp audit',
+      /cp audit/.test(ctxBody));
+  }
+
   // User edits one skill file.
   const aSkill = path.join(fakeRepo, '.github', 'skills', 'cp-map-codebase', 'SKILL.md');
   if (fs.existsSync(aSkill)) {
@@ -199,6 +209,22 @@ section('install/claude: e2e collision protection');
 
   const r2 = claude.install({ pluginRoot: REPO, repoRoot: fakeRepo });
   ok('claude re-install: zero new writes', r2.written === 0);
+
+  // Drift-defense literacy: claude's CLAUDE.md should carry the block.
+  const claudeMd = path.join(fakeRepo, '.claude', 'CLAUDE.md');
+  if (fs.existsSync(claudeMd)) {
+    const md = fs.readFileSync(claudeMd, 'utf8');
+    ok('CLAUDE.md: drift-defense block present',
+      /cp:drift-defense v1/.test(md));
+    ok('CLAUDE.md: drift-defense lists cp reconcile',
+      /cp reconcile/.test(md));
+    // Re-install must not duplicate the block (strip+append idempotent).
+    claude.install({ pluginRoot: REPO, repoRoot: fakeRepo });
+    const md2 = fs.readFileSync(claudeMd, 'utf8');
+    const occurrences = (md2.match(/cp:drift-defense v1/g) || []).length;
+    ok('CLAUDE.md: drift block appears exactly once after re-install',
+      occurrences === 1, `count=${occurrences}`);
+  }
 
   // Edit one command and re-install.
   const aCmd = path.join(fakeRepo, '.claude', 'commands', 'cp-status.md');

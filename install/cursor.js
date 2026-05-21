@@ -24,7 +24,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { listCommandFiles, writeFileSafe, homeDir } = require('./common');
+const { listCommandFiles, writeFileSafe, homeDir, buildDriftDefenseBlock } = require('./common');
 
 // Cursor rule body wrapper: add frontmatter on top of the raw command body.
 // If the source already has YAML frontmatter (most cp slash commands do),
@@ -96,7 +96,8 @@ matching checkbox in \`.planning/ROADMAP.md\`; write the \`SUMMARY.md\`.
 Only invoke cp commands when the user explicitly asks. Don't apply cp
 workflows unbidden.
 <!-- /context-planning -->
-`;
+
+${buildDriftDefenseBlock(pluginRoot)}`;
   const ctxRule = buildRule({ name: 'context-planning', body: ctxBody, alwaysApply: true });
   const ctxR = writeFileSafe(ctxFile, ctxRule, { force });
   if (ctxR.status === 'user-modified') userModified.push('context-planning.mdc');
