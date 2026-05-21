@@ -52,7 +52,7 @@ artifacts so future readers can drill into the "why" not just the "what".
 
 ## Plans
 
-- [ ] 35-01: extend renderDigest with Phase designs + Reviews sections
+- [x] 35-01: extend renderDigest with Phase designs + Reviews sections
 
 ## Notes
 
