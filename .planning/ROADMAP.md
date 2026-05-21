@@ -172,7 +172,7 @@ Plans:
 ### Phase 20: Derived STATE.md
 
 Plans:
-- [ ] 20-01: TBD
+- [x] 20-01: TBD
 - [ ] 20-02: TBD
 
 ### Phase 21: Plan-time expected-key-files

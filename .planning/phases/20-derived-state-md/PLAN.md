@@ -35,7 +35,7 @@ Session Continuity) preserved byte-for-byte. Eliminates drift cause
 
 ## Plans
 
-- [ ] 20-01: `deriveState` + `regenerate` + lifecycle integration
+- [x] 20-01: `deriveState` + `regenerate` + lifecycle integration
 - [ ] 20-02: `cp state regen` CLI verb + integration test
 
 ---
