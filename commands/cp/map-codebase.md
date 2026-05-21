@@ -44,6 +44,32 @@ Parse `$ARGUMENTS`:
   refreshes.
 - No flags — full parallel map.
 
+## Step 1.5 — Auto-init if `.planning/` missing (v0.9)
+
+Check whether `.planning/PROJECT.md` exists in the repo root.
+
+- **If it exists**, skip this step and continue.
+- **If it does NOT exist**, this is a case-2 user (existing code, no
+  planning yet). Print a clear notice and run `cp init` BEFORE the
+  scaffold-codebase step:
+
+  ```
+  ℹ .planning/ not found — initialising before mapping (cp init)…
+  ```
+
+  ```
+  cp init
+  ```
+
+  `cp init` is idempotent and additive — it creates PROJECT.md /
+  ROADMAP.md / STATE.md / MILESTONES.md stubs and the `cp:` config block
+  if they're missing, and leaves any existing GSD files untouched. After
+  it runs, continue to Step 2.
+
+**Never auto-init silently.** The notice line above is mandatory so the
+user understands what just happened and can answer "why are there new
+files in my repo?" without reading the source.
+
 ## Step 2 — Scaffold the stub files
 
 Run the cp wrapper. This creates `.planning/codebase/` and seeds 7 stub
@@ -205,7 +231,9 @@ same output.
   comments and an HTML comment per section explaining what to include.
   Mapper agents should DELETE those markers when writing real content (so
   `cp codebase-status` correctly reports `filled`).
-- **Brownfield bootstrap:** the recommended order for an existing project is
-  `cp scaffold-codebase` → `/cp-map-codebase` → `cp init`. The map gives
-  `cp init` real context to ground PROJECT.md against.
+- **Brownfield bootstrap:** the recommended order for an existing project
+  is `/cp-map-codebase` — that's it. Since v0.9, the skill auto-invokes
+  `cp init` (with notice) if `.planning/` is missing. The legacy 3-step
+  order (`cp scaffold-codebase` → `/cp-map-codebase` → `cp init`) still
+  works but is no longer the documented path.
 - **Re-run any time** the codebase changes materially: `/cp-map-codebase --force`.
