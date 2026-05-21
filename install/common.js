@@ -62,4 +62,54 @@ function homeDir() {
   return require('os').homedir();
 }
 
-module.exports = { listCommandFiles, copyFile, writeFile, writeFileSafe, homeDir };
+const DRIFT_BLOCK_BEGIN = '<!-- cp:drift-defense v1 -->';
+const DRIFT_BLOCK_END = '<!-- /cp:drift-defense -->';
+
+/**
+ * Build the drift-defense literacy block injected into every harness's
+ * ambient instruction file. Reads `templates/agent-instructions.md` from
+ * the plugin root and wraps it in idempotent sentinels.
+ *
+ * Returns a trailing-newline-terminated string ready to append to a
+ * harness's instruction body. Callers that re-install should strip any
+ * previous DRIFT_BLOCK_BEGIN..DRIFT_BLOCK_END region first using
+ * `stripDriftBlock(text)` to keep the file idempotent.
+ */
+function buildDriftDefenseBlock(pluginRoot) {
+  const src = path.join(pluginRoot, 'templates', 'agent-instructions.md');
+  if (!fs.existsSync(src)) {
+    throw new Error(`buildDriftDefenseBlock: missing ${src}`);
+  }
+  const body = fs.readFileSync(src, 'utf8').replace(/\s+$/, '');
+  return `${DRIFT_BLOCK_BEGIN}\n${body}\n${DRIFT_BLOCK_END}\n`;
+}
+
+function escapeRegex(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Remove any previously-installed drift-defense block from `text`. Returns
+ * the text with the block (and any trailing blank line) removed. Safe to
+ * call when no block exists.
+ */
+function stripDriftBlock(text) {
+  if (!text) return text;
+  const re = new RegExp(
+    escapeRegex(DRIFT_BLOCK_BEGIN) + '[\\s\\S]*?' + escapeRegex(DRIFT_BLOCK_END) + '\\n?',
+    'g'
+  );
+  return text.replace(re, '');
+}
+
+module.exports = {
+  listCommandFiles,
+  copyFile,
+  writeFile,
+  writeFileSafe,
+  homeDir,
+  buildDriftDefenseBlock,
+  stripDriftBlock,
+  DRIFT_BLOCK_BEGIN,
+  DRIFT_BLOCK_END,
+};
