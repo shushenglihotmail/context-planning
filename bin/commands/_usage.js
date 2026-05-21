@@ -83,11 +83,15 @@ Usage:
                                   2 manual findings remain.
   cp reconcile <phaseNum> [--infer-shas] [--accept] [--plan NN-MM]
                           [--dry-run] [--json] [--no-commit]
-                                  Repair drift for a phase (v0.8 P10).
-                                  --infer-shas fills missing base-commit
-                                  and end-commit from git log. --accept
-                                  rewrites expected-key-files from SUMMARY
-                                  (destructive). One atomic commit per change.
+  cp reconcile --all      [--infer-shas|--accept] [--dry-run] [--json] [--no-commit]
+  cp reconcile --phase <range> [--infer-shas|--accept] [--dry-run] [--json] [--no-commit]
+                                  Repair drift for a phase, all phases, or a
+                                  range (v0.8 P10/P9). --infer-shas fills
+                                  missing base-commit + end-commit from git
+                                  log. --accept rewrites expected-key-files
+                                  from SUMMARY (destructive). One atomic
+                                  commit per change. <range>: 5, 5-8, 5..8,
+                                  5,7,9, 5,7-9.
   cp supersede <planId> --by <newPlanId> [--reason "<text>"]
                         [--dry-run] [--json] [--no-commit]
                                   Mark plan as superseded ([~] checkbox) and
