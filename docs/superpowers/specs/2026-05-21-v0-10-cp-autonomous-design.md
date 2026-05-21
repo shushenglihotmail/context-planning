@@ -100,7 +100,8 @@ START forms (mutually exclusive, all optional):
 
 --scope flag values:
   phase                    just the START phase (run all its plans + close-out)
-  <N>                      next N phases from START
+  <N>                      next N phases from START (inclusive of START;
+                           e.g. START=32, --scope=3 → phases 32, 33, 34)
   <N>-<M>                  explicit inclusive phase range (e.g. "32-34");
                            START arg is ignored when this form is used
   milestone                DEFAULT — all remaining phases in the active
@@ -154,7 +155,8 @@ for phase in phases_in_scope:                            # resolved by lib
     cp state regen
 
     # Smart gates after each plan commit
-    if test_command configured:
+    if test_command configured (config.cp.behavior.test_command;
+       defaults to "npm test" if package.json present):
       run tests; on fail → SMART GATE
     run `cp audit`; if HIGH → SMART GATE
 
