@@ -1,32 +1,18 @@
----
-phase: "28"
-name: Post-commit hook tick auto
-milestone: v0.8 Consistency
-status: in-progress
-created: 2026-05-21
----
+# Phase 28 Plan — Post-commit hook tick auto
 
-# Phase 28: Post-commit hook tick auto
-
-**Milestone**: v0.8 Consistency
-**Created**: 2026-05-21
-
-## Goal
-
-{Describe what this phase delivers in 1-2 sentences.}
-
-## Success Criteria
-
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+**Base commit**: 23189b4
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
+- [ ] 28-01: tick-auto wiring (lib + shim + tests)
 
-- [ ] 28-01: {brief description}
+### 28-01 expected-key-files
 
-## Notes
-
-<!-- Free-form during phase execution. -->
+- created:
+  - test/unit-tick-auto.js
+  - test/dryrun-post-commit-tick.js
+- modified:
+  - lib/hooks.js
+  - bin/cp-hook.js
+  - lib/lifecycle.js
+  - package.json
