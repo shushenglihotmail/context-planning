@@ -26,7 +26,7 @@ expected-key-files:
 ## Plans
 
 - [x] 30-01: Shared drift-defense template + buildDriftDefenseBlock helper
-- [ ] 30-02: Wire helper into all 4 installers
+- [x] 30-02: Wire helper into all 4 installers
 
 ## Notes
 
