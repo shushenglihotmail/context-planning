@@ -406,6 +406,41 @@ section('scaffoldPhase happy path');
     rmap.includes('- [ ] 02-01: TBD') && rmap.includes('- [ ] 02-03: TBD'));
 }
 
+section('scaffoldPhase stamps base-commit on PLAN.md (v0.8 P1)');
+{
+  const root = freshProject('sp-base-commit');
+  const r = lifecycle.scaffoldPhase(root, '3', { name: 'Pinned', plans: 1 });
+  ok('scaffold ok', r.ok);
+  const planContent = fs.readFileSync(path.join(r.phaseDir, 'PLAN.md'), 'utf8');
+  const m = planContent.match(/^base-commit:\s*([0-9a-f]{40})\s*$/m);
+  ok('PLAN.md frontmatter has base-commit field', m !== null,
+    `frontmatter:\n${planContent.split('---')[1] || planContent.slice(0, 200)}`);
+  if (m) {
+    const head = execSync('git rev-parse HEAD', { cwd: root, encoding: 'utf8' }).trim();
+    ok('base-commit matches `git rev-parse HEAD` of repo', m[1] === head);
+  }
+  ok('template comment line stripped after stamping',
+    !planContent.includes('# base-commit stamped by'));
+  ok('other frontmatter keys preserved',
+    planContent.includes('phase: "3"') && planContent.includes('milestone: v0.1 Hi') && planContent.includes('status: in-progress'));
+}
+
+section('scaffoldPhase omits base-commit cleanly when git unavailable');
+{
+  // Simulate "no git" by pointing scaffold at a non-git tmp dir that has
+  // a complete cp .planning skeleton but no git history.
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-no-git-'));
+  fs.mkdirSync(path.join(root, '.planning'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.planning', 'ROADMAP.md'),
+    '# demo\n\n## Phases\n\n### \uD83D\uDEA7 v0.1 Hi (In Progress)\n\nGoal: t.\n\n');
+  const r = lifecycle.scaffoldPhase(root, '1', { name: 'Solo', plans: 1 });
+  ok('scaffold ok in non-git dir', r.ok);
+  const planContent = fs.readFileSync(path.join(r.phaseDir, 'PLAN.md'), 'utf8');
+  ok('PLAN.md has no base-commit field', !/^base-commit:/m.test(planContent));
+  ok('template comment retained (signals git was unavailable)',
+    planContent.includes('# base-commit stamped by'));
+}
+
 section('scaffoldPhase decimal phase number');
 {
   const root = freshProject('sp-decimal');

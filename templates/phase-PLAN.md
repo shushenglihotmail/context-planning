@@ -4,6 +4,7 @@ name: {{PHASE_NAME}}
 milestone: {{MILESTONE_NAME}}
 status: in-progress
 created: {{DATE}}
+# base-commit stamped by `cp scaffold-phase` when git is available
 ---
 
 # Phase {{PHASE_NUM}}: {{PHASE_NAME}}

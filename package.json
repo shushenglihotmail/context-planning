@@ -32,7 +32,7 @@
     "install:copilot": "node bin/cp.js install copilot",
     "install:claude": "node bin/cp.js install claude",
     "doctor": "node bin/cp.js doctor",
-    "test": "node test/roundtrip-gsd.js && node test/dryrun-progress.js && node test/dryrun-complete-milestone.js && node test/dryrun-gsd-import.js && node test/dryrun-resume.js && node test/unit-libs.js && node test/unit-detect.js && node test/unit-merge.js && node test/dryrun-doctor.js && node test/dryrun-config-refresh.js && node test/unit-lifecycle.js && node test/unit-codebase.js && node test/unit-atomic.js && node test/unit-gitcommit.js && node test/unit-v034.js && node test/unit-inbox.js && node test/unit-statusline.js && node test/unit-installers.js && node test/unit-worktree.js && node test/unit-design.js",
+    "test": "node test/roundtrip-gsd.js && node test/dryrun-progress.js && node test/dryrun-complete-milestone.js && node test/dryrun-gsd-import.js && node test/dryrun-resume.js && node test/unit-libs.js && node test/unit-detect.js && node test/unit-merge.js && node test/dryrun-doctor.js && node test/dryrun-config-refresh.js && node test/unit-lifecycle.js && node test/unit-codebase.js && node test/unit-atomic.js && node test/unit-gitcommit.js && node test/unit-v034.js && node test/unit-inbox.js && node test/unit-statusline.js && node test/unit-installers.js && node test/unit-worktree.js && node test/unit-design.js && node test/unit-git-sha.js",
     "coverage": "c8 --reporter=text --reporter=html npm test",
     "coverage:ci": "c8 --reporter=text --reporter=lcov --reporter=json-summary --check-coverage --lines 85 --branches 75 npm test"
   },
