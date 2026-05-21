@@ -28,7 +28,7 @@ expected-key-files:
 ## Plans
 
 - [x] 29-01: CI template + `cp install --ci` flag
-- [ ] 29-02: `cp reconcile --all` / `--phase <range>` + backfill this repo
+- [x] 29-02: `cp reconcile --all` / `--phase <range>` + backfill this repo
 
 ## Notes
 

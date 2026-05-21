@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 29 (v0.8 Consistency)
-Plan: 29-02
+Phase: 30 (v0.8 Consistency)
+Plan: 30-01
 Status: Ready to execute
-Current focus: CI template + backfill
-Last activity: plan phase 29 (CI template + reconcile backfill)
+Current focus: Agent literacy injection
+Last activity: tick plan 29-01
 
-Progress: [█████████░] 91%
+Progress: [█████████░] 92%
 
 ## Performance Metrics
 
