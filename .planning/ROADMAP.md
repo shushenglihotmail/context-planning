@@ -270,6 +270,10 @@ Plans:
 
 ### 🚧 v0.10 Autonomy (In Progress)
 
+### Phase 36: cp autonomous CLI + lib helper
+
+Plans:
+- [ ] 36-01: TBD
 ## Progress
 
 **Execution Order:**
