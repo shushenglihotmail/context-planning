@@ -62,7 +62,7 @@ Closes case-4 onboarding (existing cp project, version bump).
        Add `lib/update.js` for the orchestration (harness detect, refresh
        loop). Add `cp update` row to `bin/commands/_usage.js`. Unit tests
        in `test/unit-update.js`.
-- [ ] 33-02: `/cp-update` skill + README docs
+- [x] 33-02: `/cp-update` skill + README docs
        Author `commands/cp/update.md` mirroring `/gsd-update`'s structure
        (with cp-specific behavior). Update README "Updating an existing
        install" section to document the `npx ...` one-liner as the primary

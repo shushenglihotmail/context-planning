@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 33 (v0.9 Onboarding)
-Plan: 33-02
+Phase: 34 (v0.9 Onboarding)
+Plan: 34-01
 Status: Ready to execute
-Current focus: cp update command
-Last activity: plan phase 33 (cp update command)
+Current focus: README onboarding decision matrix
+Last activity: write summary for plan 33-01
 
-Progress: [██████████] 96%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
