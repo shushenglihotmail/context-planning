@@ -100,6 +100,12 @@ Usage:
                         [--dry-run] [--json] [--no-commit]
                                   Append a dated \`## Deviation\` block to
                                   phase PLAN.md (P10).
+  cp update [--dry-run | --check] [--quiet] [--json]
+                                  Refresh per-repo cp state (skill files,
+                                  config defaults, drift fixes) after a
+                                  version bump. Documented invocation:
+                                  \`npx -y --package=context-planning@latest -- cp update\`.
+                                  --check exits 1 if anything would change.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

@@ -35,4 +35,5 @@ module.exports = {
   reconcile: require('./reconcile'),
   supersede: require('./supersede'),
   deviate: require('./deviate'),
+  update: require('./update'),
 };
