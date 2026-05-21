@@ -199,6 +199,44 @@ section('writeSummary');
   ok('custom body honoured', /# Custom body/.test(s4Raw));
 }
 
+section('writeSummary stamps end-commit on SUMMARY.md (v0.8 P1)');
+{
+  const root = freshProject('summary-end-commit');
+  const r = lifecycle.writeSummary(root, '01-01', {
+    subsystem: 'foo',
+    'key-decisions': ['decided x'],
+  });
+  const parsed = fm.parse(fs.readFileSync(r.path, 'utf8')).frontmatter;
+  ok('end-commit field present', typeof parsed['end-commit'] === 'string',
+    `frontmatter: ${JSON.stringify(parsed).slice(0, 200)}`);
+  ok('end-commit is a 40-char hex SHA',
+    typeof parsed['end-commit'] === 'string' && /^[0-9a-f]{40}$/i.test(parsed['end-commit']));
+  const head = execSync('git rev-parse HEAD', { cwd: root, encoding: 'utf8' }).trim();
+  ok('end-commit matches `git rev-parse HEAD`', parsed['end-commit'] === head);
+
+  // Caller-supplied end-commit is respected (not overwritten).
+  const r2 = lifecycle.writeSummary(root, '01-02', {
+    subsystem: 'foo',
+    'end-commit': 'feedfeedfeedfeedfeedfeedfeedfeedfeedfeed',
+  });
+  const parsed2 = fm.parse(fs.readFileSync(r2.path, 'utf8')).frontmatter;
+  ok('caller-supplied end-commit is preserved',
+    parsed2['end-commit'] === 'feedfeedfeedfeedfeedfeedfeedfeedfeedfeed');
+}
+
+section('writeSummary omits end-commit cleanly in a non-git directory');
+{
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-ws-no-git-'));
+  fs.mkdirSync(path.join(root, '.planning', 'phases', '01-only'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.planning', 'phases', '01-only', 'PLAN.md'),
+    '---\nphase: "1"\nname: Only\n---\n# Phase 1\n');
+  const r = lifecycle.writeSummary(root, '01-01', { subsystem: 'x' });
+  const parsed = fm.parse(fs.readFileSync(r.path, 'utf8')).frontmatter;
+  ok('end-commit field absent in non-git dir', !('end-commit' in parsed));
+  // Existing v0.7 SUMMARY without end-commit parses cleanly via fm.parse.
+  ok('SUMMARY still parses (forward-compat)', parsed.phase === 1 && parsed.plan === '01-01');
+}
+
 // ---------- statusReport ----------
 
 section('statusReport');
