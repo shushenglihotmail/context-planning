@@ -13,9 +13,9 @@ Phase: 30 (v0.8 Consistency)
 Plan: 30-03
 Status: Ready to execute
 Current focus: Agent literacy injection
-Last activity: tick plan 30-02
+Last activity: plan phase 31 (docs + v0.8.0 release)
 
-Progress: [██████████] 95%
+Progress: [██████████] 97%
 
 ## Performance Metrics
 
