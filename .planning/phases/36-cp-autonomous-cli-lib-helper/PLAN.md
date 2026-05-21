@@ -52,7 +52,7 @@ structured JSON output.
 
 ## Plans
 
-- [ ] 36-01: ship lib/autonomous.js + bin/commands/autonomous.js + unit tests + CLI registration
+- [x] 36-01: ship lib/autonomous.js + bin/commands/autonomous.js + unit tests + CLI registration
 
 ## Notes
 

@@ -273,7 +273,7 @@ Plans:
 ### Phase 36: cp autonomous CLI + lib helper
 
 Plans:
-- [ ] 36-01: TBD
+- [x] 36-01: TBD
 
 ### Phase 37: /cp-autonomous slash skill
 
