@@ -127,5 +127,56 @@ section('cp write-summary --no-file-check bypasses P3 hard-block');
     /lib\/phantom-cli\.js/.test(summary));
 }
 
+// ---------- v0.8 P5: --strict-expected and --no-expected-check (Phase 21) ----------
+
+function addExpectedToPlan(dir, expectedLine) {
+  // expectedLine: e.g. `  - lib/x.js`
+  const planPath = path.join(dir, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  const next = orig.replace(/^---\n/, `---\nexpected-key-files:\n${expectedLine}\n`);
+  fs.writeFileSync(planPath, next);
+  execSync('git add -A && git commit -q -m "add expected"', { cwd: dir });
+}
+
+section('cp write-summary emits drift notice with PLAN expected-key-files (v0.8 P5)');
+{
+  const dir = mkFixture('p5-drift');
+  addExpectedToPlan(dir, '  - lib/x.js');
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({ subsystem: 'g', 'key-decisions': ['x'] }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath], dir);
+  ok('exit code 0 (soft notice, not block)', r.status === 0, `stderr=${r.stderr}`);
+  ok('stderr names drift', /expected-vs-actual drift/.test(r.stderr),
+    `stderr=${JSON.stringify(r.stderr)}`);
+  const summary = fs.readFileSync(path.join(dir, '.planning', 'phases', '01-greet', '01-01-SUMMARY.md'), 'utf8');
+  ok('summary key-decisions records drift', /expected-vs-actual drift/.test(summary));
+}
+
+section('cp write-summary --strict-expected hard-blocks on drift');
+{
+  const dir = mkFixture('p5-strict');
+  addExpectedToPlan(dir, '  - lib/x.js');
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({ subsystem: 'g', 'key-decisions': ['x'] }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--strict-expected'], dir);
+  ok('exit code 2 (validation error)', r.status === 2, `status=${r.status}`);
+  ok('stderr names drift', /expected-vs-actual drift/.test(r.stderr));
+  ok('no SUMMARY written', !fs.existsSync(path.join(dir, '.planning', 'phases', '01-greet', '01-01-SUMMARY.md')));
+}
+
+section('cp write-summary --no-expected-check opts out');
+{
+  const dir = mkFixture('p5-optout');
+  addExpectedToPlan(dir, '  - lib/x.js');
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({ subsystem: 'g', 'key-decisions': ['x'] }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--no-expected-check'], dir);
+  ok('exit code 0', r.status === 0);
+  ok('no drift notice in stderr', !/expected-vs-actual drift/.test(r.stderr),
+    `stderr=${JSON.stringify(r.stderr)}`);
+  const summary = fs.readFileSync(path.join(dir, '.planning', 'phases', '01-greet', '01-01-SUMMARY.md'), 'utf8');
+  ok('summary has no drift sentence', !/expected-vs-actual drift/.test(summary));
+}
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) process.exit(1);

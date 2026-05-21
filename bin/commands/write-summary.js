@@ -14,6 +14,8 @@ function run(args = []) {
   let dryRun = false;
   let autoKeyFiles = true;
   let checkFileExistence = true;
+  let expectedCheck = true;
+  let strictExpected = false;
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--from') fromPath = args[++i];
@@ -22,12 +24,14 @@ function run(args = []) {
     else if (a === '--dry-run') dryRun = true;
     else if (a === '--no-auto-key-files') autoKeyFiles = false;
     else if (a === '--no-file-check') checkFileExistence = false;
+    else if (a === '--no-expected-check') expectedCheck = false;
+    else if (a === '--strict-expected') strictExpected = true;
     else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
     else if (!planId) planId = a;
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
   if (!planId || !fromPath) {
-    console.error('Usage: cp write-summary <plan-id> --from <json> [--body <md>] [--overwrite] [--dry-run] [--no-auto-key-files] [--no-file-check]');
+    console.error('Usage: cp write-summary <plan-id> --from <json> [--body <md>] [--overwrite] [--dry-run] [--no-auto-key-files] [--no-file-check] [--no-expected-check] [--strict-expected]');
     process.exit(2);
   }
   let data;
@@ -40,7 +44,7 @@ function run(args = []) {
   const body = bodyPath ? fs.readFileSync(bodyPath, 'utf8') : undefined;
   let r;
   try {
-    r = milestone.writeSummary(root, planId, data, { dryRun, body, overwrite, autoKeyFiles, checkFileExistence });
+    r = milestone.writeSummary(root, planId, data, { dryRun, body, overwrite, autoKeyFiles, checkFileExistence, expectedCheck, strictExpected });
   } catch (err) {
     if (err && (err.name === 'ValidationError' || err.code === 'EVALIDATION')) {
       process.stderr.write(err.message + '\n');
