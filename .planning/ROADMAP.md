@@ -184,7 +184,7 @@ Plans:
 ### Phase 22: scaffold-phase prior-summary check
 
 Plans:
-- [ ] 22-01: TBD
+- [x] 22-01: TBD
 
 ### Phase 23: complete-milestone audit gate
 
