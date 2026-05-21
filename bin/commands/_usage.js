@@ -62,6 +62,10 @@ Usage:
                                   Regenerate derived block of STATE.md from
                                   ROADMAP + phase tree. Run after pulling
                                   colleagues' commits or hand-editing ROADMAP.
+  cp audit [--json] [--strict] [--milestone <name>] [--phase <N>] [--quiet]
+                                  Read-only drift sweep (v0.8 Tier 3 detect).
+                                  Reports findings with severity / location /
+                                  fix. Exit 0 clean, 1 LOW/MED, 2 HIGH or strict.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

@@ -31,4 +31,5 @@ module.exports = {
   statusline: require('./statusline'),
   worktree: require('./worktree'),
   state: require('./state'),
+  audit: require('./audit'),
 };
