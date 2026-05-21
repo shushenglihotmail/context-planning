@@ -33,4 +33,6 @@ module.exports = {
   state: require('./state'),
   audit: require('./audit'),
   reconcile: require('./reconcile'),
+  supersede: require('./supersede'),
+  deviate: require('./deviate'),
 };

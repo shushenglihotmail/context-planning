@@ -82,6 +82,14 @@ Usage:
                                   and end-commit from git log. --accept
                                   rewrites expected-key-files from SUMMARY
                                   (destructive). One atomic commit per change.
+  cp supersede <planId> --by <newPlanId> [--reason "<text>"]
+                        [--dry-run] [--json] [--no-commit]
+                                  Mark plan as superseded ([~] checkbox) and
+                                  append "Superseded by" note to PLAN.md (P10).
+  cp deviate <phaseNum> --summary "<text>" [--reason "<text>"]
+                        [--dry-run] [--json] [--no-commit]
+                                  Append a dated \`## Deviation\` block to
+                                  phase PLAN.md (P10).
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config
