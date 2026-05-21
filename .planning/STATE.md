@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 17 — SHA pinning foundation (v0.8 Consistency)
+**Current focus:** Phase 18 — Auto key-files at write-time (v0.8 Consistency)
 
 ## Current Position
 
-Phase: 17 (v0.8 Consistency)
-Plan: 1 of 2
-Status: Ready to execute
-Current focus: Phase 17 — SHA pinning foundation
-Last activity: 2026-05-21 — planned phase 17 (SHA pinning foundation)
+Phase: 17 → 18 (v0.8 Consistency)
+Plan: 0 of 2 (phase 18 ready to plan)
+Status: Ready to plan (phase 17 complete)
+Current focus: Phase 18 — Auto key-files at write-time
+Last activity: 2026-05-21 — completed phase 17 SHA pinning (lib/git.js::headSha, scaffoldPhase base-commit, writeSummary end-commit; +14 test assertions, all green; self-stamped own SUMMARYs)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 6%
 
 ## Performance Metrics
 
