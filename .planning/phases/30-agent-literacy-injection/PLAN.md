@@ -3,33 +3,33 @@ phase: "30"
 name: Agent literacy injection
 milestone: v0.8 Consistency
 status: in-progress
-created: 2026-05-21
-base-commit: 3788b8bacbce468bc50cf998e7a8bd876a57420e
+created: 2026-05-22
+base-commit: ab13c00cf6885b5811aaa710ce438d18be92dcf2
+expected-key-files:
+  "30-01":
+    - templates/agent-instructions.md
+    - install/common.js
+    - test/unit-drift-block.js
+    - package.json
+  "30-02":
+    - install/copilot.js
+    - install/claude.js
+    - install/cursor.js
+    - install/aider.js
+    - test/unit-installers.js
 ---
 
-# Phase 30: Agent literacy injection
+# Phase 30 — Agent literacy injection
 
-**Milestone**: v0.8 Consistency
-**Created**: 2026-05-21
-
-## Goal
-
-{Describe what this phase delivers in 1-2 sentences.}
-
-## Success Criteria
-
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+**Design**: see [DESIGN.md](./DESIGN.md)
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 30-01: {brief description}
-- [ ] 30-02: {brief description}
-- [ ] 30-03: {brief description}
+- [ ] 30-01: Shared drift-defense template + buildDriftDefenseBlock helper
+- [ ] 30-02: Wire helper into all 4 installers
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+The drift-defense literacy block bridges v0.8's verbs (audit/fix/
+reconcile/supersede/deviate/hooks) and the AI agent's prompt-time
+awareness so the right verb is suggested at the right moment.
