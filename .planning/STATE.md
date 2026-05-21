@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 35 (v0.9 Onboarding)
+Phase: -
 Plan: 69 of 69
-Status: Phase complete
-Current focus: DESIGN.md lifecycle polish
-Last activity: write summary for plan 35-01
+Status: Idle
+Current focus: -
+Last activity: changelog phase 35 entry
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -75,5 +75,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-21
-Stopped at: shipped v0.8 Consistency
+Stopped at: shipped v0.9 Onboarding
 Resume file: None

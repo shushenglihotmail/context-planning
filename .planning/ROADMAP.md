@@ -6,8 +6,8 @@
 
 ## Phases
 
-### 🚧 v0.9 Onboarding (In Progress)
-
+<details>
+<summary>✅ v0.9 Onboarding (Phases 1-35) — SHIPPED 2026-05-21</summary>
 
 <details>
 <summary>✅ v0.8 Consistency (Phases 1-31) — SHIPPED 2026-05-21</summary>
@@ -265,6 +265,8 @@ Plans:
 
 Plans:
 - [x] 35-01: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**
