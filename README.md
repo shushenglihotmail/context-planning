@@ -393,7 +393,7 @@ lib/
   gsd-compat.js      # detect/classify pure-GSD vs cp-aware vs GSD-superset
   import.js          # read-only auditor (74-test fixture suite)
 templates/           # PROJECT/ROADMAP/STATE/MILESTONES seeds
-test/                # 6 test files, 328 assertions, plain Node (no test runner)
+test/                # 43 test files, ~1400 assertions, plain Node (no test runner)
 docs/
   architecture.md
   writing-providers.md
