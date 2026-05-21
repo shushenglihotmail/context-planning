@@ -274,6 +274,11 @@ Plans:
 
 Plans:
 - [ ] 36-01: TBD
+
+### Phase 37: /cp-autonomous slash skill
+
+Plans:
+- [ ] 37-01: TBD
 ## Progress
 
 **Execution Order:**
