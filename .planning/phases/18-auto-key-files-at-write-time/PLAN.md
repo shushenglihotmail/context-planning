@@ -4,6 +4,7 @@ name: Auto key-files at write-time
 milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
+base-commit: 928860654550bddfe936457af1881d1c2c387fe8
 ---
 
 # Phase 18: Auto key-files at write-time
