@@ -36,4 +36,5 @@ module.exports = {
   supersede: require('./supersede'),
   deviate: require('./deviate'),
   update: require('./update'),
+  autonomous: require('./autonomous'),
 };

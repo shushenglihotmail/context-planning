@@ -9,11 +9,11 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: -
-Plan: 69 of 69
-Status: Idle
-Current focus: -
-Last activity: changelog phase 35 entry
+Phase: 36 (v0.10 Autonomy)
+Plan: 36-01
+Status: Ready to execute
+Current focus: cp autonomous CLI + lib helper
+Last activity: scaffold-phase 37 (/cp-autonomous slash skill)
 
 Progress: [░░░░░░░░░░] 0%
 

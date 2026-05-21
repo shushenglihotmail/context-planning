@@ -106,6 +106,14 @@ Usage:
                                   version bump. Documented invocation:
                                   \`npx -y --package=context-planning@latest -- cp update\`.
                                   --check exits 1 if anything would change.
+  cp autonomous [START] [--scope=phase|N|N-M|milestone]
+                        [--check] [--json] [--quiet]
+                                  Walk pending phases of the active milestone
+                                  autonomously (v0.10). Bounded to a single
+                                  milestone. Smart-gated on test/audit/deviation;
+                                  stops via \`.planning/.continue-here.md\`.
+                                  Bare CLI is most useful with --check;
+                                  /cp-autonomous slash skill drives the full loop.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config
