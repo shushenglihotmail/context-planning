@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 26 (v0.8 Consistency)
-Plan: 26-03
+Phase: 27 (v0.8 Consistency)
+Plan: 27-01
 Status: Ready to execute
-Current focus: Repair commands
-Last activity: tick plan 26-01
+Current focus: Pre-commit hook smart shim
+Last activity: tick plan 26-02
 
-Progress: [████████░░] 83%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
