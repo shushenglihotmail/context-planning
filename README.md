@@ -68,21 +68,50 @@ npm link            # exposes BOTH `cplan` and `cp` on PATH (or use: node bin/cp
 
 ### Updating an existing install
 
-```bash
-npm install -g context-planning@latest   # upgrade global CLI
+**One-liner (v0.9+, recommended):**
 
-# In every repo where you previously ran `cp install`:
+```bash
 cd <your-project>
-cp install <harness> --force             # refresh harness skill files + ambient instructions
-cp config refresh                        # merge new config defaults into .planning/config.json
+npx -y --package=context-planning@latest -- cp update
 ```
 
-**Why `--force`?** `cp install` is collision-safe by default — if a skill
+That single command fetches the latest cp via `npx` (per-user cache, no
+sudo, package-manager-neutral) and runs `cp update` against the current
+repo. It detects which harness(es) are installed and runs the full
+refresh loop: re-install skill files, merge new config defaults, and
+auto-clean any low/medium drift via `cp audit --fix`. Mirrors GSD's
+`/gsd-update` pattern.
+
+**Equivalent manual steps** (or for users who prefer to manage the npm
+package themselves):
+
+```bash
+npm install -g context-planning@latest   # upgrade global CLI
+cd <your-project>
+cp update                                # per-repo refresh (same as above)
+```
+
+**Even more granular** (the verbs `cp update` is built on):
+
+```bash
+cp install <harness> --force             # refresh skill files + ambient instructions
+cp config refresh                        # merge new config defaults
+cp audit --fix                           # auto-clean drift introduced by upgrade
+```
+
+Flags:
+
+- `cp update --dry-run` — preview without writing.
+- `cp update --check` — exit 1 if anything would change (CI gate).
+- `cp update --json` — machine-readable summary.
+
+**Why `--force` on install?** `cp install` is collision-safe by default — if a skill
 file or ambient instruction file differs from what the new version ships,
 it assumes you hand-edited it and refuses to overwrite (printing
 `LOCALLY MODIFIED — kept`). On a clean version bump that's a false
 positive; `--force` says "this is cp-owned content, replace it." If you
-actually customised a cp file, copy it out before forcing.
+actually customised a cp file, copy it out before forcing. `cp update`
+passes `--force` automatically.
 
 **v0.8 upgrade note:** the drift-defense literacy block
 (`<!-- cp:drift-defense v1 -->`) is injected into your harness's ambient

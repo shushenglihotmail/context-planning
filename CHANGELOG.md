@@ -6,6 +6,31 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`cp update` — case-4 onboarding helper.** New CLI subcommand that
+  refreshes per-repo cp state in one shot: detects installed harness(es),
+  re-runs `cp install <harness> --force` for each, merges new config
+  defaults via `cp config refresh`, and auto-cleans low/medium drift via
+  `cp audit --fix`. Flags: `--dry-run`, `--check` (CI gate), `--quiet`,
+  `--json`. Documented user-facing invocation (mirrors `/gsd-update`):
+  ```
+  npx -y --package=context-planning@latest -- cp update
+  ```
+  That fetches the latest cp via npx (per-user cache, no sudo,
+  package-manager-neutral) and runs `cp update` against the current repo
+  in one command. The subcommand also works standalone (`cp update`) if
+  the binary is already current.
+- **`/cp-update` slash-command skill** mirroring `/gsd-update`'s structure;
+  installed by all four harness installers on next `cp install`.
+- **`/cp-map-codebase` auto-init.** When invoked in a repo without
+  `.planning/`, the skill now runs `cp init` first with a mandatory
+  user-visible notice, then proceeds with mapping. Case-2 onboarding
+  (existing code, no planning yet) becomes a single command.
+- README "Updating an existing install" section restructured around the
+  `npx` one-liner as the primary path; manual / per-verb invocations
+  documented as alternatives.
+
 ## [0.8.1] - 2026-05-21 — README polish (npm-page facing)
 
 - README: `cp --version` example now prints `0.8.x` (was stale `0.7.x`).
