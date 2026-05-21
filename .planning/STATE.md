@@ -13,7 +13,7 @@ Phase: 29 (v0.8 Consistency)
 Plan: 29-01
 Status: Ready to execute
 Current focus: CI template + backfill
-Last activity: plan phase 28 (post-commit hook tick auto)
+Last activity: tick plan 28-01
 
 Progress: [█████████░] 89%
 
