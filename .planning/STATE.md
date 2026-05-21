@@ -13,7 +13,7 @@ Phase: 27 (v0.8 Consistency)
 Plan: 27-01
 Status: Ready to execute
 Current focus: Pre-commit hook smart shim
-Last activity: tick plan 26-03
+Last activity: write SUMMARYs for plans 26-01, 26-02, 26-03
 
 Progress: [█████████░] 85%
 
