@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 30 (v0.8 Consistency)
-Plan: 30-01
+Plan: 30-02
 Status: Ready to execute
 Current focus: Agent literacy injection
-Last activity: write SUMMARYs for phase 29 + 1.5 backfill cleanup
+Last activity: plan phase 30 (agent literacy injection)
 
-Progress: [█████████░] 92%
+Progress: [█████████░] 94%
 
 ## Performance Metrics
 
