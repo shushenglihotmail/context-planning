@@ -28,20 +28,33 @@ base-commit: e6c1831894796431792116565e1404f30c549c1b
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+`/cp-map-codebase` becomes a one-command start for users in case 2 (existing
+code, no `.planning/` yet). The skill detects missing `.planning/` and
+auto-invokes `cp init` first with an explicit notice, then proceeds with
+the normal mapping flow. No silent side-effects.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. Running `/cp-map-codebase` in a repo without `.planning/` prints a clear
+   notice like `ℹ .planning/ not found — initialising before mapping…`
+   and then runs `cp init` before scaffolding the codebase docs.
+2. Running `/cp-map-codebase` in a repo that already has `.planning/`
+   behaves exactly as before — no regression for case 1/3 users.
+3. The skill's "Brownfield bootstrap" note at the bottom is updated to
+   reflect the new single-command order; no stale `cp init` → `/cp-map-codebase`
+   instruction remains.
+4. All four installers (copilot, claude, cursor, aider) ship the updated
+   skill — verified via existing installer tests.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 32-01: {brief description}
+- [ ] 32-01: skill rewrite — add Step 0 (auto-init), update brownfield note,
+       refresh installer-test fixtures if they pin specific skill content
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- This phase touches ONLY `commands/cp/map-codebase.md` (source of truth)
+  plus any unit tests that assert on skill content. Installers re-read
+  from `commands/cp/` so no installer.js edits are needed.
+- Decision: print notice before invoking `cp init`, not after — users
+  should see what's happening before files appear.
