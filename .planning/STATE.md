@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 21 (v0.8 Consistency)
-Plan: 21-02
+Phase: 22 (v0.8 Consistency)
+Plan: 22-01
 Status: Ready to execute
-Current focus: Plan-time expected-key-files
-Last activity: plan phase 21 (Plan-time expected-key-files) — DESIGN + PLAN + STATE.md
+Current focus: scaffold-phase prior-summary check
+Last activity: tick plan 21-01
 
-Progress: [███████░░░] 67%
+Progress: [███████░░░] 68%
 
 ## Performance Metrics
 

@@ -179,7 +179,7 @@ Plans:
 
 Plans:
 - [x] 21-01: TBD
-- [ ] 21-02: TBD
+- [x] 21-02: TBD
 
 ### Phase 22: scaffold-phase prior-summary check
 
