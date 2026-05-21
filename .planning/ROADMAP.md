@@ -168,6 +168,12 @@ Plans:
 
 Plans:
 - [ ] 19-01: TBD
+
+### Phase 20: Derived STATE.md
+
+Plans:
+- [ ] 20-01: TBD
+- [ ] 20-02: TBD
 ## Progress
 
 **Execution Order:**
