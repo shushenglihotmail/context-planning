@@ -6,16 +6,55 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Added (v0.8 in progress — Consistency milestone)
+## [0.8.0] - 2026-05-21 — Consistency milestone
 
-- **Repair commands** (Phase 26): four new verbs to fix drift detected by
-  `cp audit`:
-  - **`cp reconcile <N>`** — `--infer-shas` fills missing `base-commit` /
-    `end-commit` in PLAN/SUMMARY by inferring from `cp(NN-MM):` commit
+The "drift defense" release. Plan/state docs and the codebase drift
+apart over time; v0.8 ships a complete **prevent → detect → repair**
+stack so they stay in sync.
+
+See [`docs/drift-playbook.md`](docs/drift-playbook.md) for the full
+walkthrough including a migration guide for pre-v0.8 projects.
+
+### Added (v0.8 — Consistency milestone)
+
+- **Agent literacy injection** (Phase 30): `templates/agent-instructions.md`
+  ships a drift-defense literacy block (verb list + finding-id → verb
+  table) automatically injected into the ambient instruction file of
+  every harness installer (Copilot CLI, Claude Code, Cursor, Aider).
+  Idempotent via `<!-- cp:drift-defense v1 -->` sentinels. New
+  `install/common.js` helpers `buildDriftDefenseBlock(pluginRoot)` and
+  `stripDriftBlock(text)` are exported for advanced installer authors.
+- **CI template + bulk reconcile** (Phase 29):
+  - `cp install --ci` writes `.github/workflows/cp-audit.yml` from
+    `templates/ci/cp-audit.yml.example` (sentinel `# cp:ci v1`,
+    `fetch-depth: 0`, runs `cp audit --severity high` on every PR).
+  - `cp reconcile --all` / `cp reconcile --phase <range>` for bulk
+    SHA backfill. Range accepts 5 shapes (`5`, `5-8`, `5..8`, `5,7,9`,
+    `5,7-9`). Composable with `--infer-shas`, `--accept`, `--dry-run`,
+    `--no-commit`.
+- **Post-commit tick-auto** (Phase 28): opt-in `cp.behavior.post_commit
+  = "tick-auto"` — after each commit whose subject matches
+  `cp(NN-MM[-slug]): ...` AND that touched ALL of the plan's
+  `expected-key-files`, the post-commit hook auto-ticks the plan with
+  a trailing `cp: tick plan NN-MM` commit. Off by default — it subtly
+  mutates history. `lib/lifecycle.tryAutoTick()` is the pure decision
+  helper.
+- **Pre-commit hook smart shim** (Phase 27): new `bin/cp-hook.js` shim
+  + `lib/hooks.js` installer. `cp install --hooks` / `--uninstall-hooks`.
+  Smart-shim walks for `.planning/STATE.md` markers so monorepos with
+  multiple cp projects work. Per-project dispatch via
+  `cp.behavior.pre_commit` (`off` / `audit-high` (default) /
+  `audit-any`). Sentinel `# cp:hook v1` for safe ownership detection.
+  Handles both regular `.git` dirs AND `gitdir:` file format (worktrees).
+- **Repair commands** (Phase 26): four new verbs to fix drift detected
+  by `cp audit`:
+  - **`cp reconcile <N>`** — `--infer-shas` fills missing `base-commit`
+    / `end-commit` in PLAN/SUMMARY by inferring from `cp(NN-MM):` commit
     log; `--accept` rewrites a plan's `expected-key-files` from actual
-    SUMMARY `key-files` (destructive). Atomic commit per change.
-  - **`cp supersede <planId> --by <newPlanId>`** — replaces plan checkbox
-    with `[~]` and appends a "Superseded by" note to PLAN.md.
+    SUMMARY `key-files` (destructive — overwrites the plan to match
+    code). Atomic commit per change.
+  - **`cp supersede <planId> --by <newPlanId>`** — replaces plan
+    checkbox with `[~]` and appends a "Superseded by" note to PLAN.md.
   - **`cp deviate <N> --summary "<text>"`** — appends a dated
     `## Deviation YYYY-MM-DD` block to phase PLAN.md.
   - **`cp scaffold-phase --continue`** — bypasses prior-summary gate
@@ -50,6 +89,14 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **SHA pinning** (Phase 17): every PLAN.md gets `base-commit` at scaffold;
   every SUMMARY.md gets `end-commit` at write. Foundation for drift
   detection.
+
+### Docs
+
+- New **`docs/drift-playbook.md`** — the canonical walkthrough of the
+  prevent/detect/repair stack, including 5-step migration recipe for
+  pre-v0.8 projects and a finding-id → repair-verb lookup table.
+- README: new **"Drift defense (v0.8)"** section with 4-layer overview
+  table linking to the playbook.
 
 ## v0.7.1 — Published to npm
 
