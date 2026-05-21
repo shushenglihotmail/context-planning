@@ -13,7 +13,7 @@ Phase: 30 (v0.8 Consistency)
 Plan: 30-01
 Status: Ready to execute
 Current focus: Agent literacy injection
-Last activity: tick plan 29-02
+Last activity: write SUMMARYs for phase 29 + 1.5 backfill cleanup
 
 Progress: [█████████░] 92%
 
