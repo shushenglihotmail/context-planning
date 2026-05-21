@@ -190,7 +190,7 @@ project: demo
   fs.writeFileSync(ctxPath, 'transient context\n');
   execSync('git add -A && git commit -q -m setup', { cwd: dir });
 
-  const r = lifecycle.completeMilestone(dir, { noCommit: true });
+  const r = lifecycle.completeMilestone(dir, { noCommit: true, noAudit: true });
   ok('completeMilestone ok=true', r.ok);
   // Writes landed: MILESTONES.md exists, ROADMAP collapsed, STATE reset.
   const msPath = path.join(dir, '.planning', 'MILESTONES.md');

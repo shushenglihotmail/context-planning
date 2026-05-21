@@ -56,8 +56,12 @@ Usage:
                                   worktree skill when --use-provider is set
                                   (Superpowers: using-git-worktrees).
   cp complete-milestone [<name>] [--dry-run] [--no-commit] [--json]
+                       [--no-audit] [--audit-warn]
                                   Full milestone close-out (verify, aggregate digest,
-                                  collapse in ROADMAP, clear context, reset STATE, commit)
+                                  collapse in ROADMAP, clear context, reset STATE, commit).
+                                  Runs cp audit as a gate: refuses on HIGH (always)
+                                  and MEDIUM (unless --audit-warn). --no-audit
+                                  bypasses the gate (override notice on stderr).
   cp state regen [--dry-run] [--quiet]
                                   Regenerate derived block of STATE.md from
                                   ROADMAP + phase tree. Run after pulling

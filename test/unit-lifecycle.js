@@ -754,7 +754,7 @@ section('completeMilestone');
   lifecycle.writeSummary(root, '01-02', { subsystem: 'g', tags: ['cli'], requires: ['hello'], provides: ['bye'], 'key-files': { created: ['src/b.js'], modified: [] }, 'requirements-completed': ['bye'], 'key-decisions': [], 'patterns-established': ['p1'], duration: '1min' });
 
   // Dry-run first.
-  const dry = lifecycle.completeMilestone(root, { dryRun: true, noCommit: true });
+  const dry = lifecycle.completeMilestone(root, { dryRun: true, noCommit: true, noAudit: true });
   ok('dry-run ok=true', dry.ok);
   ok('dry-run dryRun=true', dry.dryRun === true);
   ok('dry-run did NOT write MILESTONES.md', !fs.existsSync(path.join(root, '.planning', 'MILESTONES.md')));
@@ -764,7 +764,7 @@ section('completeMilestone');
     dry.actions.some((a) => a.kind === 'write' && /[\\/]milestones[\\/]v0-1-hi[\\/]DESIGN\.md$/.test(a.path)));
 
   // Real run.
-  const real = lifecycle.completeMilestone(root, { noCommit: true });
+  const real = lifecycle.completeMilestone(root, { noCommit: true, noAudit: true });
   ok('real run ok=true', real.ok);
   ok('milestone="v0.1 Hi"', real.milestone === 'v0.1 Hi');
   ok('aggregated subsystem=greet (singular -> array)', real.agg.subsystems.includes('g'));
@@ -783,7 +783,7 @@ section('completeMilestone');
   // (status reports as shipped); but verifyMilestoneComplete still ok=true →
   // completeMilestone will create a SECOND digest. That's user error and the
   // current behavior; just make sure we don't crash.
-  const replay = lifecycle.completeMilestone(root, { name: 'v0.1 Hi', noCommit: true });
+  const replay = lifecycle.completeMilestone(root, { name: 'v0.1 Hi', noCommit: true, noAudit: true });
   ok('replay does not crash (idempotent for caller)', replay.ok === true || replay.ok === false);
 }
 
@@ -815,7 +815,7 @@ section('completeMilestone w/ git commit');
   lifecycle.tickPlan(root, '01-02');
   lifecycle.writeSummary(root, '01-01', { subsystem: 'g' });
   lifecycle.writeSummary(root, '01-02', { subsystem: 'g' });
-  const r = lifecycle.completeMilestone(root);
+  const r = lifecycle.completeMilestone(root, { noAudit: true });
   ok('commit hash returned', typeof r.commit === 'string' && /^[0-9a-f]{6,}$/.test(r.commit));
   const log = execSync('git log -1 --format=%s', { cwd: root }).toString().trim();
   ok('commit message starts with "cp: /cp-complete-milestone"', log.startsWith('cp: /cp-complete-milestone'));
@@ -1009,7 +1009,7 @@ section('scaffold + tick + complete round-trip');
   // Write a SUMMARY so complete-milestone passes verification
   lifecycle.writeSummary(root, '01-01', { subsystem: 'only' });
   // Complete
-  const cm = lifecycle.completeMilestone(root, { noCommit: true });
+  const cm = lifecycle.completeMilestone(root, { noCommit: true, noAudit: true });
   ok('complete-milestone succeeds on scaffolded shape', cm.ok);
 }
 
@@ -1127,6 +1127,85 @@ section('scaffoldPhase first phase (no prior) succeeds even without summaries');
     '# demo\n\n## Phases\n\n### 🚧 v0.1 Hi (In Progress)\n\n## Progress\n\n');
   const r = lifecycle.scaffoldPhase(root, '1', { name: 'First', plans: 1 });
   ok('ok for first phase', r.ok, `${JSON.stringify(r)}`);
+}
+
+
+// ---------- v0.8 P7 (Phase 23): completeMilestone audit gate ----------
+
+function setupCompletableProject(suffix) {
+  const root = freshProject('p7-' + suffix);
+  fs.mkdirSync(path.join(root, 'src'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'src', 'a.js'), '// a\n');
+  fs.writeFileSync(path.join(root, 'src', 'b.js'), '// b\n');
+  lifecycle.tickPlan(root, '01-01');
+  lifecycle.tickPlan(root, '01-02');
+  lifecycle.writeSummary(root, '01-01', { subsystem: 'g', tags: [], requires: [], provides: ['hi'], 'key-files': { created: ['src/a.js'], modified: [] }, 'requirements-completed': ['hi'], 'key-decisions': ['x'], 'patterns-established': [], duration: '1m' });
+  lifecycle.writeSummary(root, '01-02', { subsystem: 'g', tags: [], requires: [], provides: ['bye'], 'key-files': { created: ['src/b.js'], modified: [] }, 'requirements-completed': ['bye'], 'key-decisions': ['y'], 'patterns-established': [], duration: '1m' });
+  return root;
+}
+
+section('completeMilestone audit gate: refuses on MEDIUM (default)');
+{
+  // freshProject seeds PLAN.md WITHOUT base-commit → audit fires missing-base-commit MEDIUM.
+  const root = setupCompletableProject('mediumblock');
+  const r = lifecycle.completeMilestone(root, { noCommit: true });
+  ok('ok=false', !r.ok);
+  ok('reason audit-failed', r.reason === 'audit-failed');
+  ok('blockingSeverity MEDIUM', r.blockingSeverity === 'MEDIUM');
+  ok('audit present', r.audit && r.audit.summary.medium >= 1);
+  ok('no actions', r.actions.length === 0);
+  ok('MILESTONES.md NOT created', !fs.existsSync(path.join(root, '.planning', 'MILESTONES.md')));
+}
+
+section('completeMilestone audit gate: --audit-warn allows MEDIUM');
+{
+  const root = setupCompletableProject('mediumwarn');
+  const r = lifecycle.completeMilestone(root, { noCommit: true, auditWarn: true });
+  ok('ok=true', r.ok, JSON.stringify(r).slice(0, 300));
+  ok('audit recorded in result', r.audit && r.audit.summary.medium >= 1);
+}
+
+section('completeMilestone audit gate: noAudit bypasses');
+{
+  const root = setupCompletableProject('noauditbypass');
+  const r = lifecycle.completeMilestone(root, { noCommit: true, noAudit: true });
+  ok('ok=true', r.ok);
+  ok('audit.skipped=true', r.audit && r.audit.skipped === true);
+}
+
+section('completeMilestone audit gate: HIGH blocks even with auditWarn');
+{
+  // Plant a HIGH: tick without SUMMARY. Use a project where verifyMilestoneComplete
+  // ALSO fails — but we expect verify to refuse first. So instead, hand-craft
+  // by ticking + summarising properly, then plant a stray ticked-without-summary
+  // in a fake second phase OUTSIDE the milestone (audit is repo-wide).
+  const root = setupCompletableProject('highblock');
+  // Build a fake out-of-milestone phase 02 with a ticked plan and no summary.
+  fs.mkdirSync(path.join(root, '.planning', 'phases', '02-extra'), { recursive: true });
+  fs.writeFileSync(path.join(root, '.planning', 'phases', '02-extra', 'PLAN.md'),
+    '---\nphase: "2"\nname: Extra\nbase-commit: ' + execSync('git rev-parse HEAD', { cwd: root }).toString().trim() + '\n---\n# Phase 2\n\n## Plans\n- [x] 02-01: stray\n');
+  const r = lifecycle.completeMilestone(root, { noCommit: true, auditWarn: true });
+  ok('ok=false', !r.ok);
+  ok('reason audit-failed', r.reason === 'audit-failed');
+  ok('blockingSeverity HIGH', r.blockingSeverity === 'HIGH');
+  ok('audit has HIGH', r.audit.summary.high >= 1);
+}
+
+section('completeMilestone audit-error: runAudit throw → reason audit-error');
+{
+  const root = setupCompletableProject('audit-error');
+  const audit = require('../lib/audit');
+  const orig = audit.runAudit;
+  audit.runAudit = function () { throw new Error('boom from test'); };
+  try {
+    const r = lifecycle.completeMilestone(root, { noCommit: true });
+    ok('ok=false', !r.ok);
+    ok('reason audit-error', r.reason === 'audit-error');
+    ok('auditError captured', /boom from test/.test(r.auditError || ''));
+    ok('no actions on audit-error', r.actions.length === 0);
+  } finally {
+    audit.runAudit = orig;
+  }
 }
 
 
