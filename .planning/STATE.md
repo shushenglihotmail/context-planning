@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 34 (v0.9 Onboarding)
-Plan: 34-01
+Phase: 35 (v0.9 Onboarding)
+Plan: 35-01
 Status: Ready to execute
-Current focus: README onboarding decision matrix
-Last activity: tick plan 33-02
+Current focus: DESIGN.md lifecycle polish
+Last activity: write summary for plan 33-02 + state regen
 
-Progress: [██████████] 97%
+Progress: [██████████] 99%
 
 ## Performance Metrics
 

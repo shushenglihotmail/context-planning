@@ -45,7 +45,7 @@ prominent; cases 2/3/4 require scrolling and guessing.
 
 ## Plans
 
-- [ ] 34-01: README — add decision matrix section + cross-links
+- [x] 34-01: README — add decision matrix section + cross-links
 
 ## Notes
 

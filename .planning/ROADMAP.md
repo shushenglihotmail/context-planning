@@ -259,7 +259,7 @@ Plans:
 ### Phase 34: README onboarding decision matrix
 
 Plans:
-- [ ] 34-01: TBD
+- [x] 34-01: TBD
 
 ### Phase 35: DESIGN.md lifecycle polish
 
