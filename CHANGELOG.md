@@ -8,6 +8,11 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Onboarding decision matrix in README.** New "Choose your starting
+  path" section maps the 4 install scenarios (greenfield / existing code /
+  existing GSD state / existing cp upgrade) to a single one-line command
+  each. Surfaces the right entry point without users having to scan
+  the full install + getting-started flow.
 - **`cp update` — case-4 onboarding helper.** New CLI subcommand that
   refreshes per-repo cp state in one shot: detects installed harness(es),
   re-runs `cp install <harness> --force` for each, merges new config
@@ -27,6 +32,18 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `.planning/`, the skill now runs `cp init` first with a mandatory
   user-visible notice, then proceeds with mapping. Case-2 onboarding
   (existing code, no planning yet) becomes a single command.
+- **Milestone digest surfaces phase DESIGN.md + REVIEW-LOG.md.**
+  `renderDigest` now emits two new sections after "Phase summaries:":
+  **Phase designs:** (one link per phase whose DESIGN.md is non-stub) and
+  **Reviews:** (total entry count across the milestone + per-phase
+  REVIEW-LOG.md links). Closes the v0.7 inbox #1 gap where
+  `aggregateSummaries` collected the refs but the renderer dropped them.
+  Stub designs (untouched templates) are filtered out so MILESTONES.md
+  stays free of noisy scaffold links. Sections are omitted entirely
+  when their data is empty.
+
+### Changed
+
 - README "Updating an existing install" section restructured around the
   `npx` one-liner as the primary path; manual / per-verb invocations
   documented as alternatives.
