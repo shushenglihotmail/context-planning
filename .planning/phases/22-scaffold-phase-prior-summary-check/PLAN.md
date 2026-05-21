@@ -45,7 +45,7 @@ finishing the prior).
 ## Plans
 
 - [x] 22-01: `_priorPhaseAudit` helper + `scaffoldPhase` integration + unit tests
-- [ ] 22-02: `--force` CLI flag + dryrun integration tests
+- [x] 22-02: `--force` CLI flag + dryrun integration tests
 
 ## Notes
 

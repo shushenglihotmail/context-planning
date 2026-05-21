@@ -13,7 +13,7 @@ Phase: 23 (v0.8 Consistency)
 Plan: 23-01
 Status: Ready to execute
 Current focus: complete-milestone audit gate
-Last activity: plan phase 22 (scaffold-phase prior-summary check)
+Last activity: tick plan 22-01
 
 Progress: [███████░░░] 70%
 
