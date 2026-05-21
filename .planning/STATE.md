@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 Phase: 17 (v0.8 Consistency)
 Plan: 1 of 2
-Status: Ready to plan
+Status: Ready to execute
 Current focus: Phase 17 — SHA pinning foundation
-Last activity: 2026-05-21 — started milestone v0.8 Consistency (phases 17-31)
+Last activity: 2026-05-21 — planned phase 17 (SHA pinning foundation)
 
 Progress: [░░░░░░░░░░] 0%
 
