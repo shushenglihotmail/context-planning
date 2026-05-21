@@ -6,6 +6,8 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-05-21 — Onboarding
+
 ### Added
 
 - **Onboarding decision matrix in README.** New "Choose your starting
@@ -47,6 +49,15 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - README "Updating an existing install" section restructured around the
   `npx` one-liner as the primary path; manual / per-verb invocations
   documented as alternatives.
+
+### Fixed
+
+- **`cp scaffold-milestone` now appends new milestone headings to the
+  END of the `## Phases` section** (was prepending at the top, which
+  caused `cp complete-milestone` to scoop ALL prior loose phase headings
+  into the new milestone and emit `Phases: 1-N` digests instead of just
+  the milestone's own range). New unit assertion in
+  `test/unit-lifecycle.js` covers tail-insert positioning.
 
 ## [0.8.1] - 2026-05-21 — README polish (npm-page facing)
 

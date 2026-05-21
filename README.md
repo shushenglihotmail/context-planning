@@ -67,7 +67,7 @@ Once you've started, every path converges on the same `/cp-plan-phase N`
 ```bash
 npm install -g context-planning
 # exposes BOTH `cplan` and `cp` on PATH
-cp --version    # should print 0.8.x
+cp --version    # should print 0.9.x
 ```
 
 ### Node CLI (from source — for development)
@@ -150,9 +150,20 @@ Then ensure your provider is available in the same harness:
 
 ### Initialise a project
 
+**You usually don't need to call this directly.** All four onboarding
+paths in the [decision matrix above](#choose-your-starting-path) handle
+init for you:
+
+- `/cp-new-project` runs it on the way to scaffolding `PROJECT.md`.
+- `/cp-map-codebase` runs it automatically when `.planning/` is missing.
+- `cp update` only refreshes existing installs.
+
+Use bare `cp init` directly only for **case 3 — existing GSD project**:
+
 ```bash
 cd <your-project>
-cp init              # idempotent — adds .planning/{PROJECT,ROADMAP,STATE,MILESTONES,config}.json
+cp init                  # idempotent — adds .planning/{PROJECT,ROADMAP,STATE,MILESTONES,config}.json
+cp gsd-import            # ingest existing GSD state into the cp lifecycle
 ```
 
 If the dir is already a GSD project, `cp init` is purely additive: it writes a
