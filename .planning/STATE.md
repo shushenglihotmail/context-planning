@@ -13,7 +13,7 @@ Phase: 37 (v0.10 Autonomy)
 Plan: 37-01
 Status: Ready to execute
 Current focus: /cp-autonomous slash skill
-Last activity: plan phase 36 (cp autonomous CLI + lib helper)
+Last activity: tick plan 36-01
 
 Progress: [███░░░░░░░] 33%
 
