@@ -260,6 +260,11 @@ Plans:
 
 Plans:
 - [ ] 34-01: TBD
+
+### Phase 35: DESIGN.md lifecycle polish
+
+Plans:
+- [ ] 35-01: TBD
 ## Progress
 
 **Execution Order:**
