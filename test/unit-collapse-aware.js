@@ -184,5 +184,88 @@ t('completeMilestone STATE.md fallback resolves milestone without explicit name'
   } finally { rm(dir); }
 });
 
+// ---------- v0.10.2 hotfix: defensive verify + --force ----------
+
+// Fixture where the collapsed <summary> declares phases that DO NOT exist
+// as `### Phase N` headings inside (i.e. writing-plans collapsed it but
+// dropped the inner blocks, or hand-collapsed in a non-standard form).
+// Pre-v0.10.2 this would hit verify, return `incomplete` with a malformed
+// report missing `summariesMissing`, and the CLI would crash with
+// `TypeError: Cannot read properties of undefined (reading 'join')`.
+const COLLAPSED_NO_INNER_PHASES = `# Roadmap
+
+## Phases
+
+<details>
+<summary>✅ v1.5 Same-Origin (Phases 9-12) — SHIPPED 2026-05-21</summary>
+
+(content omitted — writing-plans variant)
+
+</details>
+
+## Progress
+`;
+
+t('verifyMilestoneComplete always populates summariesMissing on missing phase', () => {
+  const rep = milestone.verifyMilestoneComplete(COLLAPSED_NO_INNER_PHASES, ['9', '10'], '/tmp/nonexistent');
+  assert.equal(rep.ok, false);
+  for (const r of rep.reports) {
+    assert.ok(Array.isArray(r.summariesMissing), `summariesMissing must be array on report ${JSON.stringify(r)}`);
+    assert.equal(typeof r.plansDone, 'number');
+    assert.equal(typeof r.plansTotal, 'number');
+  }
+});
+
+t('completeMilestone skips verify for shipped (collapsed) milestone even with no inner phases', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-v0-10-2-'));
+  try {
+    fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
+    execSync('git init -q', { cwd: dir });
+    execSync('git config user.email t@t', { cwd: dir });
+    execSync('git config user.name t', { cwd: dir });
+    execSync('git config commit.gpgsign false', { cwd: dir });
+    fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'), COLLAPSED_NO_INNER_PHASES);
+    fs.writeFileSync(path.join(dir, '.planning', 'STATE.md'),
+      '# State\nmilestone: v1.5 Same-Origin\nphase: -\nplan: -\nstatus: Idle\n');
+    fs.writeFileSync(path.join(dir, '.planning', 'PROJECT.md'), '# Project\n');
+    execSync('git add -A && git commit -q -m init', { cwd: dir, shell: true });
+
+    const r = lifecycle.completeMilestone(dir, { name: 'v1.5 Same-Origin', noAudit: true });
+    // Pre-v0.10.2: r.reason === 'incomplete' (and CLI would crash)
+    // v0.10.2: should succeed because collapsed status is trusted
+    assert.equal(r.ok, true, `expected ok:true, got ${JSON.stringify(r)}`);
+    assert.notEqual(r.reason, 'incomplete');
+  } finally { rm(dir); }
+});
+
+t('completeMilestone --force bypasses verify for in-progress milestone', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-v0-10-2-force-'));
+  try {
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '01-foo'), { recursive: true });
+    execSync('git init -q', { cwd: dir });
+    execSync('git config user.email t@t', { cwd: dir });
+    execSync('git config user.name t', { cwd: dir });
+    execSync('git config commit.gpgsign false', { cwd: dir });
+    // In-progress milestone with UNTICKED plan and NO summary
+    const INPROGRESS = `# r\n\n## Phases\n\n### 🚧 v0.9 X (In Progress)\n\n### Phase 1: Foo\n\nPlans:\n- [ ] 01-01: untouched\n`;
+    fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'), INPROGRESS);
+    fs.writeFileSync(path.join(dir, '.planning', 'STATE.md'),
+      '# State\nmilestone: v0.9 X\nphase: 1\nplan: 01-01\nstatus: in-progress\n');
+    fs.writeFileSync(path.join(dir, '.planning', 'PROJECT.md'), '# Project\n');
+    fs.writeFileSync(path.join(dir, '.planning', 'phases', '01-foo', 'PLAN.md'),
+      '---\nphase: "1"\nname: Foo\n---\n# P\n');
+    execSync('git add -A && git commit -q -m init', { cwd: dir, shell: true });
+
+    // Without --force: blocks with incomplete
+    const r1 = lifecycle.completeMilestone(dir, { name: 'v0.9 X', noAudit: true, dryRun: true });
+    assert.equal(r1.ok, false);
+    assert.equal(r1.reason, 'incomplete');
+
+    // With --force: bypasses verify
+    const r2 = lifecycle.completeMilestone(dir, { name: 'v0.9 X', noAudit: true, force: true, dryRun: true });
+    assert.equal(r2.ok, true, `expected --force to bypass verify, got ${JSON.stringify(r2)}`);
+  } finally { rm(dir); }
+});
+
 console.log(`unit-collapse-aware: ${passed} passed`);
 process.exit(0);

@@ -12,6 +12,7 @@ function run(args = []) {
   let json = false;
   let noAudit = false;
   let auditWarn = false;
+  let force = false;
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     if (a === '--dry-run') dryRun = true;
@@ -19,6 +20,7 @@ function run(args = []) {
     else if (a === '--json') json = true;
     else if (a === '--no-audit') noAudit = true;
     else if (a === '--audit-warn') auditWarn = true;
+    else if (a === '--force') force = true;
     else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
     else if (!name) name = a;
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
@@ -27,8 +29,11 @@ function run(args = []) {
   if (noAudit) {
     console.error('cp: --no-audit override — consistency gate SKIPPED for this complete-milestone run.');
   }
+  if (force) {
+    console.error('cp: --force override — verify gate SKIPPED for this complete-milestone run.');
+  }
 
-  const r = lifecycle.completeMilestone(root, { name, dryRun, noCommit, noAudit, auditWarn });
+  const r = lifecycle.completeMilestone(root, { name, dryRun, noCommit, noAudit, auditWarn, force });
 
   if (json) {
     console.log(JSON.stringify(r, null, 2));
@@ -42,7 +47,9 @@ function run(args = []) {
     if (r.reason === 'incomplete') {
       console.error(`\nMilestone "${r.milestone}" still has work to do:`);
       for (const rep of r.verify.reports.filter(x => !x.ok)) {
-        console.error(`  Phase ${rep.phaseNum} ${rep.name}: plans ${rep.plansDone}/${rep.plansTotal} done; missing SUMMARY: ${rep.summariesMissing.join(', ') || '—'}`);
+        const missing = (rep.summariesMissing || []).join(', ') || '—';
+        const extra = rep.error ? ` [${rep.error}]` : '';
+        console.error(`  Phase ${rep.phaseNum} ${rep.name || '(unknown)'}: plans ${rep.plansDone}/${rep.plansTotal} done; missing SUMMARY: ${missing}${extra}`);
       }
       process.exit(1);
     } else if (r.reason === 'audit-failed') {

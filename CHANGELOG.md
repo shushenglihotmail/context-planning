@@ -6,6 +6,34 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.2] - 2026-05-22 — Defensive verify + `--force` (hotfix)
+
+### Fixed
+
+- **`cp complete-milestone` crashed with `TypeError: Cannot read
+  properties of undefined (reading 'join')`** when a phase declared in
+  the milestone range was missing from ROADMAP.md (e.g. the Superpowers
+  `writing-plans` skill collapsed the milestone but the inner
+  `### Phase N` blocks were folded together or removed).
+  `lib/milestone.js:verifyMilestoneComplete` now always populates
+  `summariesMissing: []` and the numeric `plansDone`/`plansTotal` fields
+  on missing-phase reports. `bin/commands/complete-milestone.js`
+  defensively coalesces every report field before rendering the
+  diagnostic so the user sees a clean error instead of a stack trace.
+- **`cp complete-milestone` blocked on already-shipped milestones with
+  no inner `### Phase` blocks.** When `found.status === 'shipped'`
+  (collapsed in ROADMAP), the verify gate is now skipped entirely —
+  the collapsed state IS the source of truth, and re-verifying would
+  block on phases the external tool intentionally folded together. The
+  digest append + STATE reset + cleanup still run.
+
+### Added
+
+- **`cp complete-milestone --force`** bypasses the verify gate for
+  manual close-out (e.g. when summaries live outside cp's expected
+  location). Audit gate still runs (use `--no-audit` to skip that too).
+  Both override flags emit a clear `cp: --force override` stderr line.
+
 ## [0.10.1] - 2026-05-22 — Collapse-aware milestone close (hotfix)
 
 ### Fixed
