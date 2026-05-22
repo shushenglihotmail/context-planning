@@ -287,6 +287,9 @@ Plans:
 - [x] 38-01: TBD
 
 </details>
+
+### 🚧 v0.10.1 Collapse-aware milestone close (In Progress)
+
 ## Progress
 
 **Execution Order:**
