@@ -436,3 +436,18 @@
 - Phase 36: cp autonomous CLI + lib helper — see `.planning/phases/36-cp-autonomous-cli-lib-helper/`
 - Phase 37: /cp-autonomous slash skill — see `.planning/phases/37-cp-autonomous-slash-skill/`
 - Phase 38: Docs + v0.10.0 release — see `.planning/phases/38-docs-v0-10-0-release/`
+
+## v0.10.1 Collapse-aware milestone close  — shipped 2026-05-22
+
+**Phases:** 39-39    **Plans:** 1    **Duration:** —
+
+**Key decisions:**
+- findMilestoneInRoadmap now ALSO walks <summary> lines, not just ### markdown headings — single-source detection for collapsed milestones  _(phase 39)_
+- statusReport STATE.md fallback ignores placeholder values (-/Idle/None) to avoid false positives in fresh repos  _(phase 39)_
+- alreadyShipped:true is a clean no-op exit 0 — no --force flag needed because idempotency is the desired contract  _(phase 39)_
+
+**Files (created):** test/unit-collapse-aware.js
+**Files (modified):** CHANGELOG.md, lib/lifecycle.js, lib/milestone.js, package.json
+
+**Phase summaries:**
+- Phase 39: collapse-aware-complete-milestone — see `.planning/phases/39-collapse-aware-complete-milestone/`

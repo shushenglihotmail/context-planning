@@ -288,12 +288,15 @@ Plans:
 
 </details>
 
-### 🚧 v0.10.1 Collapse-aware milestone close (In Progress)
+<details>
+<summary>✅ v0.10.1 Collapse-aware milestone close (Phases 39-39) — SHIPPED 2026-05-22</summary>
 
 ### Phase 39: collapse-aware-complete-milestone
 
 Plans:
 - [x] 39-01: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**
