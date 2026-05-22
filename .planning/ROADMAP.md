@@ -290,6 +290,10 @@ Plans:
 
 ### 🚧 v0.10.1 Collapse-aware milestone close (In Progress)
 
+### Phase 39: collapse-aware-complete-milestone
+
+Plans:
+- [ ] 39-01: TBD
 ## Progress
 
 **Execution Order:**
