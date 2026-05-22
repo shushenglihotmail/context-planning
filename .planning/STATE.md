@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 Phase: 39 (v0.10.1 Collapse-aware milestone close)
 Plan: 1 of 1
-Status: Ready to write summary
+Status: Phase complete
 Current focus: collapse-aware-complete-milestone
-Last activity: plan phase 39 (v0.10.1 hotfix details)
+Last activity: tick plan 39-01
 
 Progress: [██████████] 100%
 
