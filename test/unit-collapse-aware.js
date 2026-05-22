@@ -267,5 +267,72 @@ t('completeMilestone --force bypasses verify for in-progress milestone', () => {
   } finally { rm(dir); }
 });
 
+// ---------- v0.10.3 hotfix: collapse-aware audit + shipped status renderer ----------
+
+const roadmap = require('../lib/roadmap');
+
+t('findMilestoneInRoadmap expands integer Phase X-Y range fully', () => {
+  const r = `# r\n\n## Phases\n\n<details>\n<summary>✅ v1.5 Same-Origin (Phases 14-16) — SHIPPED 2026-05-21</summary>\n\n(flattened)\n\n</details>\n`;
+  const info = milestone.findMilestoneInRoadmap(r, 'v1.5 Same-Origin');
+  assert.ok(info, 'should find collapsed milestone');
+  assert.deepEqual(info.phases, ['14', '15', '16'], 'should expand 14-16 not just endpoints');
+});
+
+t('roadmap.listCollapsedPhaseNums returns all integer phases in collapsed range', () => {
+  const r = `# r\n\n<details>\n<summary>✅ v1 (Phases 1-3) — SHIPPED 2026-01-01</summary>\n</details>\n\n<details>\n<summary>✅ v2 (Phases 5-7) — SHIPPED 2026-02-01</summary>\n</details>\n`;
+  const got = roadmap.listCollapsedPhaseNums(r).sort();
+  assert.deepEqual(got, ['1', '2', '3', '5', '6', '7']);
+});
+
+t('roadmap.listCollapsedPhaseNums returns [] when no collapsed milestones', () => {
+  const r = `# r\n\n### 🚧 v0.1 X (In Progress)\n\n### Phase 1: Foo\n`;
+  assert.deepEqual(roadmap.listCollapsedPhaseNums(r), []);
+});
+
+t('audit.phase-no-roadmap respects collapsed milestone ranges', () => {
+  const audit = require('../lib/audit');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-v0-10-3-audit-'));
+  try {
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '14-foo'), { recursive: true });
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '15-bar'), { recursive: true });
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '16-baz'), { recursive: true });
+    // ROADMAP: v1.5 is collapsed with NO inner ### Phase headings (writing-plans flat form)
+    const COLLAPSED = `# r\n\n## Phases\n\n<details>\n<summary>✅ v1.5 (Phases 14-16) — SHIPPED 2026-05-21</summary>\n\n(flattened)\n\n</details>\n`;
+    fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'), COLLAPSED);
+    fs.writeFileSync(path.join(dir, '.planning', 'PROJECT.md'), '# Project\n');
+    // Each phase needs a PLAN.md to count as a phase dir
+    for (const p of ['14-foo', '15-bar', '16-baz']) {
+      const n = p.split('-')[0];
+      fs.writeFileSync(path.join(dir, '.planning', 'phases', p, 'PLAN.md'),
+        `---\nphase: "${Number(n)}"\nname: ${p}\n---\n# Plan\n`);
+    }
+
+    const result = audit.runAudit(dir);
+    const orphans = result.findings.filter(f => f.id === 'phase-no-roadmap');
+    assert.equal(orphans.length, 0,
+      `expected no phase-no-roadmap findings for collapsed range; got: ${orphans.map(f => f.message).join('; ')}`);
+  } finally { rm(dir); }
+});
+
+t('status renderer: shipped milestone suggests new-milestone not complete-milestone', () => {
+  // Spawn cp status against a fixture with a shipped milestone in STATE.md
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-v0-10-3-status-'));
+  try {
+    fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'),
+      `# r\n\n## Phases\n\n<details>\n<summary>✅ v1.5 (Phases 1-1) — SHIPPED 2026-05-21</summary>\n\n### Phase 1: A\n\nPlans:\n- [x] 01-01: done\n\n</details>\n`);
+    fs.writeFileSync(path.join(dir, '.planning', 'STATE.md'),
+      '# State\nmilestone: v1.5\nphase: -\nplan: -\nstatus: Idle\n');
+    fs.writeFileSync(path.join(dir, '.planning', 'PROJECT.md'), '# Project\n');
+
+    const cpBin = path.resolve(__dirname, '..', 'bin', 'cp.js');
+    const out = execSync(`node "${cpBin}" status`, { cwd: dir, encoding: 'utf8' });
+    assert.match(out, /\[shipped\]/, 'should mark milestone as shipped');
+    assert.doesNotMatch(out, /Run.*cp complete-milestone/i,
+      `should NOT suggest complete-milestone for shipped; got:\n${out}`);
+    assert.match(out, /new-milestone/, 'should suggest new-milestone');
+  } finally { rm(dir); }
+});
+
 console.log(`unit-collapse-aware: ${passed} passed`);
 process.exit(0);

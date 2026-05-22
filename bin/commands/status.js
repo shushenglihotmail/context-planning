@@ -34,8 +34,14 @@ function run(args = []) {
     console.log(`\nNext plan:   ${r.nextPlan.planId} (Phase ${r.nextPlan.phaseNum}: ${r.nextPlan.phaseName})`);
     console.log(`             ${r.nextPlan.desc}`);
     console.log(`\nDo:          /cp-execute-phase ${r.nextPlan.phaseNum}`);
+  } else if (r.milestone && r.milestoneStatus === 'shipped') {
+    console.log(`\nMilestone "${r.milestone}" is shipped. Start the next one:`);
+    console.log(`  cp new-milestone "<name>"   (or /cp-new-milestone)`);
   } else if (r.milestone) {
     console.log(`\nAll plans done. Run \`cp complete-milestone\` (or \`/cp-complete-milestone\`).`);
+  } else {
+    console.log(`\nNo milestone in progress. Start one:`);
+    console.log(`  cp new-milestone "<name>"   (or /cp-new-milestone)`);
   }
 }
 

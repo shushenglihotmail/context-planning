@@ -6,6 +6,30 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-05-22 — Collapse-aware audit + status renderer (hotfix)
+
+### Fixed
+
+- **`cp audit` reported false-positive `phase-no-roadmap` MEDIUM findings
+  for every phase dir whose milestone had been collapsed into
+  `<details><summary>✅ <name> (Phases X-Y) — SHIPPED ...</summary>`.**
+  The check now treats integer phase numbers covered by a collapsed
+  milestone's range as present in ROADMAP, even when the inner
+  `### Phase N:` headings have been flattened away by Superpowers
+  `writing-plans`. New helper `roadmap.listCollapsedPhaseNums()` exposes
+  this set for any caller.
+- **`cp status` suggested `cp complete-milestone` even when the
+  milestone was already shipped.** The renderer now:
+  - prints `Milestone "<name>" is shipped. Start the next one:` +
+    `cp new-milestone "<name>"` when `milestoneStatus === 'shipped'`
+  - prints a `No milestone in progress` hint when there is no milestone
+    at all (no more silently empty output)
+- **`findMilestoneInRoadmap` collapse-path returned only the endpoints
+  of `Phases X-Y`** (e.g. "Phases 14-16" → `["14", "16"]`, dropping
+  phase 15). Now expands integer ranges fully → `["14", "15", "16"]`.
+  Non-integer ranges (`1.5-1.7`) still fall back to endpoints; ranges
+  larger than 100 phases also fall back as a sanity guard.
+
 ## [0.10.2] - 2026-05-22 — Defensive verify + `--force` (hotfix)
 
 ### Fixed
