@@ -6,6 +6,43 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-05-22 — Collapse-aware milestone close (hotfix)
+
+### Fixed
+
+- **`cp complete-milestone` returned `milestone-not-found` when ROADMAP.md
+  was already collapsed** into `<details><summary>✅ <name> ... SHIPPED
+  <date></summary>...</details>`. This pattern is produced by the
+  Superpowers `writing-plans` skill on the final phase's C2 commit, by
+  hand-collapses, and by prior `cp complete-milestone` runs.
+  `lib/milestone.js:findMilestoneInRoadmap` now also walks `<summary>`
+  lines and returns `status: 'shipped'` with the correct phases array.
+- **`cp status` blind to collapsed milestones.** `statusReport` now
+  falls back to STATE.md's `milestone:` frontmatter field when no
+  `### (In Progress)` heading exists. Placeholder values (`-`, `Idle`,
+  `None`) are still ignored.
+- **`cp complete-milestone` is now idempotent.** When invoked against a
+  milestone that's already shipped (collapsed in ROADMAP + digest in
+  MILESTONES.md), it returns `{ok: true, alreadyShipped: true}` as a
+  clean no-op instead of failing. When the milestone is collapsed but
+  the digest hasn't been appended yet (e.g. external pre-close), it
+  finishes the remaining bookkeeping — appends the digest, resets
+  STATE.md, deletes MILESTONE-CONTEXT.md, commits.
+
+### Added
+
+- 9 regression assertions in `test/unit-collapse-aware.js` covering the
+  collapsed-`<summary>` detector, em-dash variants, multi-phase
+  ranges, STATE.md fallback, and `alreadyShipped` idempotency.
+
+### Upgrade
+
+```
+npx -y --package=context-planning@latest -- cp update
+```
+
+No breaking changes; safe to upgrade in-place.
+
 ## [0.10.0] - 2026-05-21 — Autonomy
 
 ### Added

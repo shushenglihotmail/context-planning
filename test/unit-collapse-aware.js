@@ -1,0 +1,188 @@
+'use strict';
+
+/**
+ * Regression tests for v0.10.1 — collapse-aware milestone close.
+ *
+ * Bug: `cp complete-milestone` returned `milestone-not-found` when
+ * ROADMAP.md had already been collapsed into
+ * `<details><summary>✅ ... SHIPPED ...</summary>...</details>` (e.g.
+ * by the Superpowers writing-plans skill on the final phase's C2 commit,
+ * or by a prior complete-milestone run).
+ *
+ * Fix: findMilestoneInRoadmap now detects <summary> lines; statusReport
+ * falls back to STATE.md's `milestone:` field; completeMilestone treats
+ * status:'shipped' as a clean already-shipped path (idempotent).
+ */
+
+const assert = require('node:assert/strict');
+const path = require('node:path');
+const fs = require('node:fs');
+const os = require('node:os');
+const { execSync } = require('node:child_process');
+
+const milestone = require('../lib/milestone');
+const lifecycle = require('../lib/lifecycle');
+
+let passed = 0;
+function t(name, fn) {
+  fn();
+  console.log('  ✓', name);
+  passed++;
+}
+
+console.log('unit-collapse-aware');
+
+const COLLAPSED_ROADMAP = `# Roadmap
+
+## Milestones
+- ✅ **v0.16 Bug Repro** — Phases 1-1 (shipped 2026-05-21)
+
+## Phases
+
+<details>
+<summary>✅ v0.16 Bug Repro (Phases 1-1) — SHIPPED 2026-05-21</summary>
+
+### Phase 1: Foo
+
+Plans:
+- [x] 01-01: do thing
+
+</details>
+
+## Progress
+
+`;
+
+// ---------- findMilestoneInRoadmap collapse path ----------
+
+t('findMilestoneInRoadmap detects collapsed <summary> milestone', () => {
+  const info = milestone.findMilestoneInRoadmap(COLLAPSED_ROADMAP, 'v0.16 Bug Repro');
+  assert.ok(info, 'should not be null');
+  assert.equal(info.status, 'shipped');
+  assert.equal(info.collapsed, true);
+  assert.deepEqual(info.phases, ['1']);
+});
+
+t('findMilestoneInRoadmap still works for in-progress (### heading) path', () => {
+  const r = `# r\n\n## Phases\n\n### 🚧 v0.1 X (In Progress)\n\n### Phase 1: A\n`;
+  const info = milestone.findMilestoneInRoadmap(r, 'v0.1 X');
+  assert.ok(info);
+  assert.equal(info.status, 'in-progress');
+  assert.equal(info.collapsed, false);
+  assert.deepEqual(info.phases, ['1']);
+});
+
+t('findMilestoneInRoadmap tolerates em-dash variant in <summary>', () => {
+  const r = COLLAPSED_ROADMAP.replace('—', '-'); // ASCII hyphen variant
+  const info = milestone.findMilestoneInRoadmap(r, 'v0.16 Bug Repro');
+  assert.ok(info, 'ASCII-dash variant should still match');
+  assert.equal(info.status, 'shipped');
+});
+
+t('findMilestoneInRoadmap collapse path returns multi-phase range', () => {
+  const r = `# r
+
+## Phases
+
+<details>
+<summary>✅ v0.5 Multi (Phases 3-5) — SHIPPED 2026-04-01</summary>
+
+### Phase 3: A
+### Phase 4: B
+### Phase 5: C
+
+</details>
+`;
+  const info = milestone.findMilestoneInRoadmap(r, 'v0.5 Multi');
+  assert.ok(info);
+  assert.deepEqual(info.phases, ['3', '4', '5']);
+});
+
+// ---------- statusReport STATE.md fallback ----------
+
+function mkFixture(roadmap, state) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-collapse-'));
+  execSync('git init -q', { cwd: dir });
+  execSync('git config user.email t@t', { cwd: dir });
+  execSync('git config user.name t', { cwd: dir });
+  fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'), roadmap);
+  if (state) fs.writeFileSync(path.join(dir, '.planning', 'STATE.md'), state);
+  return dir;
+}
+function rm(d) { fs.rmSync(d, { recursive: true, force: true }); }
+
+t('statusReport falls back to STATE.md milestone field when no In-Progress heading', () => {
+  const dir = mkFixture(COLLAPSED_ROADMAP, '# State\nmilestone: v0.16 Bug Repro\nphase: -\nplan: -\nstatus: Idle\n');
+  try {
+    const s = lifecycle.statusReport(dir);
+    assert.equal(s.ok, true);
+    assert.equal(s.milestone, 'v0.16 Bug Repro');
+    assert.equal(s.milestoneStatus, 'shipped');
+  } finally { rm(dir); }
+});
+
+t('statusReport ignores STATE.md milestone "-" / "Idle" placeholders', () => {
+  const r = `# r\n\n## Phases\n\n`;
+  const dir = mkFixture(r, '# State\nmilestone: -\nstatus: Idle\n');
+  try {
+    const s = lifecycle.statusReport(dir);
+    assert.equal(s.milestone, null);
+  } finally { rm(dir); }
+});
+
+// ---------- completeMilestone already-shipped path ----------
+
+function mkFullFixture() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-collapse-full-'));
+  execSync('git init -q', { cwd: dir });
+  execSync('git config user.email t@t', { cwd: dir });
+  execSync('git config user.name t', { cwd: dir });
+  execSync('git config commit.gpgsign false', { cwd: dir });
+  fs.mkdirSync(path.join(dir, '.planning', 'phases', '01-foo'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'), COLLAPSED_ROADMAP);
+  fs.writeFileSync(path.join(dir, '.planning', 'STATE.md'),
+    '# State\nmilestone: v0.16 Bug Repro\nphase: -\nplan: -\nstatus: Idle\n');
+  fs.writeFileSync(path.join(dir, '.planning', 'PROJECT.md'), '# Project\n');
+  fs.writeFileSync(path.join(dir, '.planning', 'phases', '01-foo', 'PLAN.md'),
+    '---\nphase: "1"\nname: Foo\nstatus: done\n---\n# Phase 1\n');
+  fs.writeFileSync(path.join(dir, '.planning', 'phases', '01-foo', '01-01-SUMMARY.md'),
+    '---\nplan: "01-01"\nphase: "1"\ngoal: do thing\noutcome: done\nkey-decisions: ["test"]\n---\n');
+  execSync('git add -A && git commit -q -m init', { cwd: dir, shell: true });
+  return dir;
+}
+
+t('completeMilestone resolves collapsed milestone (no more milestone-not-found)', () => {
+  const dir = mkFullFixture();
+  try {
+    const r = lifecycle.completeMilestone(dir, { name: 'v0.16 Bug Repro', noAudit: true });
+    assert.equal(r.ok, true, `expected ok:true, got ${JSON.stringify(r)}`);
+    assert.notEqual(r.reason, 'milestone-not-found');
+    assert.equal(r.milestone, 'v0.16 Bug Repro');
+  } finally { rm(dir); }
+});
+
+t('completeMilestone is idempotent on second call (alreadyShipped:true)', () => {
+  const dir = mkFullFixture();
+  try {
+    const r1 = lifecycle.completeMilestone(dir, { name: 'v0.16 Bug Repro', noAudit: true });
+    assert.equal(r1.ok, true);
+    const r2 = lifecycle.completeMilestone(dir, { name: 'v0.16 Bug Repro', noAudit: true });
+    assert.equal(r2.ok, true);
+    assert.equal(r2.alreadyShipped, true);
+    assert.deepEqual(r2.actions, []);
+  } finally { rm(dir); }
+});
+
+t('completeMilestone STATE.md fallback resolves milestone without explicit name', () => {
+  const dir = mkFullFixture();
+  try {
+    // No milestone name passed; should resolve via statusReport → STATE.md
+    const r = lifecycle.completeMilestone(dir, { noAudit: true });
+    assert.equal(r.ok, true);
+    assert.equal(r.milestone, 'v0.16 Bug Repro');
+  } finally { rm(dir); }
+});
+
+console.log(`unit-collapse-aware: ${passed} passed`);
+process.exit(0);
