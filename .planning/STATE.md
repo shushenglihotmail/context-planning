@@ -9,11 +9,11 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: -
-Plan: 72 of 72
-Status: Idle
-Current focus: -
-Last activity: tick plan 38-01
+Phase: 39 (v0.10.1 Collapse-aware milestone close)
+Plan: 39-01
+Status: Ready to execute
+Current focus: collapse-aware-complete-milestone
+Last activity: scaffold-milestone v0.10.1 Collapse-aware milestone close
 
 Progress: [░░░░░░░░░░] 0%
 
