@@ -71,7 +71,7 @@ same blind spot (no STATE.md `milestone:` fallback).
 
 ## Plans
 
-- [ ] 39-01: Fix `findMilestoneInRoadmap` + `statusReport` STATE.md
+- [x] 39-01: Fix `findMilestoneInRoadmap` + `statusReport` STATE.md
       fallback + `completeMilestone` already-shipped handling, with
       unit tests, then cut v0.10.1 release.
 

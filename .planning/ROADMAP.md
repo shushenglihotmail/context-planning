@@ -293,7 +293,7 @@ Plans:
 ### Phase 39: collapse-aware-complete-milestone
 
 Plans:
-- [ ] 39-01: TBD
+- [x] 39-01: TBD
 ## Progress
 
 **Execution Order:**
