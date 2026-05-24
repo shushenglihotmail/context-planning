@@ -13,7 +13,7 @@ Phase: -
 Plan: 73 of 73
 Status: Idle
 Current focus: -
-Last activity: tick plan 39-01
+Last activity: v0.10.3 - collapse-aware audit + status renderer (hotfix)
 
 Progress: [░░░░░░░░░░] 0%
 
