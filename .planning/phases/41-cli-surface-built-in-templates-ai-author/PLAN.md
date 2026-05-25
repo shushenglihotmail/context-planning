@@ -4,11 +4,13 @@ name: CLI surface + built-in templates + AI authoring
 milestone: v1.0 Workflow Engine
 status: in-progress
 plan-status:
-  41-01: in-progress
+  41-01: complete
   41-02: pending
   41-03: pending
 plan-started:
   41-01: 2026-05-25T19:00:00.000Z
+plan-completed:
+  41-01: 2026-05-26T03:46:00.000Z
 created: 2026-05-25
 base-commit: 3086c54225a83d5c35491c5a22272526a691fef6
 expected-key-files:

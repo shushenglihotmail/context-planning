@@ -36,3 +36,21 @@ The orchestrator (cp-execute-phase Step 4.5) appends a block per review:
 
 <!-- orchestrator appends below this marker; do not delete the marker -->
 <!-- REVIEW-LOG-ENTRIES-BELOW -->
+
+## 2026-05-25 20:30 — Plan 41-01 Task all — orchestrator (parallel-dispatch)
+
+**Verdict:** approved
+
+**Findings:**
+
+- All 6 sub-commands implemented as a single `bin/commands/run.js` module dispatching on argv[0]; smoke-tested across 10 nominal and error scenarios (start, duplicate guard, status/--json, resume +/-, mark-complete with stdin, abandon --yes).
+- Stdout/stderr discipline holds: instruction body and JSON to stdout, slug/wave/error to stderr. Exit-code matrix documented at top of `run.js` and verified in smoke tests (0/1/3/4 all observed).
+- Full `npm test` (31 files) remains 100% green; no regressions in existing suites.
+- Minor: `mark-complete` stderr emits `advanced to wave N` (no `of M`) because `markPhaseComplete` does not return the template. Acceptable for v1.0; will close fully when 41-03 either threads template through or accepts the current shorter form via tests.
+
+**Resolution:**
+
+Implementation accepted as-is in commit `409a023`. The "wave N of M" follow-up is recorded as a known minor cosmetic gap for 41-03 to confirm via integration tests (no behavior change required).
+
+---
+

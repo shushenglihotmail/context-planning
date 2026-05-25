@@ -1,0 +1,13 @@
+workflow: quick-mini
+slug: 2026-05-24-foo
+status: abandoned
+binding: custom
+started: 2026-05-25T03:21:44.842Z
+last_activity: 2026-05-25T03:22:16.934Z
+current_phase: null
+completed:
+  - discuss
+artifacts:
+  discuss: 01-discuss.md
+template_path: C:\src\github\context-planning\test\fixtures\workflows\quick-mini.yaml
+current_wave: 1
