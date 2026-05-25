@@ -28,22 +28,35 @@ base-commit: ce06ed62fb23b1dc8f5d16fa76abfdd9633dfbc7
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Ship v1.1.0 to npm with complete documentation of the new agent-side
+workflow surface: 5 new `cp-workflow-*` skills, new `cp workflow export`
+CLI subcommand, and a migration guide for users upgrading from v1.0.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. README.md documents the new agent skills (`/cp-workflow-run`,
+   `/cp-workflow-list`, `/cp-workflow-resume`, `/cp-workflow-new`,
+   `/cp-workflow-customize`) and the new `cp workflow export` CLI.
+2. `MIGRATION-v1.1.md` exists at repo root explaining the v1.0 → v1.1
+   delta: what's new, what's deferred (cp-quick/cp-autonomous unchanged),
+   how to discover the new skills.
+3. `CHANGELOG.md` has a v1.1.0 entry listing all phase 43 + phase 44
+   shipped features.
+4. `npm test` passes (regression check).
+5. `package.json` version is `1.1.0`.
+6. v1.1.0 published to npm and tagged `v1.1.0` on git.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 46-01: {brief description}
-- [ ] 46-02: {brief description}
-- [ ] 46-03: {brief description}
+- [ ] 46-01: README.md + docs/ updates — document 5 new `cp-workflow-*` agent skills and new `cp workflow export` CLI subcommand.
+- [ ] 46-02: MIGRATION-v1.1.md (new file) + CHANGELOG.md v1.1.0 entry — explain v1.0 → v1.1 delta, what's new, what's deferred, discovery path for new skills.
+- [ ] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`.
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- Phase 45 was deferred to v1.2 after design review (see milestone DESIGN.md
+  for rationale). v1.1 ships the new agent surface without refactoring the
+  legacy cp-quick / cp-autonomous skills.
+- `MIGRATION-v1.0.md` and `CHANGELOG.md` already exist — follow their
+  existing structure for the v1.1 additions.
+

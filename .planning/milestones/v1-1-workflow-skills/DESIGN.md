@@ -161,17 +161,18 @@ engine, runtime, validators, and CLI surface stay frozen.
 - **Public interface:** `cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]`
 - **Dependencies:** `cp workflow export` (new in 44-01), `cp workflow validate`, `cp workflow import`.
 
-### Refactored: `commands/cp/quick.md`
-- **Purpose:** Back-compat shim. Translates pre-v1.1 argv into
-  `cp-workflow-run quick` invocations; preserves
-  `.planning/quick/<dir>/` transcript layout.
-- **Public interface:** unchanged from v1.0 — `cp-quick <task> | list | resume <slug>`.
+### ~~Refactored: `commands/cp/quick.md`~~ (deferred to v1.2)
+- **Status:** Deferred from v1.1 after phase 44 design review. `cp-quick` and
+  `cp-workflow-run quick` use different state layouts
+  (`.planning/quick/<dir>/` vs `.planning/runs/<slug>/`); a true shim would
+  break back-compat. Keeping `cp-quick` as-is for v1.1.
 
-### Refactored: `commands/cp/autonomous.md`
-- **Purpose:** Back-compat shim. Translates pre-v1.1 argv into
-  `cp-workflow-run dev` for the active milestone; preserves smart-gate
-  stop semantics.
-- **Public interface:** unchanged from v1.0 — `cp-autonomous [START] [--scope=...] [--check]`.
+### ~~Refactored: `commands/cp/autonomous.md`~~ (deferred to v1.2)
+- **Status:** Deferred from v1.1 after phase 44 design review. `cp-autonomous`
+  drives milestone phases via `cp autonomous` + `/cp-plan-phase` +
+  `/cp-execute-phase`; `cp-workflow-run dev` drives a workflow's waves via
+  `cp run`. Fundamentally different orchestrators. Keeping `cp-autonomous`
+  as-is for v1.1.
 
 ### `install/copilot.js`, `install/claude.js`
 - **Purpose:** register the 5 new `cp-workflow-*` skills into both
