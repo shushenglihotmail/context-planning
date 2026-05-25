@@ -125,6 +125,19 @@ Usage:
                                   (--plan-only prints waves without mutating state).
                                   \`cp run status\` lists all active runs.
                                   See \`cp run --help\` for full sub-command details.
+  cp workflow ls [--json]         List all templates (built-in + project).
+  cp workflow show <name>         Print a template's YAML body to stdout.
+  cp workflow validate <name-or-path> [--strict]
+                                  Validate a template (errors/warnings to stderr).
+                                  Exit 2 on errors; --strict also exits 2 on warnings.
+  cp workflow diagram <name-or-path> [--format mermaid]
+                                  Emit a Mermaid flowchart to stdout.
+  cp workflow init                Create .planning/workflows/ directory.
+  cp workflow new <name> [--from <built-in>] [--force]
+                                  Scaffold a new template file (stub or from built-in).
+  cp workflow import <path> [--name <override>] [--force]
+                                  Validate + copy an external template into .planning/workflows/.
+                                  See \`cp workflow --help\` for full sub-command details.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

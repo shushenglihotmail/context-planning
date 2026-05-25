@@ -38,4 +38,5 @@ module.exports = {
   update: require('./update'),
   autonomous: require('./autonomous'),
   run: require('./run'),
+  workflow: require('./workflow'),
 };

@@ -1,0 +1,60 @@
+workflow: debug
+version: 1
+binds_to: custom
+principles:
+  - Reproduce before diagnosing — a confirmed repro case is the foundation of every fix.
+  - Apply scientific method — form a hypothesis, test it, update based on evidence.
+  - Fix the root cause, not the symptom — trace the failure to its origin before writing code.
+  - Verify the fix holds — re-run the repro and the full test suite after patching.
+defaults:
+  model: default
+phases:
+  - id: collect-symptoms
+    role: investigator
+    prompt: |
+      Gather all observable symptoms of the bug.
+      - Collect error messages, stack traces, and logs.
+      - Note environment details: OS, runtime version, dependency versions.
+      - Record exact steps that trigger the failure.
+      - Describe the expected vs. actual behaviour.
+      Output a "symptoms" document that will guide reproduction.
+
+  - id: repro
+    depends_on: [collect-symptoms]
+    role: investigator
+    prompt: |
+      Build a minimal, reliable reproduction case.
+      - Reduce the failing scenario to the smallest possible inputs.
+      - Confirm the repro case fails consistently.
+      - Rule out environmental causes (clean install, isolated test, etc.).
+      - Document the repro case clearly so it can be re-run after the fix.
+
+  - id: plan
+    depends_on: [repro]
+    role: debugger
+    prompt: |
+      Form a hypothesis and plan the fix.
+      - State the root cause hypothesis based on repro evidence.
+      - Identify the code path responsible for the failure.
+      - Propose the minimal change that addresses the root cause.
+      - List verification steps (tests, manual checks) to confirm the fix.
+
+  - id: fix
+    depends_on: [plan]
+    role: debugger
+    prompt: |
+      Apply the fix described in the debug plan.
+      - Make the targeted change identified in the plan phase.
+      - Add or update tests to cover the failure case.
+      - Do not introduce unrelated changes in this commit.
+
+  - id: verify
+    depends_on: [fix]
+    role: verifier
+    skill: verification-before-completion
+    prompt: |
+      Verify the fix resolves the bug and introduces no regressions.
+      - Re-run the minimal repro case from the repro phase — it must now pass.
+      - Run the full test suite and confirm zero failures.
+      - Optionally re-test in the original environment if the bug was environment-specific.
+      - Document the outcome in a brief post-mortem note.

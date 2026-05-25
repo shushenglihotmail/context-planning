@@ -1,0 +1,75 @@
+workflow: dev
+version: 1
+binds_to: milestone
+principles:
+  - Understand before building — brainstorm and research before planning.
+  - Parallelise independent work — research angles can run concurrently.
+  - Plan before executing — a validated plan reduces re-work.
+  - Review before shipping — a fresh pair of eyes catches what the implementer misses.
+defaults:
+  model: default
+phases:
+  - id: brainstorm
+    role: brainstormer
+    model: high
+    skill: brainstorming
+    persist_output: true
+    prompt: |
+      Explore the problem space for this milestone.
+      - What is the core goal and why does it matter?
+      - What are the unknowns and risks?
+      - What are the key design axes (scope, architecture, tradeoffs)?
+      Output a concise brainstorm document summarising findings and open questions
+      so downstream research phases have a shared context.
+
+  - id: research-prior-art
+    depends_on: [brainstorm]
+    role: researcher
+    prompt: |
+      Research prior art, existing solutions, and community patterns relevant to
+      the brainstorm findings.
+      - Survey existing libraries, protocols, and docs.
+      - Identify best practices and cautionary tales.
+      - Summarise what we can reuse vs. must build fresh.
+
+  - id: research-constraints
+    depends_on: [brainstorm]
+    role: researcher
+    prompt: |
+      Research project-specific constraints: current codebase patterns, dependency
+      versions, CI matrix, performance budgets, and team conventions.
+      - Read relevant source files and docs.
+      - Flag any hard constraints that must shape the plan.
+      - Produce a "constraints" summary for the planner.
+
+  - id: plan
+    depends_on: [research-prior-art, research-constraints]
+    role: planner
+    skill: writing-plans
+    prompt: |
+      Synthesise the brainstorm and both research summaries into an actionable plan.
+      - Decompose work into numbered tasks with clear success criteria.
+      - Identify dependencies between tasks.
+      - Flag risks with mitigations.
+      - Validate the plan against the constraints summary before finalising.
+
+  - id: execute
+    depends_on: [plan]
+    role: implementer
+    skill: subagent-driven-development
+    prompt: |
+      Execute the plan produced in the plan phase.
+      - Follow the task list in order; commit atomically per task.
+      - Surface blockers immediately rather than pushing past them.
+      - Keep the plan updated as you go (tick completed tasks).
+
+  - id: review
+    depends_on: [execute]
+    role: reviewer
+    skill: requesting-code-review
+    prompt: |
+      Review the implementation against the original goal and plan.
+      - Check correctness, test coverage, and code quality.
+      - Verify success criteria from the plan are met.
+      - Run the full test suite and report results.
+      - Produce a REVIEW.md with findings; request fixes if needed before sign-off.
