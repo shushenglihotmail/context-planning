@@ -329,7 +329,7 @@ Plans:
 Plans:
 - [x] 43-01: `commands/cp/workflow-run.md` — generic workflow driver skill (argv parse, doctor role resolution, `cp run`, wave loop, smart-gate stop, final report)
 - [x] 43-02: `commands/cp/workflow-list.md` — discoverability skill (list mode via `cp workflow ls --json`, show mode via `cp workflow show <name>`)
-- [ ] 43-03: `commands/cp/workflow-resume.md` — resume/retry/abandon skill (enumeration, resume, --retry, --abandon modes; delegates wave-loop to cp-workflow-run)
+- [x] 43-03: `commands/cp/workflow-resume.md` — resume/retry/abandon skill (enumeration, resume, --retry, --abandon modes; delegates wave-loop to cp-workflow-run)
 - [ ] 43-04: Tests — extend `test/unit-installers.js` (+6 assertions) and add `test/integration-workflow-skills.js` (~15 assertions) wired into `package.json` `test` chain
 
 ### Phase 44: Creator skills: cp-workflow-new, cp-workflow-import
