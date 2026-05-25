@@ -8,6 +8,7 @@ plan-status:
   47-02: complete
   47-03: complete
 created: 2026-05-25
+base-commit: 05539f908b64ea8cda2c5b34eb97427322a2a954
 ---
 
 # Phase 47: Complete CLI-verb-to-agent-skill coverage + `cp workflow inspect`
