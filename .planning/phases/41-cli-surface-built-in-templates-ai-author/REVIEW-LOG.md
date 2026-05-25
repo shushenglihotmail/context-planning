@@ -54,3 +54,23 @@ Implementation accepted as-is in commit `409a023`. The "wave N of M" follow-up i
 
 ---
 
+## 2026-05-25 20:54 — Plan 41-02 Task all — orchestrator (sequential-dispatch)
+
+**Verdict:** approved
+
+**Findings:**
+
+- All 7 `cp workflow` sub-commands implemented in `bin/commands/workflow.js`; smoke-tested across 18 scripted scenarios (USAGE, ls/show/validate/diagram happy + error, init idempotency, new conflict + `--force`, import valid + cycle-rejection, full `npm test`). All passed.
+- Three built-in templates ship with `principles:` (≥2 entries) and `defaults:` blocks; all three pass `workflow.validate(tpl).ok === true` cleanly.
+- Stdout/stderr discipline upheld: pipeable output to stdout (YAML body, Mermaid source, table/JSON, `OK: name`), progress + errors to stderr.
+- Exit codes 0/2/3/6 documented at top of `workflow.js` and verified per smoke matrix.
+- Full `npm test` (31 files) remains 100% green; no regressions.
+- Minor deviation: `dev.yaml` has 6 phases (spec said "5+", listed 5 names but included `review`). Acceptable — review phase demonstrates the requesting-code-review skill.
+
+**Resolution:**
+
+Implementation accepted as-is in commit `d8c08fe`. Notes for plan 41-03's test-writer captured in the SUMMARY's "Notes for 41-03" section (cwd-based init, exit-code-2 collisions for usage vs validation, alphabetical ls ordering, etc.).
+
+---
+
+
