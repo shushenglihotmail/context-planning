@@ -5,10 +5,11 @@ milestone: v1.0 Workflow Engine
 status: in-progress
 plan-status:
   41-01: complete
-  41-02: pending
+  41-02: in-progress
   41-03: pending
 plan-started:
   41-01: 2026-05-25T19:00:00.000Z
+  41-02: 2026-05-26T03:50:00.000Z
 plan-completed:
   41-01: 2026-05-26T03:46:00.000Z
 created: 2026-05-25
