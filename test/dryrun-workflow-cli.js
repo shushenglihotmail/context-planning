@@ -167,6 +167,94 @@ section('cp workflow diagram dev → stdout contains parallel research phases');
 }
 
 // ============================================================
+// Section 5.5: inspect (NEW — plan 47-01)
+// ============================================================
+section('cp workflow inspect no args → usage on stderr, exit 2');
+{
+  const r = cp(['workflow', 'inspect'], repoRoot);
+  ok('exit 2', r.status === 2, 'status=' + r.status);
+  ok('stderr mentions Usage', r.stderr.includes('Usage: cp workflow inspect'),
+    'stderr=' + r.stderr);
+}
+
+section('cp workflow inspect <missing> → template-not-found, exit 3');
+{
+  const r = cp(['workflow', 'inspect', 'does-not-exist'], repoRoot);
+  ok('exit 3', r.status === 3, 'status=' + r.status);
+  ok('stderr says not found', r.stderr.includes('not found'),
+    'stderr=' + r.stderr);
+}
+
+section('cp workflow inspect <name> --bogus → unknown option, exit 2');
+{
+  const r = cp(['workflow', 'inspect', 'dev', '--bogus'], repoRoot);
+  ok('exit 2', r.status === 2, 'status=' + r.status);
+  ok('stderr mentions unknown option', r.stderr.includes('unknown option'),
+    'stderr=' + r.stderr);
+}
+
+section('cp workflow inspect dev → shows YAML + wave decomposition, exit 0');
+{
+  const r = cp(['workflow', 'inspect', 'dev'], repoRoot);
+  ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+  ok('stdout starts with template header', r.stdout.startsWith('# template: dev'),
+    'stdout=' + r.stdout.slice(0, 80));
+  ok('stdout contains workflow: dev YAML key', r.stdout.includes('workflow: dev'),
+    'stdout has YAML body');
+  ok('stdout contains "Deduced execution sequence" header',
+    r.stdout.includes('=== Deduced execution sequence ==='),
+    'stdout missing wave header');
+  ok('stdout reports "5 wave(s)"', r.stdout.includes('5 wave(s)'),
+    'stdout=' + r.stdout.slice(-400));
+  ok('stdout has Wave 1 header', /Wave 1 of 5/.test(r.stdout),
+    'stdout missing wave 1 line');
+  ok('stdout marks parallel wave', r.stdout.includes('parallel'),
+    'stdout missing parallel marker for wave 2');
+  ok('stdout shows brainstorm role', /brainstorm.*role: brainstormer/.test(r.stdout),
+    'stdout missing brainstorm role line');
+  ok('stdout shows depends_on for plan', /plan.*depends on: research-prior-art, research-constraints/.test(r.stdout),
+    'stdout missing plan depends-on line');
+}
+
+section('cp workflow inspect dev --json → structured JSON, exit 0');
+{
+  const r = cp(['workflow', 'inspect', 'dev', '--json'], repoRoot);
+  ok('exit 0', r.status === 0, 'status=' + r.status);
+  let parsed = null;
+  try { parsed = JSON.parse(r.stdout); } catch (_) {}
+  ok('stdout is valid JSON', parsed !== null, 'stdout=' + r.stdout.slice(0, 200));
+  if (parsed) {
+    ok('json.workflow=dev', parsed.workflow === 'dev', 'workflow=' + parsed.workflow);
+    ok('json.binds_to=milestone', parsed.binds_to === 'milestone',
+      'binds_to=' + parsed.binds_to);
+    ok('json.total_phases=6', parsed.total_phases === 6,
+      'total_phases=' + parsed.total_phases);
+    ok('json.total_waves=5', parsed.total_waves === 5,
+      'total_waves=' + parsed.total_waves);
+    ok('json.waves is array of length 5', Array.isArray(parsed.waves) && parsed.waves.length === 5,
+      'waves.length=' + (parsed.waves && parsed.waves.length));
+    ok('json wave 2 has 2 parallel phases',
+      parsed.waves && parsed.waves[1] && parsed.waves[1].phases.length === 2,
+      'wave2.phases=' + JSON.stringify(parsed.waves && parsed.waves[1]));
+    ok('json wave 1 phase carries role + model',
+      parsed.waves && parsed.waves[0].phases[0].role === 'brainstormer' &&
+        parsed.waves[0].phases[0].model === 'high',
+      'wave1.phase=' + JSON.stringify(parsed.waves && parsed.waves[0].phases[0]));
+  }
+}
+
+section('cp workflow inspect quick → 3 waves, exit 0');
+{
+  const r = cp(['workflow', 'inspect', 'quick', '--json'], repoRoot);
+  ok('exit 0', r.status === 0, 'status=' + r.status);
+  const parsed = JSON.parse(r.stdout);
+  ok('quick.total_waves=3', parsed.total_waves === 3,
+    'total_waves=' + parsed.total_waves);
+  ok('quick.binds_to=custom', parsed.binds_to === 'custom',
+    'binds_to=' + parsed.binds_to);
+}
+
+// ============================================================
 // Section 6: init
 // ============================================================
 section('cp workflow init in fresh temp → creates .planning/workflows/, exit 0');
@@ -344,6 +432,9 @@ section('cp workflow --help mentions export');
     r.stdout.includes('cp workflow export'),
     'stdout=' + r.stdout.slice(0, 800));
   ok('help includes --as flag', r.stdout.includes('--as'),
+    'stdout=' + r.stdout.slice(0, 800));
+  ok('help includes "cp workflow inspect"',
+    r.stdout.includes('cp workflow inspect'),
     'stdout=' + r.stdout.slice(0, 800));
 }
 

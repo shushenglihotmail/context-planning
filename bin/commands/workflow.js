@@ -46,6 +46,10 @@ var USAGE = [
   '                                        --strict  Exit 2 if any warnings present.',
   '  cp workflow diagram <name-or-path> [--format mermaid]',
   '                                        Emit a Mermaid flowchart to stdout.',
+  '  cp workflow inspect <name-or-path> [--json]',
+  '                                        Show template YAML plus the deduced wave-by-wave',
+  '                                        execution sequence (parallel phase groupings).',
+  '                                        --json   Machine-readable form.',
   '  cp workflow init',
   '                                        Create .planning/workflows/ directory.',
   '  cp workflow new <name> [--from <built-in>] [--force]',
@@ -407,8 +411,132 @@ function workflowDiagram(args, cwd) {
 }
 
 /**
- * cp workflow init
+ * cp workflow inspect <name-or-path> [--json]
+ *
+ * Combines `show` (raw template YAML) with the deduced wave-by-wave
+ * execution sequence computed by lib/workflow.js#computeWaves. Useful
+ * for understanding which phases run in parallel before launching
+ * `cp run`. Human-readable by default; --json emits a structured form
+ * suitable for tooling.
  */
+function workflowInspect(args, cwd) {
+  var nameOrPath = null;
+  var json = false;
+  for (var i = 0; i < args.length; i++) {
+    var a = args[i];
+    if (a === '--json') { json = true; }
+    else if (a.startsWith('-')) {
+      process.stderr.write('unknown option: ' + a + '\n');
+      process.exit(2);
+    } else if (!nameOrPath) {
+      nameOrPath = a;
+    } else {
+      process.stderr.write('unexpected arg: ' + a + '\n');
+      process.exit(2);
+    }
+  }
+
+  if (!nameOrPath) {
+    process.stderr.write('Usage: cp workflow inspect <name-or-path> [--json]\n');
+    process.exit(2);
+  }
+
+  var filePath;
+  try {
+    filePath = resolveNameOrPath(nameOrPath, cwd);
+  } catch (e) {
+    var msg = e.message || String(e);
+    if (msg.startsWith('Template not found:') || e.notFound) {
+      process.stderr.write('error: template "' + nameOrPath + '" not found.\n');
+      process.exit(3);
+    }
+    process.stderr.write('error: ' + msg + '\n');
+    process.exit(1);
+  }
+
+  var tpl;
+  try {
+    tpl = wfLib.loadTemplate(filePath, {});
+  } catch (e) {
+    process.stderr.write('error: ' + (e.message || String(e)) + '\n');
+    process.exit(2);
+  }
+
+  var result = wfLib.validate(tpl);
+  if (!result.ok) {
+    for (var j = 0; j < result.errors.length; j++) {
+      process.stderr.write('error: ' + result.errors[j] + '\n');
+    }
+    process.exit(2);
+  }
+
+  var waves;
+  try {
+    waves = wfLib.computeWaves(tpl);
+  } catch (e) {
+    process.stderr.write('error: ' + (e.message || String(e)) + '\n');
+    process.exit(2);
+  }
+
+  var name = (tpl.meta && tpl.meta.workflow) || nameOrPath;
+  var bindsTo = (tpl.meta && tpl.meta.binds_to) || 'custom';
+
+  if (json) {
+    var out = {
+      workflow: name,
+      binds_to: bindsTo,
+      source: filePath,
+      total_phases: (tpl.phases || []).length,
+      total_waves: waves.length,
+      waves: waves.map(function (wave, idx) {
+        return {
+          wave: idx + 1,
+          phases: wave.map(function (p) {
+            return {
+              id: p.id,
+              role: p.role || null,
+              depends_on: Array.isArray(p.depends_on) ? p.depends_on : [],
+              model: p.model || null
+            };
+          })
+        };
+      })
+    };
+    process.stdout.write(JSON.stringify(out, null, 2) + '\n');
+    return;
+  }
+
+  // Human-readable form
+  var body = fs.readFileSync(filePath, 'utf8');
+  process.stdout.write('# template: ' + name + ' (source: ' + filePath + ')\n');
+  process.stdout.write(body);
+  if (body.length > 0 && body[body.length - 1] !== '\n') {
+    process.stdout.write('\n');
+  }
+  process.stdout.write('\n');
+  process.stdout.write('=== Deduced execution sequence ===\n');
+  process.stdout.write('workflow: ' + name + '  binds_to: ' + bindsTo + '\n');
+  process.stdout.write((tpl.phases || []).length + ' phase(s) across ' + waves.length + ' wave(s)\n');
+  process.stdout.write('\n');
+  for (var w = 0; w < waves.length; w++) {
+    var wave = waves[w];
+    var parallel = wave.length > 1 ? ' (parallel)' : '';
+    process.stdout.write('Wave ' + (w + 1) + ' of ' + waves.length + ' — ' + wave.length + ' phase(s)' + parallel + ':\n');
+    for (var p = 0; p < wave.length; p++) {
+      var ph = wave[p];
+      var parts = [];
+      if (ph.role) { parts.push('role: ' + ph.role); }
+      if (ph.model) { parts.push('model: ' + ph.model); }
+      if (Array.isArray(ph.depends_on) && ph.depends_on.length > 0) {
+        parts.push('depends on: ' + ph.depends_on.join(', '));
+      }
+      var suffix = parts.length > 0 ? '  (' + parts.join(', ') + ')' : '';
+      process.stdout.write('  - ' + ph.id + suffix + '\n');
+    }
+  }
+}
+
+
 function workflowInit(args, cwd) {
   for (var i = 0; i < args.length; i++) {
     process.stderr.write('unexpected arg: ' + args[i] + '\n');
@@ -808,6 +936,7 @@ function run(args) {
     case 'show':        return workflowShow(rest, cwd);
     case 'validate':    return workflowValidate(rest, cwd);
     case 'diagram':     return workflowDiagram(rest, cwd);
+    case 'inspect':     return workflowInspect(rest, cwd);
     case 'init':        return workflowInit(rest, cwd);
     case 'new':         return workflowNew(rest, cwd);
     case 'import':      return workflowImport(rest, cwd);

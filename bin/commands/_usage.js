@@ -132,6 +132,10 @@ Usage:
                                   Exit 2 on errors; --strict also exits 2 on warnings.
   cp workflow diagram <name-or-path> [--format mermaid]
                                   Emit a Mermaid flowchart to stdout.
+  cp workflow inspect <name-or-path> [--json]
+                                  Show template YAML plus the deduced wave-by-wave
+                                  execution sequence (parallel phase groupings).
+                                  --json   Machine-readable form.
   cp workflow init                Create .planning/workflows/ directory.
   cp workflow new <name> [--from <built-in>] [--force]
                                   Scaffold a new template file (stub or from built-in).
