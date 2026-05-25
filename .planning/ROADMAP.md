@@ -338,6 +338,13 @@ Plans:
 - [ ] 44-01: TBD
 - [ ] 44-02: TBD
 - [ ] 44-03: TBD
+
+### Phase 45: Refactor cp-quick + cp-autonomous to shims
+
+Plans:
+- [ ] 45-01: TBD
+- [ ] 45-02: TBD
+- [ ] 45-03: TBD
 ## Progress
 
 **Execution Order:**
