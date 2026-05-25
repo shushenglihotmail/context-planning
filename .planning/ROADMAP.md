@@ -311,7 +311,7 @@ Plans:
 
 Plans:
 - [x] 41-01: TBD
-- [ ] 41-02: TBD
+- [x] 41-02: TBD
 - [ ] 41-03: TBD
 
 ### Phase 42: Docs + v1.0.0 release
