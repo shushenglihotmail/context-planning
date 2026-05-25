@@ -363,7 +363,7 @@ Plans:
 ### Phase 48: Resume v1.1.0 release (re-tag, publish, push)
 
 Plans:
-- [ ] 48-01: Re-run full `npm test`, re-create `git tag v1.1.0`, `npm publish` (handle OTP interactively), `git push origin main && git push origin v1.1.0`.
+- [x] 48-01: Re-run full `npm test`, re-create `git tag v1.1.0`, `npm publish` (handle OTP interactively), `git push origin main && git push origin v1.1.0`.
 ## Progress
 
 **Execution Order:**

@@ -2,9 +2,9 @@
 phase: "48"
 name: Resume v1.1.0 release
 milestone: v1.1 Workflow Skills
-status: pending
+status: in-progress
 plan-status:
-  48-01: pending
+  48-01: complete
 created: 2026-05-25
 ---
 
@@ -32,7 +32,7 @@ push commits + tag to origin.
 
 ## Plans
 
-- [ ] 48-01: Re-tag + publish + push.
+- [x] 48-01: Re-tag + publish + push.
 
 ## Notes
 
