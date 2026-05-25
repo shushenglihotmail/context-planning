@@ -36,3 +36,34 @@ The orchestrator (cp-execute-phase Step 4.5) appends a block per review:
 
 <!-- orchestrator appends below this marker; do not delete the marker -->
 <!-- REVIEW-LOG-ENTRIES-BELOW -->
+
+## 2026-05-25 17:30 — Plan 40-01 Task all — orchestrator (parallel-dispatch)
+
+**Verdict:** approved
+
+**Findings:**
+
+- Plan dispatched as a background general-purpose sub-agent (claude-sonnet-4.6) with a self-contained contract derived from `.planning/phases/40-core-engine-custom-tier/DESIGN.md`.
+- Sub-agent completed in ~21 min with 75 passed assertions, 0 failed (`node test/unit-workflow.js`).
+- Full `npm test` suite green (0 failures) after integration.
+- No deviations from the public-interface contract.
+- Sub-agent correctly added `node test/unit-workflow.js` to the npm test chain in `package.json`.
+
+**Resolution:** approved on first pass — committed in `0a8862f`, `7a675fe`, `1c77693`.
+
+---
+
+## 2026-05-25 17:30 — Plan 40-03 Task all — orchestrator (parallel-dispatch)
+
+**Verdict:** approved
+
+**Findings:**
+
+- Plan dispatched as a background general-purpose sub-agent (claude-sonnet-4.6) in parallel with 40-01 (file-disjoint scopes).
+- Sub-agent completed in ~11 min with 58 passed assertions, 0 failed (`node test/unit-custom.js`).
+- Sub-agent did NOT wire `unit-custom.js` into the npm test chain; orchestrator added that line as a follow-up commit (`ce68311`).
+- No deviations from the public-interface contract.
+
+**Resolution:** approved after orchestrator-applied npm-test wiring (`ce68311`); plan commits `6c47edf`, `441f002`.
+
+---
