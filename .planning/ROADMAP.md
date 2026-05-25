@@ -357,7 +357,7 @@ Closes the remaining gap from v1.1's "every write-side workflow CLI verb has a s
 
 Plans:
 - [x] 47-01: `cp workflow inspect <name> [--json]` CLI subcommand — combines `show` output with computed wave-by-wave decomposition from `lib/workflow.js#computeWaves`; dryrun-cli tests.
-- [ ] 47-02: 7 new agent skills under `commands/cp/`: workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect; installer + integration tests extended.
+- [x] 47-02: 7 new agent skills under `commands/cp/`: workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect; installer + integration tests extended.
 - [ ] 47-03: README + MIGRATION-v1.1.md + CHANGELOG amendments documenting the expanded surface (12 total `cp-workflow-*` skills, 2 new CLI verbs).
 
 ### Phase 48: Resume v1.1.0 release (re-tag, publish, push)

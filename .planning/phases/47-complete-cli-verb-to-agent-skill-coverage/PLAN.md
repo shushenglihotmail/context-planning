@@ -45,7 +45,7 @@ computes internally but never exposes to users.
 ## Plans
 
 - [x] 47-01: `cp workflow inspect <name> [--json]` CLI — combines `show` YAML with `computeWaves` decomposition + dryrun-cli tests.
-- [ ] 47-02: 7 new agent skills (workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect) + installer + integration test updates.
+- [x] 47-02: 7 new agent skills (workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect) + installer + integration test updates.
 - [ ] 47-03: Docs sync — README, MIGRATION-v1.1.md, CHANGELOG amended to reflect the expanded 12-skill surface and 2 new CLI verbs (export + inspect).
 
 ## Notes
