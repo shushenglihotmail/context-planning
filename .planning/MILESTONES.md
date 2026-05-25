@@ -451,3 +451,79 @@
 
 **Phase summaries:**
 - Phase 39: collapse-aware-complete-milestone — see `.planning/phases/39-collapse-aware-complete-milestone/`
+
+## v1.0 Workflow Engine  — shipped 2026-05-25
+
+**Phases:** 40-42    **Plans:** 7    **Duration:** 21min, 21min, 11min, 30min
+
+**Requirements delivered:** v1.0/CLI/run-family, v1.0/CLI/workflow-family, v1.0/built-in-templates/dev, v1.0/built-in-templates/debug, v1.0/built-in-templates/quick, v1.0/CLI/workflow-brainstorm, v1.0/tests/dryrun-run-cli, v1.0/tests/dryrun-workflow-cli, v1.0/tests/integration-run-cli, v1.0/docs/readme-workflow-engine, v1.0/docs/migration, v1.0/release/changelog-entry, v1.0/release/version-bump
+
+**Subsystems touched:** tooling, cli, docs
+
+**Key decisions:**
+- computeWaves emits phase OBJECTS (not just ids) per wave — downstream runtime needs full phase metadata (role, model, skill, prompt, persist_output) at instruction-emission time  _(phase 40)_
+- validate() runs ALL checks before returning (no short-circuit) so users see every error in one pass  _(phase 40)_
+- cycle error messages reconstruct the offending path with → arrows for fast diagnosis  _(phase 40)_
+- resolveTemplate tolerates missing built-in templates/workflows/ directory (Phase 41 ships it) — searches project-local .planning/workflows/ first, then built-in, then throws with attempted paths listed  _(phase 40)_
+- loadTemplate defaults binds_to='custom', principles=[], defaults={}, per-phase depends_on=[] so templates can omit boilerplate  _(phase 40)_
+- markPhaseComplete takes summaryText as a function argument; Phase 41 CLI will read stdin and pass through — keeps the lib pure  _(phase 40)_
+- startRun supports dryRun:true returning waves[i].instruction without writing state — Phase 41's --plan-only relies on this  _(phase 40)_
+- Module name is runtime.js (broader than wave-walker.js; matches typical workflow-engine terminology)  _(phase 40)_
+- retryPhase rolls back current_wave to the phase's wave (not just removes from completed[]) — spec interpretation: re-emitting a past-wave instruction requires actually returning there  _(phase 40)_
+- Per-run state files: custom-tier uses STATE.yaml (existing convention); milestone-tier uses .planning/milestones/<slug>/RUN.yaml; phase-tier uses .planning/phases/<dir>/.workflow-runs/<slug>.yaml. Lookup by slug walks all three locations.  _(phase 40)_
+- Instruction format: omit `Global directives` preamble entirely when both constraints and principles are absent; omit `[parallel]` header for single-phase waves  _(phase 40)_
+- scaffoldPhase audit gate (prior-phase-incomplete) bypassed via force:true when scaffolding milestone-bound phases — empty plan list would otherwise block 2nd+ phase  _(phase 40)_
+- STATE.yaml stays YAML (not JSON) for symmetry with workflow templates and easy hand-editing during recovery  _(phase 40)_
+- writeState ALWAYS overwrites last_activity regardless of patch contents — matches the file's name semantics and removes a footgun where callers forget to bump it  _(phase 40)_
+- artifacts gets shallow-merged (existing entries preserved); other top-level keys overwrite — minimum surprise for the common 'append phase' case  _(phase 40)_
+- pruneAbandoned defaults to dry-run; {apply: true} required to actually delete — matches cp's safety.always_confirm_destructive convention  _(phase 40)_
+- Slug collision suffix starts at -2 (not -1) — base name has no suffix, collision starts immediately at -2/-3/...  _(phase 40)_
+- Single run.js module hosts the full sub-command tree (start, resume, retry, abandon, mark-complete, status); dispatched on argv[0].  _(phase 41)_
+- Stdout reserved for actionable text (instruction body, --json payloads); stderr for slug/wave logs and errors. Exit codes: 0 ok, 1 duplicate/abort, 2 usage, 3 template-not-found, 4 run-not-found, 5 phase-not-in-wave.  _(phase 41)_
+- mark-complete reads summary text from stdin (matching write-summary convention); abandon supports --yes for non-interactive flows.  _(phase 41)_
+- Imports lib/workflow.js#computeWaves directly to format 'wave N of M' in resume/mark-complete logs — pure computation, no state mutation.  _(phase 41)_
+- Seven sub-commands hosted in a single workflow.js module (mirrors run.js sub-tree pattern).  _(phase 41)_
+- Exit-code matrix: 0 ok, 2 usage/validation/strict-warnings, 3 template-not-found, 6 file-already-exists.  _(phase 41)_
+- diagram emits Mermaid flowchart only (DESIGN.md open-question resolved: mermaid-only for v1.0).  _(phase 41)_
+- All three built-in templates pass workflow.validate ok=true; each carries a principles: block (≥2 entries) and a defaults: block per DESIGN.md requirements.  _(phase 41)_
+- dev.yaml ships with 6 phases (brainstorm → research-prior-art ∥ research-constraints → plan → execute → review) to demonstrate parallel-wave authoring.  _(phase 41)_
+- brainstorm sub-command delegates to provider.resolveSkill('brainstorm') and emits a structured 'Designing a new workflow' starter context block; it does NOT write any file (matching cp run's instruction-emit pattern).  _(phase 41)_
+- Manual-fallback path prints provider.resolvePrompt('brainstorm') followed by context block; provider-installed path prefixes with 'Designing a new workflow. Please invoke the {name} brainstorm skill ...'.  _(phase 41)_
+- Three new dryrun/integration test files exceed the assertion targets (31/53/20 vs ~20/25/10) for stronger coverage at zero extra runtime cost.  _(phase 41)_
+- cp run resume on a completed run returns the last wave's instruction (exit 0) rather than erroring — documented in integration test.  _(phase 41)_
+- MIGRATION-v1.0.md placed at repo root (not docs/) for discoverability on GitHub front page  _(phase 42)_
+- README Workflow Engine H2 section inserted between Command surface and State layer  _(phase 42)_
+- Two commits used - docs commit then version bump commit as recommended by DESIGN.md  _(phase 42)_
+
+**Patterns established:**
+- YAML workflow template canonical shape: {workflow, version, binds_to?, defaults?, principles?, phases[{id, depends_on?, role?, model?, skill?, prompt?, persist_output?}]}  _(phase 40)_
+- Test fixture directory layout: test/fixtures/workflows/<scenario>.yaml — one fixture per validation scenario plus happy paths  _(phase 40)_
+- Wave instruction format (see lib/runtime.js formatInstruction): Global directives preamble (project constraints + workflow principles, both optional) → `Wave N of M — K phase(s)` header → optional `[parallel]` block → per-phase blocks with `(absent)` literal for absent fields → closing `cp run mark-complete` line  _(phase 40)_
+- Three-tier binding resolution: detect by trying custom.readState first, then scanning .planning/phases/*/.workflow-runs/, then .planning/milestones/<slug>/RUN.yaml — throw RunNotFound if none match  _(phase 40)_
+- Custom-tier directory layout: .planning/custom/<YYYY-MM-DD-slug>/STATE.yaml + NN-<phase-id>.md per phase  _(phase 40)_
+- STATE.yaml canonical shape: workflow, slug, status (in-progress|done|abandoned), binding (custom), started, last_activity, current_phase, completed[], artifacts{}  _(phase 40)_
+- Sub-command sub-tree inside a single registry entry (alternative to one file per leaf command).  _(phase 41)_
+- Exit-code matrix per CLI module (documented at top of run.js).  _(phase 41)_
+- Built-in templates resolved from repo-root templates/workflows/ via lib/workflow.js#resolveTemplate; project-level overrides live in .planning/workflows/.  _(phase 41)_
+- Path-vs-name argument detection: contains / \\ or ends with .yaml/.yml → path; else → named lookup.  _(phase 41)_
+- CLI commands that delegate to AI skills emit instructions rather than executing inline (same model as cp run): stdout = the instruction/context, stderr = operational hints.  _(phase 41)_
+- End-to-end CLI integration tests spawn bin/cp.js via spawnSync for full stdout/stderr/exit-code coverage (vs lib-only tests in integration-runtime.js).  _(phase 41)_
+- Release phases with new public API surface get a dedicated MIGRATION-vX.Y.md at repo root  _(phase 42)_
+
+**Files (created):** lib/workflow.js, test/unit-workflow.js, test/fixtures/workflows/linear.yaml, test/fixtures/workflows/parallel.yaml, test/fixtures/workflows/cycle.yaml, test/fixtures/workflows/dangling-dep.yaml, test/fixtures/workflows/bad-yaml.yaml, test/fixtures/workflows/missing-id.yaml, lib/runtime.js, test/integration-runtime.js, test/fixtures/workflows/dev-mini.yaml, test/fixtures/workflows/debug-mini.yaml, test/fixtures/workflows/quick-mini.yaml, lib/custom.js, test/unit-custom.js, bin/commands/run.js, bin/commands/workflow.js, templates/workflows/dev.yaml, templates/workflows/debug.yaml, templates/workflows/quick.yaml, test/dryrun-run-cli.js, test/dryrun-workflow-cli.js, test/integration-run-cli.js, MIGRATION-v1.0.md
+**Files (modified):** package.json, bin/commands/index.js, bin/commands/_usage.js, bin/commands/workflow.js, README.md, CHANGELOG.md
+
+**Phase summaries:**
+- Phase 40: Core engine + custom tier — see `.planning/phases/40-core-engine-custom-tier/`
+- Phase 41: CLI surface + built-in templates + AI authoring — see `.planning/phases/41-cli-surface-built-in-templates-ai-author/`
+- Phase 42: Docs + v1.0.0 release — see `.planning/phases/42-docs-v1-0-0-release/`
+
+**Phase designs:**
+- Phase 40 — `.planning/phases/40-core-engine-custom-tier/DESIGN.md`
+- Phase 41 — `.planning/phases/41-cli-surface-built-in-templates-ai-author/DESIGN.md`
+- Phase 42 — `.planning/phases/42-docs-v1-0-0-release/DESIGN.md`
+
+**Reviews:** 6 entries across 3 phases
+- Phase 40 — `.planning/phases/40-core-engine-custom-tier/REVIEW-LOG.md`
+- Phase 41 — `.planning/phases/41-cli-surface-built-in-templates-ai-author/REVIEW-LOG.md`
+- Phase 42 — `.planning/phases/42-docs-v1-0-0-release/REVIEW-LOG.md`

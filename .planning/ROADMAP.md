@@ -298,7 +298,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.0 Workflow Engine (In Progress)
+<details>
+<summary>✅ v1.0 Workflow Engine (Phases 40-42) — SHIPPED 2026-05-25</summary>
 
 ### Phase 40: Core engine + custom tier
 
@@ -318,6 +319,8 @@ Plans:
 
 Plans:
 - [x] 42-01: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**
