@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-25)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 43 — Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume (v1.1 Workflow Skills)
+**Current focus:** Phase 49 — Unified Phase type + reader abstractions (v1.2 Unified Phase Model)
 
 ## Current Position
 
-Phase: -
-Plan: 95 of 95
-Status: Idle
-Current focus: -
-Last activity: tick plan 46-03
+Phase: 49 (v1.2 Unified Phase Model)
+Plan: 49-01
+Status: Ready to execute
+Current focus: Unified Phase type + reader abstractions
+Last activity: scaffold-phase 52 (cp-quick as thin shim over cp run (state migration))
 
 Progress: [░░░░░░░░░░] 0%
 

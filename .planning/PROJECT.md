@@ -39,6 +39,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - ✓ Onboarding wave: `cp map-codebase` auto-init (case-2 one-liner), `cp update` + `/cp-update` skill mirroring `/gsd-update`'s npx one-liner (case-4), README "Choose your starting path" 4-row decision matrix, milestone digest surfaces phase DESIGN.md + REVIEW-LOG.md refs, scaffoldMilestone tail-insert bug fix — v0.9 (published as `context-planning@0.9.0`)
 - ✓ Autonomy: `/cp-autonomous` slash skill + `cp autonomous` CLI looping `plan-phase → execute-phase → tick → write-summary → state regen` across pending phases of the active milestone; smart-gated on test failure, audit HIGH, executor deviation; clean stop via `.planning/.continue-here.md` so `/cp-resume` picks up — v0.10 (published as `context-planning@0.10.x`)
 - ✓ Workflow Engine: YAML-based workflow templates as a top-level abstraction. Templates declare a DAG of phases (`depends_on:`) with per-phase `role` / `model` / `skill` / `persist_output`. cp emits per-wave instructions; harness owns parallelism + model resolution. Three first-class state tiers: `milestone` / `phase` / `custom`. Ships 3 built-in templates (`dev`/`debug`/`quick`), 14-command CLI surface (`cp run` + `cp workflow`), AI-driven authoring via `cp workflow brainstorm`. — v1.0 (published as `context-planning@1.0.0`)
+- ✓ Workflow Skills: 12 agent-side `cp-workflow-*` slash skills (one per `cp workflow` verb except `init`) closing the v1.0 agent-skill gap; 2 new CLI verbs (`cp workflow export`, `cp workflow inspect`); the latter exposes the runtime's deduced wave-by-wave execution sequence. ~150 new test assertions. — v1.1 (published as `context-planning@1.1.0`)
 
 ### Known minor issues
 - 5 MEDIUM concerns in `.planning/codebase/CONCERNS.md` open: `bin/cp.js`
@@ -49,7 +50,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - No CI yet (LOW concern) — `npm test` runs locally only.
 
 ### Active
-- **Workflow Skills**: ship agent-side `cp-workflow-*` skill family that wraps the v1.0 workflow CLI (`cp run` + `cp workflow`), closing the convention gap where every other write-side cp capability has both a terminal command and a matching `cp-*` skill. Five new skills (`cp-workflow-run`, `cp-workflow-resume`, `cp-workflow-list`, `cp-workflow-new`, `cp-workflow-import`); refactor `cp-quick` and `cp-autonomous` to thin shims over `cp-workflow-run quick` / `cp-workflow-run dev` so all workflow-driven work flows through one execution path. — v1.1
+- **Unified Phase Model**: collapse cp-autonomous + cp-quick onto the v1.0 workflow engine via a unified `Phase` data type used by both the milestone layer (ROADMAP/STATE — owns plan + state) and the workflow layer (templates — owns execution recipe). CLI surfaces (`cp autonomous`, `cp quick`, `cp run`) stay frozen; refactor is internal. Unifies transcript state under `.planning/runs/<slug>/`. Resolves the v1.1 Phase 45 deferral. — v1.2
 
 ### Out of Scope
 - **No knowledge-graph layer** — gsd-graphify-style indexing is heavy and
