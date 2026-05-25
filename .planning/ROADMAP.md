@@ -324,6 +324,13 @@ Plans:
 
 ### 🚧 v1.1 Workflow Skills (In Progress)
 
+### Phase 43: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
+
+Plans:
+- [ ] 43-01: TBD
+- [ ] 43-02: TBD
+- [ ] 43-03: TBD
+- [ ] 43-04: TBD
 ## Progress
 
 **Execution Order:**
