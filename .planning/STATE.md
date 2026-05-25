@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 43 (v1.1 Workflow Skills)
-Plan: 43-04
+Phase: 44 (v1.1 Workflow Skills)
+Plan: 44-01
 Status: Ready to execute
-Current focus: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
-Last activity: start 43-04 execution
+Current focus: Creator skills: cp-workflow-new, cp-workflow-import
+Last activity: write SUMMARY for 43-04
 
-Progress: [██░░░░░░░░] 23%
+Progress: [███░░░░░░░] 31%
 
 ## Performance Metrics
 
