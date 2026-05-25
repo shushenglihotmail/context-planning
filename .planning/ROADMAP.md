@@ -395,6 +395,13 @@ Plans:
 - [ ] 52-02: TBD
 - [ ] 52-03: TBD
 - [ ] 52-04: TBD
+
+### Phase 53: Docs + MIGRATION-v1.2.md + v1.2.0 release
+
+Plans:
+- [ ] 53-01: TBD
+- [ ] 53-02: TBD
+- [ ] 53-03: TBD
 ## Progress
 
 **Execution Order:**
