@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 45 (v1.1 Workflow Skills)
-Plan: 45-01
+Phase: 46 (v1.1 Workflow Skills)
+Plan: 46-02
 Status: Ready to execute
-Current focus: Refactor cp-quick + cp-autonomous to shims
-Last activity: write SUMMARY for 44-04
+Current focus: Docs + MIGRATION-v1.1.md + v1.1.0 release
+Last activity: start 46-01 execution
 
-Progress: [██████░░░░] 57%
+Progress: [████████░░] 82%
 
 ## Performance Metrics
 
