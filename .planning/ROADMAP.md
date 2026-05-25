@@ -366,6 +366,12 @@ Plans:
 
 ### 🚧 v1.2 Unified Phase Model (In Progress)
 
+### Phase 49: Unified Phase type + reader abstractions
+
+Plans:
+- [ ] 49-01: TBD
+- [ ] 49-02: TBD
+- [ ] 49-03: TBD
 ## Progress
 
 **Execution Order:**
