@@ -310,7 +310,7 @@ Plans:
 ### Phase 41: CLI surface + built-in templates + AI authoring
 
 Plans:
-- [ ] 41-01: TBD
+- [x] 41-01: TBD
 - [ ] 41-02: TBD
 - [ ] 41-03: TBD
 

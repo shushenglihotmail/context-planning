@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 41 (v1.0 Workflow Engine)
-Plan: 41-01
+Plan: 41-02
 Status: Ready to execute
 Current focus: CLI surface + built-in templates + AI authoring
 Last activity: correct phase 41 expected-key-files; start 41-01 execution
 
-Progress: [████░░░░░░] 43%
+Progress: [██████░░░░] 57%
 
 ## Performance Metrics
 
