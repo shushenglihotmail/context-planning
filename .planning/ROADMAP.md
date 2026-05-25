@@ -303,7 +303,7 @@ Plans:
 ### Phase 40: Core engine + custom tier
 
 Plans:
-- [ ] 40-01: TBD
+- [x] 40-01: TBD
 - [ ] 40-02: TBD
 - [ ] 40-03: TBD
 
