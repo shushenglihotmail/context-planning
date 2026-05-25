@@ -6,6 +6,50 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-24 — Workflow Engine
+
+### Added
+
+- **Workflow Engine** — reusable YAML workflow format with phase DAGs,
+  parallel waves, top-level `principles:`, and three state tiers
+  (`milestone` / `phase` / `custom`). See [MIGRATION-v1.0.md](MIGRATION-v1.0.md)
+  for the full template format reference and FAQ.
+- **`cp run` CLI family** — `cp run <workflow> [name] [--plan-only]` starts a
+  new workflow run; `cp run resume <slug>` re-emits the current wave;
+  `cp run retry <slug> <phase-id>` rolls back a phase; `cp run abandon <slug>`
+  marks a run abandoned; `cp run mark-complete <slug> <phase-id>` advances the
+  run (summary read from stdin); `cp run status [slug] [--json]` lists runs or
+  shows one's state.
+- **`cp workflow` CLI family** — `cp workflow ls / show / validate / diagram /
+  init / new / import / brainstorm`. Validate templates before running;
+  `--strict` makes warnings fail for CI usage; `diagram` emits a Mermaid
+  `flowchart TD` of the phase DAG.
+- **Three built-in templates** at `templates/workflows/`:
+  - `dev.yaml` — 6-phase milestone-bound dev workflow with a parallel research
+    wave (brainstorm → research-prior-art ∥ research-constraints → plan →
+    execute → review).
+  - `debug.yaml` — 5-phase custom-bound scientific-method debug cycle
+    (collect-symptoms → repro → plan → fix → verify).
+  - `quick.yaml` — 3-phase custom-bound minimal workflow (discuss → execute →
+    verify).
+- **AI authoring** — `cp workflow brainstorm [--workflow <name>]` delegates to
+  your configured provider's brainstorm skill (Superpowers by default) for
+  conversational YAML workflow design. Falls back to a printed manual prompt
+  when no provider is installed.
+- **Top-level `principles:` field** — global directives applied across every
+  phase of a workflow (e.g. "Don't commit until confirmed with user", "Run
+  autonomously until hitting a blocking issue"). cp prepends them to every
+  wave instruction emitted. Configurable per template.
+- **104 new CLI test assertions** across `test/dryrun-run-cli.js` (31),
+  `test/dryrun-workflow-cli.js` (53), and `test/integration-run-cli.js` (20).
+  Lib-tier coverage from Phase 40: 75 assertions in `test/unit-workflow.js`,
+  58 assertions in `test/unit-custom.js`, 67 assertions in
+  `test/integration-runtime.js`.
+
+### Changed
+
+- `package.json` version bumped from `0.10.3` → `1.0.0`.
+
 ## [0.10.3] - 2026-05-22 — Collapse-aware audit + status renderer (hotfix)
 
 ### Fixed

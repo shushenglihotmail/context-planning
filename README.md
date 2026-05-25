@@ -352,6 +352,86 @@ filename format, frontmatter aliases, descriptor-object return shapes,
 etc.). See [Troubleshooting](#troubleshooting) for the contract details
 they hide.
 
+## Workflow Engine
+
+> **New in v1.0** — see [MIGRATION-v1.0.md](MIGRATION-v1.0.md) for the full
+> template format reference, state tier guide, and FAQ.
+
+cp ships a reusable YAML workflow format that lets you define phase DAGs once
+and run them via `cp run`. Each workflow declares phases, dependencies (for
+parallel waves), roles, and global principles. The engine supports three state
+tiers: **milestone-bound** runs that scaffold a full ROADMAP entry,
+**phase-bound** runs that attach to an existing phase, and **custom-tier** runs
+that execute completely outside the roadmap — perfect for debugging sessions,
+quick tasks, and one-off investigations.
+
+### Quick start
+
+```bash
+cp workflow ls                          # list available templates
+cp run quick "fix login typo"          # start a 3-phase custom run
+# → prints slug + Wave 1 instruction for the agent to execute
+echo "Aligned on scope" | cp run mark-complete <slug> discuss
+echo "Fixed typo, tests pass" | cp run mark-complete <slug> execute
+echo "Verified correct" | cp run mark-complete <slug> verify
+cp run status <slug>                    # status: done
+```
+
+### `cp run` family
+
+| Sub-command | Purpose |
+|---|---|
+| `cp run <workflow> [name] [--plan-only]` | Start a new workflow run; `--plan-only` prints the wave plan without writing state |
+| `cp run resume <slug>` | Re-emit the current wave's instruction (after a session boundary or context reset) |
+| `cp run retry <slug> <phase-id>` | Roll back a phase and re-emit its instruction |
+| `cp run abandon <slug> [--yes]` | Mark a run abandoned (interactive confirm by default; `--yes` for scripts) |
+| `cp run mark-complete <slug> <phase-id>` | Advance the run; summary text read from stdin |
+| `cp run status [slug] [--json]` | List all runs (table) or show one run's state |
+
+### `cp workflow` family
+
+| Sub-command | Purpose |
+|---|---|
+| `cp workflow ls [--json]` | List built-in + project templates with source and binding |
+| `cp workflow show <name>` | Pretty-print a resolved template |
+| `cp workflow validate <name-or-path> [--strict]` | Run schema + DAG validation; `--strict` fails on warnings (CI-safe) |
+| `cp workflow diagram <name-or-path>` | Emit a Mermaid `flowchart TD` of the phase DAG |
+| `cp workflow init` | Bootstrap `.planning/workflows/` in the current project (idempotent) |
+| `cp workflow new <name> [--from <built-in>] [--force]` | Scaffold a new template, optionally cloned from a built-in |
+| `cp workflow import <path> [--name <override>] [--force]` | Validate and copy an external template into the project |
+| `cp workflow brainstorm [--workflow <name>] [--out <path>]` | Delegate to your provider's brainstorm skill to design a new workflow |
+
+### Built-in templates
+
+| Name | Binds to | Phase chain |
+|---|---|---|
+| `dev` | `milestone` | brainstorm → research-prior-art ∥ research-constraints → plan → execute → review |
+| `debug` | `custom` | collect-symptoms → repro → plan → fix → verify |
+| `quick` | `custom` | discuss → execute → verify |
+
+Define your own with `cp workflow new <name> --from quick` and validate with
+`cp workflow validate <name>` before running. Project-local templates in
+`.planning/workflows/` override built-ins of the same name.
+
+### Principles
+
+The top-level `principles:` field in a workflow template declares global
+directives that apply across every phase. cp prepends them to every wave
+instruction it emits, so the agent always has the workflow's ground rules in
+context — no matter which phase is running. Examples:
+
+```yaml
+principles:
+  - Don't commit until the user explicitly confirms
+  - Run autonomously until you hit a blocking issue, then surface it
+  - Run the full test suite after each change
+```
+
+Principles layer on top of your `PROJECT.md` `## Constraints` section. They
+travel with the template, so a `debug.yaml` can encode "Reproduce before
+diagnosing" while `quick.yaml` encodes "Discuss before acting" — each
+workflow brings its own discipline without polluting the global config.
+
 ## State layer
 
 ```
