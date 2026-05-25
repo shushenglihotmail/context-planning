@@ -13,7 +13,7 @@ Phase: 43 (v1.1 Workflow Skills)
 Plan: 43-01
 Status: Ready to execute
 Current focus: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
-Last activity: scaffold-phase 45 (Refactor cp-quick + cp-autonomous to shims)
+Last activity: start milestone v1.1 Workflow Skills (phases 43-46)
 
 Progress: [░░░░░░░░░░] 0%
 
