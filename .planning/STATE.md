@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 44 (v1.1 Workflow Skills)
-Plan: 44-04
+Phase: 45 (v1.1 Workflow Skills)
+Plan: 45-01
 Status: Ready to execute
-Current focus: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export)
-Last activity: start 44-04 + sync frontmatter for completed 44-03
+Current focus: Refactor cp-quick + cp-autonomous to shims
+Last activity: write SUMMARY for 44-04
 
-Progress: [█████░░░░░] 50%
+Progress: [██████░░░░] 57%
 
 ## Performance Metrics
 
