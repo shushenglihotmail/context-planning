@@ -322,7 +322,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.1 Workflow Skills (In Progress)
+<details>
+<summary>✅ v1.1 Workflow Skills (Phases 43-48) — SHIPPED 2026-05-25</summary>
 
 ### Phase 43: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
 
@@ -360,6 +361,8 @@ Plans:
 
 Plans:
 - [x] 48-01: Re-run full `npm test`, re-create `git tag v1.1.0`, `npm publish` (handle OTP interactively), `git push origin main && git push origin v1.1.0`.
+
+</details>
 ## Progress
 
 **Execution Order:**

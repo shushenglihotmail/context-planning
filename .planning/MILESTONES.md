@@ -527,3 +527,91 @@
 - Phase 40 — `.planning/phases/40-core-engine-custom-tier/REVIEW-LOG.md`
 - Phase 41 — `.planning/phases/41-cli-surface-built-in-templates-ai-author/REVIEW-LOG.md`
 - Phase 42 — `.planning/phases/42-docs-v1-0-0-release/REVIEW-LOG.md`
+
+## v1.1 Workflow Skills  — shipped 2026-05-25
+
+**Phases:** 43-48    **Plans:** 15    **Duration:** 20min, 8min, 10min, 35min, 30min, 12min, 15min, 20min, 20min, 25min, 0min, 35min, 50min, 12min, 3min
+
+**Requirements delivered:** v1.1 phase 43, v1.1 phase 44
+
+**Subsystems touched:** tooling, testing, docs, workflow
+
+**Key decisions:**
+- Wave-loop logic lives in cp-workflow-run only; cp-workflow-resume cross-references rather than duplicates (43-03)  _(phase 43)_
+- Smart-gate sentinels (test fail, audit HIGH, DEVIATION: prefix) match cp-autonomous exactly so phase-45 shim is transparent  _(phase 43)_
+- --scope and --check argv contract matches cp-autonomous historical contract  _(phase 43)_
+- Skill never mutates .planning/runs/ directly; all state changes go through cp run sub-commands  _(phase 43)_
+- DESCRIPTION column derived from first principles: entry, not a separate description: field (schema doesn't have one today; deferred to future rev)  _(phase 43)_
+- List mode separates built-ins from project templates in two table sections  _(phase 43)_
+- End-of-output suggestions point to /cp-workflow-run, /cp-workflow-list <name>, /cp-workflow-new --from for full discoverability loop  _(phase 43)_
+- Optional 'want me to run one?' offer suppressed if user already ran a workflow in session  _(phase 43)_
+- Wave-loop logic is NOT duplicated here — skill body cross-references cp-workflow-run Step 5 by name  _(phase 43)_
+- --scope intentionally not supported on resume (would create inconsistent STATE); user must abandon + start fresh to re-scope  _(phase 43)_
+- Argument modes: enumeration / resume / --retry / --abandon; --abandon wins over --retry if both passed  _(phase 43)_
+- cp doctor re-resolved on resume to pick up newly-installed providers  _(phase 43)_
+- Added installer auto-pickup assertions in test/unit-v034.js (not test/unit-installers.js as DESIGN.md suggested) because copilot/claude installer e2e coverage already lived in unit-v034.js. Documented as plan-level deviation.  _(phase 43)_
+- Normalised CRLF to LF when asserting on skill markdown body so tests pass on Windows.  _(phase 43)_
+- integration-workflow-skills.js covers the slices integration-run-cli.js does not: skill source shape, named slug honour, and abandon-flow status transition.  _(phase 43)_
+- Rewrite top-level workflow: key via per-line regex instead of YAML reserialisation. Reason: preserves formatting so export-edit-export cycles produce minimal diffs; reserialisation would change quoting/ordering.  _(phase 44)_
+- Strip the # template: header that cp workflow show emits (kept in show for back-compat). Without this, import round-trip would treat the comment as content drift.  _(phase 44)_
+- Validate the rewritten YAML before writing — even with --force. Refuse to ship a broken file.  _(phase 44)_
+- Default destination is ./<name>.yaml (or ./<as-name>.yaml). The DESIGN's open question (default into .planning/workflows/) was answered no — users may want to inspect before committing to the project tree; --out covers the explicit case.  _(phase 44)_
+- Skill refuses to reuse built-in template names outright (no --force escape hatch) — you cannot override quick/dev/debug from the project tree.  _(phase 44)_
+- Skill refuses project-name collision unless --force, mirroring the underlying CLI behavior.  _(phase 44)_
+- Added explicit When-to-use-this vs cp-workflow-customize callout so the two creator skills do not compete during agent skill selection — authoring is fresh-start; customize is tweak-existing.  _(phase 44)_
+- Skill ends with a /cp-workflow-run <name> hint so the next user action is one click away.  _(phase 44)_
+- Skill replaces the originally-planned cp-workflow-import — pure import would have been a thin LLM-less wrapper; customize is the actual user task. User-approved in mid-43-04 conversation.  _(phase 44)_
+- Skill is interactive-first: missing built-in or new-name prompts the user with a menu rather than failing — discoverability over strict argv.  _(phase 44)_
+- Step 7 validates by PATH (not name) because the template is not yet registered. Both forms are accepted by cp workflow validate.  _(phase 44)_
+- Skill ends with a re-customize hint pointing users at 'cp workflow import <path> --force' for later iterations without re-walking the full export step.  _(phase 44)_
+- Extended the cp-workflow-* skills array in unit-v034.js from 3 to 5 entries rather than adding a parallel section — keeps installer-pickup assertions data-driven and trivially extensible for v1.2+.  _(phase 44)_
+- Integration test reuses dir2 fixture across both round-trip scenarios (basic export and rename-export) — cheaper than separate fixtures and exercises that 'init' + 'import' are idempotent across multiple invocations.  _(phase 44)_
+- Test count badge bumped to 2100+ (was 751; actual ✓ count is ~2111)  _(phase 46)_
+- v1.1 skill subsection placed under existing slash-command table, not a new top-level section  _(phase 46)_
+- MIGRATION-v1.1.md follows MIGRATION-v1.0.md structure: What's New / Do I Need to Migrate / Discovery / Deferred / Worked Example / Compatibility / Upgrade Steps  _(phase 46)_
+- Did NOT add MIGRATION-v1.1.md to package.json iles array — follows v1.0 precedent (migration guides are GitHub-only, not shipped in npm tarball)  _(phase 46)_
+- Explicit Deferred to v1.2 section in CHANGELOG documents the cp-quick/cp-autonomous shim deferral with full rationale so future contributors understand why phase 45 was skipped  _(phase 46)_
+- Plan obsoleted mid-flight — paused during execution when scope expanded to include 7 additional agent skills + cp workflow inspect CLI. Actual publish work moved to Phase 48-01.  _(phase 46)_
+- Reused lib/workflow.js#computeWaves (already existed) rather than reimplementing topological sort  _(phase 47)_
+- Human-readable output places YAML first then wave decomposition; --json emits structured form for tooling  _(phase 47)_
+- Inserted as Section 5.5 in dryrun tests (between diagram and init) to keep test order matching CLI grouping  _(phase 47)_
+- Exit codes match the rest of cp workflow family: 2 usage, 3 template-not-found, 2 validation-failure  _(phase 47)_
+- 12 cp-workflow-* skills total now mirror every cp workflow CLI verb except 'init' (which is a one-shot bootstrap that does not benefit from agent orchestration)  _(phase 47)_
+- Brainstorm is the only non-trivial skill (orchestrates provider delegation); other 6 are thin wrappers because their underlying CLI is already complete  _(phase 47)_
+- All skills carry a 'When to use this vs <sibling>' callout to disambiguate from cp-workflow-customize (round-trip) and cp-workflow-new (clone-from-built-in)  _(phase 47)_
+- Skipped /cp-workflow-init — the bootstrap path doesn't benefit from agent orchestration  _(phase 47)_
+- Organise the 12 cp-workflow-* skills into 3 functional groups in every doc surface (README, MIGRATION, CHANGELOG): Drive / Author / Inspect — mirrors how users actually reach for them.  _(phase 47)_
+- Document /cp-workflow-init's absence and why (one-shot bootstrap, no agent value) so reviewers don't read the missing entry as an oversight.  _(phase 47)_
+- Update test-count line in CHANGELOG to actual deltas (integration 39->93, dryrun 75->103, unit 64->92) — was previously approximated.  _(phase 47)_
+- Created annotated tag v1.1.0 with full release-note body in the tag message — searchable via git show v1.1.0.  _(phase 48)_
+- User ran npm publish from their own terminal (OTP-driven browser flow cannot be automated).  _(phase 48)_
+
+**Patterns established:**
+- cp-workflow-* skill family naming under unified prefix (Q2 of v1.1 brainstorm)  _(phase 43)_
+- Skill bodies use numbered Step 1..N sections mirroring commands/cp/autonomous.md structure  _(phase 43)_
+- Read-only cp-workflow-* skills end with next-action suggestions linking to write-side cp-workflow-* skills  _(phase 43)_
+- cp-workflow-* skills explicitly cross-reference each other when sharing execution sections (single-source-of-truth for wave-loop)  _(phase 43)_
+- New cp-* agent skill must ship with both a unit-v034.js installer assertion (3 per skill: file exists in copilot tree, file exists in claude tree, frontmatter name matches file) and at least one shape-of-skill assertion in integration-workflow-skills.js.  _(phase 43)_
+- New cp workflow subcommands follow the existing arg-parse pattern: positional args first, --flag args after, unknown options exit 2.  _(phase 44)_
+- Interactive-first agent skills: when a required argv is missing, present an enumerated picker via cp workflow ls --json rather than printing usage and exiting.  _(phase 44)_
+- Round-trip integration tests for CLI surfaces should exercise both directions in the same fixture: write side (export) verifies content, read side (import + ls) verifies the writer's output is consumable.  _(phase 44)_
+- Workflow-skills subsection format wraps the agent-side companions for each new CLI verb family  _(phase 46)_
+- Per-minor-version MIGRATION-vN.M.md files at repo root  _(phase 46)_
+- CHANGELOG Deferred to vNEXT subsection convention for documenting non-shipped intent  _(phase 46)_
+- Inspect-style CLI = raw artifact + deduced semantic view in one command  _(phase 47)_
+- 'Every CLI verb has a slash companion' contract is now complete for cp workflow family  _(phase 47)_
+- Group skill catalogues by user intent (drive/author/inspect) rather than alphabetically — applies to all future skill cluster docs.  _(phase 47)_
+
+**Files (created):** commands/cp/workflow-run.md, commands/cp/workflow-list.md, commands/cp/workflow-resume.md, test/integration-workflow-skills.js, commands/cp/workflow-new.md, commands/cp/workflow-customize.md, MIGRATION-v1.1.md, commands/cp/workflow-brainstorm.md, commands/cp/workflow-diagram.md, commands/cp/workflow-export.md, commands/cp/workflow-import.md, commands/cp/workflow-inspect.md, commands/cp/workflow-show.md, commands/cp/workflow-validate.md
+**Files (modified):** test/unit-v034.js, package.json, bin/commands/workflow.js, test/dryrun-workflow-cli.js, test/integration-workflow-skills.js, README.md, CHANGELOG.md, bin/commands/_usage.js, package-lock.json, MIGRATION-v1.1.md
+
+**Phase summaries:**
+- Phase 43: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume — see `.planning/phases/43-consumer-skills-cp-workflow-run-cp-workf/`
+- Phase 44: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export) — see `.planning/phases/44-creator-skills-cp-workflow-new-cp-workfl/`
+- Phase 46: Docs + MIGRATION-v1.1.md + v1.1.0 release — see `.planning/phases/46-docs-migration-v1-1-md-v1-1-0-release/`
+- Phase 47: Complete CLI-verb-to-agent-skill coverage + `cp workflow inspect` — see `.planning/phases/47-complete-cli-verb-to-agent-skill-coverag/`
+- Phase 48: Resume v1.1.0 release (re-tag, publish, push) — see `.planning/phases/48-resume-v1-1-0-release-re-tag-publish-pus/`
+
+**Phase designs:**
+- Phase 43 — `.planning/phases/43-consumer-skills-cp-workflow-run-cp-workf/DESIGN.md`
+- Phase 44 — `.planning/phases/44-creator-skills-cp-workflow-new-cp-workfc/DESIGN.md`
