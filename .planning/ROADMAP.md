@@ -331,6 +331,13 @@ Plans:
 - [ ] 43-02: TBD
 - [ ] 43-03: TBD
 - [ ] 43-04: TBD
+
+### Phase 44: Creator skills: cp-workflow-new, cp-workflow-import
+
+Plans:
+- [ ] 44-01: TBD
+- [ ] 44-02: TBD
+- [ ] 44-03: TBD
 ## Progress
 
 **Execution Order:**
