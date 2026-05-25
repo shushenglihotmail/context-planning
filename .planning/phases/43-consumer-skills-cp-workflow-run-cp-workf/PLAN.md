@@ -1,35 +1,5 @@
 ---
-phase: "43"
-name: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
-milestone: v1.1 Workflow Skills
-status: in-progress
-created: 2026-05-25
-base-commit: f1e6a24a3d5b4b8b95d9709c063c09332af11012
-plan-status:
-  43-01: complete
-  43-02: complete
-  43-03: complete
-  43-04: in-progress
-plan-started:
-  43-01: 2026-05-25T20:25:00.000Z
-  43-02: 2026-05-25T20:35:00.000Z
-  43-03: 2026-05-25T20:45:00.000Z
-  43-04: 2026-05-25T20:55:00.000Z
-plan-completed:
-  43-01: 2026-05-25T20:32:00.000Z
-  43-02: 2026-05-25T20:43:00.000Z
-  43-03: 2026-05-25T20:53:00.000Z
-expected-key-files:
-  43-01:
-    - commands/cp/workflow-run.md
-  43-02:
-    - commands/cp/workflow-list.md
-  43-03:
-    - commands/cp/workflow-resume.md
-  43-04:
-    - test/unit-installers.js
-    - test/integration-workflow-skills.js
-    - package.json
+base-commit: ca26f475fe2e99eb71b74d8f248dd05d85593c99
 ---
 
 # Phase 43: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
