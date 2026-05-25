@@ -379,6 +379,14 @@ Plans:
 - [ ] 50-01: TBD
 - [ ] 50-02: TBD
 - [ ] 50-03: TBD
+
+### Phase 51: cp-autonomous as thin shim over cp run
+
+Plans:
+- [ ] 51-01: TBD
+- [ ] 51-02: TBD
+- [ ] 51-03: TBD
+- [ ] 51-04: TBD
 ## Progress
 
 **Execution Order:**
