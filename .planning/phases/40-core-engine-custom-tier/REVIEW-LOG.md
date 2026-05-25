@@ -67,3 +67,22 @@ The orchestrator (cp-execute-phase Step 4.5) appends a block per review:
 **Resolution:** approved after orchestrator-applied npm-test wiring (`ce68311`); plan commits `6c47edf`, `441f002`.
 
 ---
+
+## 2026-05-25 18:30 — Plan 40-02 Task all — orchestrator (sequential-dispatch)
+
+**Verdict:** approved
+
+**Findings:**
+
+- Plan dispatched as a background general-purpose sub-agent (claude-sonnet-4.6) AFTER 40-01 + 40-03 were committed (dependency order).
+- Sub-agent completed in ~21 min with 67 passed assertions, 0 failed (target was ≥30 — comfortably exceeded).
+- Full `npm test` suite green (31 test files, 0 failures) after integration.
+- All three binding tiers (milestone, phase, custom) exercised end-to-end.
+- Sub-agent self-resolved the phase DESIGN.md's three open questions per the orchestrator's stated leans (summary-as-arg, dryRun support, name `runtime.js`).
+- One semantic deviation noted and approved: `retryPhase` rolls back `current_wave` (not just removes from `completed[]`) when retry crosses wave boundaries — intent-preserving interpretation of the spec.
+- Sub-agent correctly wired `unit-runtime.js` integration test into `package.json` (no orchestrator follow-up needed this time).
+- Surprises discovered re: `scaffoldMilestone`/`scaffoldPhase` documented in plan SUMMARY.md (DESIGN.md auto-creation as side effect; STATE.md `Progress:` line requirement for `regenerate()`; ROADMAP.md `## Phases` requirement; `prior-phase-incomplete` audit needs `force: true` to bypass during milestone-bound run start).
+
+**Resolution:** approved on first pass — committed in `78d47ec`, `560f1a7`, `b72aefe`, `3dd0f8a`.
+
+---
