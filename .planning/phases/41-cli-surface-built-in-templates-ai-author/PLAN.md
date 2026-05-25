@@ -2,19 +2,27 @@
 phase: "41"
 name: CLI surface + built-in templates + AI authoring
 milestone: v1.0 Workflow Engine
-status: ready
+status: in-progress
+plan-status:
+  41-01: in-progress
+  41-02: pending
+  41-03: pending
+plan-started:
+  41-01: 2026-05-25T19:00:00.000Z
 created: 2026-05-25
 base-commit: 3086c54225a83d5c35491c5a22272526a691fef6
 expected-key-files:
   41-01:
-    - bin/cp.js
+    - bin/commands/run.js
+    - bin/commands/index.js
   41-02:
-    - bin/cp.js
+    - bin/commands/workflow.js
+    - bin/commands/index.js
     - templates/workflows/dev.yaml
     - templates/workflows/debug.yaml
     - templates/workflows/quick.yaml
   41-03:
-    - bin/cp.js
+    - bin/commands/workflow.js
     - test/dryrun-run-cli.js
     - test/dryrun-workflow-cli.js
     - test/integration-run-cli.js
