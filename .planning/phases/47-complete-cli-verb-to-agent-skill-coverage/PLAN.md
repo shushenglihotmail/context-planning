@@ -4,9 +4,9 @@ name: Complete CLI-verb-to-agent-skill coverage + cp workflow inspect
 milestone: v1.1 Workflow Skills
 status: in-progress
 plan-status:
-  47-01: in-progress
-  47-02: pending
-  47-03: pending
+  47-01: complete
+  47-02: complete
+  47-03: in-progress
 created: 2026-05-25
 ---
 
@@ -46,7 +46,7 @@ computes internally but never exposes to users.
 
 - [x] 47-01: `cp workflow inspect <name> [--json]` CLI — combines `show` YAML with `computeWaves` decomposition + dryrun-cli tests.
 - [x] 47-02: 7 new agent skills (workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect) + installer + integration test updates.
-- [ ] 47-03: Docs sync — README, MIGRATION-v1.1.md, CHANGELOG amended to reflect the expanded 12-skill surface and 2 new CLI verbs (export + inspect).
+- [x] 47-03: Docs sync — README, MIGRATION-v1.1.md, CHANGELOG amended to reflect the expanded 12-skill surface and 2 new CLI verbs (export + inspect).
 
 ## Notes
 
