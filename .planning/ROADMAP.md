@@ -363,6 +363,9 @@ Plans:
 - [x] 48-01: Re-run full `npm test`, re-create `git tag v1.1.0`, `npm publish` (handle OTP interactively), `git push origin main && git push origin v1.1.0`.
 
 </details>
+
+### 🚧 v1.2 Unified Phase Model (In Progress)
+
 ## Progress
 
 **Execution Order:**
