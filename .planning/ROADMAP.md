@@ -345,6 +345,13 @@ Plans:
 - [ ] 45-01: TBD
 - [ ] 45-02: TBD
 - [ ] 45-03: TBD
+
+### Phase 46: Docs + MIGRATION-v1.1.md + v1.1.0 release
+
+Plans:
+- [ ] 46-01: TBD
+- [ ] 46-02: TBD
+- [ ] 46-03: TBD
 ## Progress
 
 **Execution Order:**
