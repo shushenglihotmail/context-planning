@@ -6,7 +6,6 @@
  */
 
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 
 const workflow = require('../lib/workflow');
@@ -47,6 +46,12 @@ function validTemplate(overrides) {
 }
 
 const cleanupDirs = [];
+function makeScratchDir(name) {
+  const dir = path.join(__dirname, 'fixtures', 'workflows', `.scratch-${name}-${process.pid}-${Date.now()}`);
+  fs.mkdirSync(dir, { recursive: true });
+  cleanupDirs.push(dir);
+  return dir;
+}
 
 section('1. loadTemplate happy paths');
 const linear = workflow.loadTemplate(fixture('linear.yaml'));
@@ -61,8 +66,10 @@ ok('linear first phase depends_on defaults to []', deepEquals(linear.phases[0].d
 ok('linear second phase depends_on preserved', deepEquals(linear.phases[1].depends_on, ['brainstorm']));
 ok('linear phase role preserved', linear.phases[0].role === 'researcher');
 ok('linear phase prompt preserved', linear.phases[1].prompt === 'Create the plan');
+ok('meta excludes principles/defaults/phases keys', !Object.prototype.hasOwnProperty.call(linear.meta, 'phases') && !Object.prototype.hasOwnProperty.call(linear.meta, 'principles') && !Object.prototype.hasOwnProperty.call(linear.meta, 'defaults'));
 const parallel = workflow.loadTemplate(fixture('parallel.yaml'));
 ok('loads parallel template by full path', parallel.meta.workflow === 'parallel' && parallel.phases.length === 4);
+ok('parallel meta.binds_to is preserved', parallel.meta.binds_to === 'phase');
 
 section('2. loadTemplate binds_to/defaults');
 const noOptional = workflow.loadTemplate(fixture('cycle.yaml'));
@@ -82,16 +89,14 @@ ok('parse error mentions file path', parseError && parseError.message.includes(f
 ok('parse error mentions parse or YAML detail', parseError && (/parse/i.test(parseError.message) || /yaml|bracket|invalid/i.test(parseError.message)));
 
 section('4. resolveTemplate');
-const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-workflow-'));
-cleanupDirs.push(tempRoot);
+const tempRoot = makeScratchDir('project');
 const tempWorkflowDir = path.join(tempRoot, '.planning', 'workflows');
 fs.mkdirSync(tempWorkflowDir, { recursive: true });
 const namedPath = path.join(tempWorkflowDir, 'named.yaml');
 fs.writeFileSync(namedPath, 'workflow: named\nversion: 1\nphases:\n  - id: one\n', 'utf8');
 const resolvedNamed = workflow.resolveTemplate('named', { projectDir: tempRoot });
 ok('resolveTemplate finds project workflow', resolvedNamed === namedPath);
-const missingRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-workflow-missing-'));
-cleanupDirs.push(missingRoot);
+const missingRoot = makeScratchDir('missing');
 let resolveError = null;
 try {
   workflow.resolveTemplate('absent-workflow-name', { projectDir: missingRoot });
@@ -101,8 +106,7 @@ try {
 ok('resolveTemplate throws when no workflow exists', !!resolveError);
 ok('resolveTemplate not found error is clear', resolveError && /not found/i.test(resolveError.message));
 ok('resolveTemplate error lists searched paths', resolveError && resolveError.message.includes(path.join(missingRoot, '.planning', 'workflows', 'absent-workflow-name.yaml')));
-const customRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-workflow-custom-'));
-cleanupDirs.push(customRoot);
+const customRoot = makeScratchDir('custom');
 fs.mkdirSync(path.join(customRoot, '.planning', 'workflows'), { recursive: true });
 const customPath = path.join(customRoot, '.planning', 'workflows', 'custom-name.yaml');
 fs.writeFileSync(customPath, 'workflow: custom-name\nversion: 1\nphases:\n  - id: one\n', 'utf8');
