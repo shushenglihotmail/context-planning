@@ -317,7 +317,7 @@ Plans:
 ### Phase 42: Docs + v1.0.0 release
 
 Plans:
-- [ ] 42-01: TBD
+- [x] 42-01: TBD
 ## Progress
 
 **Execution Order:**

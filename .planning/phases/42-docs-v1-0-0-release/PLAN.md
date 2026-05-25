@@ -36,7 +36,7 @@ Document the v1.0 Workflow Engine (new `cp run` + `cp workflow` CLI families, 3 
 
 ## Plans
 
-- [ ] 42-01: README + MIGRATION-v1.0.md + CHANGELOG + version bump + milestone close.
+- [x] 42-01: README + MIGRATION-v1.0.md + CHANGELOG + version bump + milestone close.
 
 ## Notes
 
