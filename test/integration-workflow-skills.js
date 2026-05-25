@@ -72,9 +72,21 @@ function mkFixture() {
 section('cp-workflow-* skills: source files are well-formed');
 
 const skillFiles = [
+  // Phase 43
   { name: 'cp-workflow-run',    src: path.join(REPO, 'commands', 'cp', 'workflow-run.md') },
   { name: 'cp-workflow-list',   src: path.join(REPO, 'commands', 'cp', 'workflow-list.md') },
   { name: 'cp-workflow-resume', src: path.join(REPO, 'commands', 'cp', 'workflow-resume.md') },
+  // Phase 44
+  { name: 'cp-workflow-new',        src: path.join(REPO, 'commands', 'cp', 'workflow-new.md') },
+  { name: 'cp-workflow-customize',  src: path.join(REPO, 'commands', 'cp', 'workflow-customize.md') },
+  // Phase 47 (close CLI-verb-to-skill gap)
+  { name: 'cp-workflow-validate',   src: path.join(REPO, 'commands', 'cp', 'workflow-validate.md') },
+  { name: 'cp-workflow-show',       src: path.join(REPO, 'commands', 'cp', 'workflow-show.md') },
+  { name: 'cp-workflow-diagram',    src: path.join(REPO, 'commands', 'cp', 'workflow-diagram.md') },
+  { name: 'cp-workflow-inspect',    src: path.join(REPO, 'commands', 'cp', 'workflow-inspect.md') },
+  { name: 'cp-workflow-import',     src: path.join(REPO, 'commands', 'cp', 'workflow-import.md') },
+  { name: 'cp-workflow-export',     src: path.join(REPO, 'commands', 'cp', 'workflow-export.md') },
+  { name: 'cp-workflow-brainstorm', src: path.join(REPO, 'commands', 'cp', 'workflow-brainstorm.md') },
 ];
 
 for (const skill of skillFiles) {
