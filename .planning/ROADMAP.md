@@ -321,6 +321,9 @@ Plans:
 - [x] 42-01: TBD
 
 </details>
+
+### 🚧 v1.1 Workflow Skills (In Progress)
+
 ## Progress
 
 **Execution Order:**
