@@ -387,6 +387,14 @@ Plans:
 - [ ] 51-02: TBD
 - [ ] 51-03: TBD
 - [ ] 51-04: TBD
+
+### Phase 52: cp-quick as thin shim over cp run (state migration)
+
+Plans:
+- [ ] 52-01: TBD
+- [ ] 52-02: TBD
+- [ ] 52-03: TBD
+- [ ] 52-04: TBD
 ## Progress
 
 **Execution Order:**
