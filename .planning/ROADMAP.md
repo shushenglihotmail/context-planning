@@ -348,7 +348,7 @@ Deferred — design analysis after phase 44 showed cp-autonomous (drives milesto
 
 Plans:
 - [x] 46-01: README.md + docs/ updates — document 5 new `cp-workflow-*` agent skills and new `cp workflow export` CLI subcommand.
-- [ ] 46-02: MIGRATION-v1.1.md (new file) + CHANGELOG.md v1.1.0 entry — explain v1.0 → v1.1 delta, what's new, what's deferred, discovery path for new skills.
+- [x] 46-02: MIGRATION-v1.1.md (new file) + CHANGELOG.md v1.1.0 entry — explain v1.0 → v1.1 delta, what's new, what's deferred, discovery path for new skills.
 - [ ] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`.
 ## Progress
 
