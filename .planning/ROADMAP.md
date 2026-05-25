@@ -356,7 +356,7 @@ Plans:
 Closes the remaining gap from v1.1's "every write-side workflow CLI verb has a slash skill" goal: standalone agent skills for the 6 read-side/utility verbs (import, export, validate, show, diagram, brainstorm) plus a new `cp workflow inspect` CLI that shows the template YAML alongside the deduced wave order, with its own `/cp-workflow-inspect` agent skill.
 
 Plans:
-- [ ] 47-01: `cp workflow inspect <name> [--json]` CLI subcommand — combines `show` output with computed wave-by-wave decomposition from `lib/workflow.js#computeWaves`; dryrun-cli tests.
+- [x] 47-01: `cp workflow inspect <name> [--json]` CLI subcommand — combines `show` output with computed wave-by-wave decomposition from `lib/workflow.js#computeWaves`; dryrun-cli tests.
 - [ ] 47-02: 7 new agent skills under `commands/cp/`: workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect; installer + integration tests extended.
 - [ ] 47-03: README + MIGRATION-v1.1.md + CHANGELOG amendments documenting the expanded surface (12 total `cp-workflow-*` skills, 2 new CLI verbs).
 
