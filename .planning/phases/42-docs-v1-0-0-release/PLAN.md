@@ -2,23 +2,17 @@
 phase: "42"
 name: Docs + v1.0.0 release
 milestone: v1.0 Workflow Engine
-status: in-progress
+status: ready
+plan-status:
+  42-01: pending
 created: 2026-05-25
-base-commit: ecec45bd02e2ebe1b80586af9f1495a520549747
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+base-commit: 918b96da3b9bf6f6a01a6f6f1bf45fb52f8c1e30
+expected-key-files:
+  42-01:
+    - README.md
+    - MIGRATION-v1.0.md
+    - CHANGELOG.md
+    - package.json
 ---
 
 # Phase 42: Docs + v1.0.0 release
@@ -28,20 +22,28 @@ base-commit: ecec45bd02e2ebe1b80586af9f1495a520549747
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Document the v1.0 Workflow Engine (new `cp run` + `cp workflow` CLI families, 3 built-in templates, custom-tier state, principles), publish MIGRATION-v1.0.md, bump `package.json` to `1.0.0`, and close the milestone.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. README has a `## Workflow Engine` section with two compact tables (cp run family, cp workflow family) and a link to MIGRATION-v1.0.md.
+2. `MIGRATION-v1.0.md` exists at repo root covering: What's New, Three State Tiers, Template Format Reference, Built-in Templates, FAQ. Pre-1.0 projects need no migration (this is documented explicitly in the FAQ).
+3. CHANGELOG.md has a `[1.0.0]` section with Added bullets covering: workflow engine (lib/workflow, lib/runtime, lib/custom), `cp run` CLI family, `cp workflow` CLI family, three built-in templates (dev / debug / quick), AI authoring via `cp workflow brainstorm`, top-level `principles:` mechanism. Date the release.
+4. `package.json` version = `1.0.0`.
+5. `npm test` green (34 test files; 0 failures).
+6. `node bin\cp.js complete-milestone "v1.0 Workflow Engine"` succeeds (audit gate passes, milestone marked validated and collapsed in ROADMAP).
+7. Final commit prompts user to: `git tag v1.0.0 && git push --tags`, then `npm publish` (interactive OTP — user owns this step), then `gh release create v1.0.0 --notes-file <extracted CHANGELOG section>` (optional, user-driven).
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 42-01: {brief description}
+- [ ] 42-01: README + MIGRATION-v1.0.md + CHANGELOG + version bump + milestone close.
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- This is a release phase; no new code or tests. Mechanical doc + version work.
+- Recommend 2 commits inside the plan: `docs(v1.0): README + MIGRATION-v1.0.md + CHANGELOG` followed by `release: v1.0.0`. A single combined commit is also acceptable.
+- `npm publish` is user-driven (OTP). After CI work completes the plan, stop and surface the publish-checklist for the user to execute.
+- README skill table location: search for `/cp-update` in README; insert the new `## Workflow Engine` section before or after the skill section as appropriate.
+- MIGRATION-v1.0.md should link to `.planning/milestones/v1-0-workflow-engine/DESIGN.md` for deeper architecture rationale.
+- The `cp workflow brainstorm` flow itself is a way to author new workflows — call this out in MIGRATION as the "AI authoring" feature promised by the milestone.
+
