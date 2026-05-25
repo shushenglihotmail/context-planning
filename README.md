@@ -8,7 +8,7 @@
 
 [![npm](https://img.shields.io/npm/v/context-planning?color=brightgreen)](https://www.npmjs.com/package/context-planning)
 [![ci](https://github.com/shushenglihotmail/context-planning/actions/workflows/ci.yml/badge.svg)](https://github.com/shushenglihotmail/context-planning/actions/workflows/ci.yml)
-[![tests](https://img.shields.io/badge/tests-751%20passing-brightgreen)]()
+[![tests](https://img.shields.io/badge/tests-2100%2B%20passing-brightgreen)]()
 [![node](https://img.shields.io/badge/node-%E2%89%A518-blue)]()
 [![license](https://img.shields.io/badge/license-MIT-blue)]()
 
@@ -67,7 +67,7 @@ Once you've started, every path converges on the same `/cp-plan-phase N`
 ```bash
 npm install -g context-planning
 # exposes BOTH `cplan` and `cp` on PATH
-cp --version    # should print 0.10.x
+cp --version    # should print 1.1.x
 ```
 
 ### Node CLI (from source — for development)
@@ -76,7 +76,7 @@ cp --version    # should print 0.10.x
 git clone https://github.com/shushenglihotmail/context-planning
 cd context-planning
 npm install         # only dep: yaml
-npm test            # ~1400 assertions; should all pass
+npm test            # ~2100 assertions; should all pass
 npm link            # exposes BOTH `cplan` and `cp` on PATH (or use: node bin/cp.js ...)
 ```
 
@@ -258,6 +258,20 @@ verb when a finding appears.
 | `/cp-map-codebase`       | Scaffold `.planning/codebase/` (7 GSD-compatible docs: STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS); dispatch 4 parallel sub-agents to fill them. **cp-native** — no provider required. | Harness sub-agent dispatch (Copilot CLI `task` / Claude `Task` tool) |
 | `/cp-capture`            | Walk `.planning/INBOX.md` open items and route each to a quick task / phase note / seed / discard. cp tracks state; harness performs the routing edits. **cp-native** — no provider required for capture/list/tick. | Harness-driven routing; optional provider for `quick:*` items |
 
+#### Workflow skills (new in v1.1)
+
+The v1.1 milestone closed the agent-skill gap that v1.0 left: every
+write-side workflow CLI verb now has a matching in-CLI slash skill, so
+you never have to drop to the terminal mid-session to drive a workflow.
+
+| Command | What it does | Wraps |
+|---|---|---|
+| `/cp-workflow-list` | List built-in + project workflow templates with source and binding; show what `/cp-workflow-run` accepts | `cp workflow ls` |
+| `/cp-workflow-run <workflow> [<name>] [--scope=…] [--check]` | Drive any workflow (built-in or custom) wave-by-wave to completion. Dispatches each phase to the role skill resolved by `cp doctor`. Smart-gated on test fail / audit HIGH / executor deviation | `cp run` + the mark-complete wave loop |
+| `/cp-workflow-resume <slug>` | Re-emit the current wave's instruction after a session boundary or context reset | `cp run resume` |
+| `/cp-workflow-new <name> [--from <built-in>] [--force]` | Author a new project-local workflow template from a blank or cloned starting point (interactive picker if argv is omitted) | `cp workflow new` |
+| `/cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]` | Round-trip customize a built-in template: export → edit → validate → import as a new project-local template | `cp workflow export` (new in v1.1) + `cp workflow import` |
+
 ### Node CLI (operational tooling — not used inside the AI loop)
 
 ```bash
@@ -356,6 +370,10 @@ they hide.
 
 > **New in v1.0** — see [MIGRATION-v1.0.md](MIGRATION-v1.0.md) for the full
 > template format reference, state tier guide, and FAQ.
+> **New in v1.1** — see [MIGRATION-v1.1.md](MIGRATION-v1.1.md) for the new
+> in-CLI agent skills (`/cp-workflow-run`, `/cp-workflow-list`,
+> `/cp-workflow-resume`, `/cp-workflow-new`, `/cp-workflow-customize`) and
+> the new `cp workflow export` subcommand.
 
 cp ships a reusable YAML workflow format that lets you define phase DAGs once
 and run them via `cp run`. Each workflow declares phases, dependencies (for
@@ -393,7 +411,8 @@ cp run status <slug>                    # status: done
 | Sub-command | Purpose |
 |---|---|
 | `cp workflow ls [--json]` | List built-in + project templates with source and binding |
-| `cp workflow show <name>` | Pretty-print a resolved template |
+| `cp workflow show <name>` | Pretty-print a resolved template (dumps YAML to stdout — pipe to a file for export-to-stdout) |
+| `cp workflow export <name> [--out <path>] [--as <new-name>] [--force]` | **New in v1.1.** Export a built-in template to a file with the `# template:` header stripped and the `workflow:` key optionally renamed. Validates before write. Default destination: `./<as-or-name>.yaml`. Pairs with `cp workflow import` for round-trip customization (or use the `/cp-workflow-customize` skill) |
 | `cp workflow validate <name-or-path> [--strict]` | Run schema + DAG validation; `--strict` fails on warnings (CI-safe) |
 | `cp workflow diagram <name-or-path>` | Emit a Mermaid `flowchart TD` of the phase DAG |
 | `cp workflow init` | Bootstrap `.planning/workflows/` in the current project (idempotent) |
