@@ -12,10 +12,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 Phase: 44 (v1.1 Workflow Skills)
 Plan: 44-01
 Status: Ready to execute
-Current focus: Creator skills: cp-workflow-new, cp-workflow-import
-Last activity: write SUMMARY for 43-04
+Current focus: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export)
+Last activity: start 44-01 execution
 
-Progress: [███░░░░░░░] 31%
+Progress: [███░░░░░░░] 29%
 
 ## Performance Metrics
 
