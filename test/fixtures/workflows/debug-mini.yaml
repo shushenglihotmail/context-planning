@@ -1,0 +1,25 @@
+workflow: debug-mini
+version: 1
+binds_to: custom
+principles:
+  - "Reproduce before fixing"
+phases:
+  - id: collect-symptoms
+    role: investigator
+    prompt: |
+      Collect symptoms.
+  - id: repro
+    depends_on: [collect-symptoms]
+    role: investigator
+    prompt: |
+      Build a minimal reproduction.
+  - id: fix
+    depends_on: [repro]
+    role: implementer
+    prompt: |
+      Apply the fix.
+  - id: verify
+    depends_on: [fix]
+    role: verifier
+    prompt: |
+      Verify the fix holds.

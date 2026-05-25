@@ -1,0 +1,15 @@
+workflow: quick-mini
+version: 1
+binds_to: custom
+phases:
+  - id: discuss
+    prompt: |
+      Discuss the change.
+  - id: execute
+    depends_on: [discuss]
+    prompt: |
+      Make the change.
+  - id: verify
+    depends_on: [execute]
+    prompt: |
+      Verify.

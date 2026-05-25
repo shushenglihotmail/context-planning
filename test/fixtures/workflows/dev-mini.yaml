@@ -1,0 +1,38 @@
+workflow: dev-mini
+version: 1
+binds_to: milestone
+principles:
+  - "Don't commit until confirmed with user"
+  - "Try to run autonomously until hitting a blocker"
+defaults:
+  model: middle
+phases:
+  - id: brainstorm
+    role: brainstormer
+    model: high
+    skill: brainstorming
+    persist_output: true
+    prompt: |
+      Brainstorm the problem space.
+  - id: research-a
+    depends_on: [brainstorm]
+    role: researcher
+    prompt: |
+      Research angle A.
+  - id: research-b
+    depends_on: [brainstorm]
+    role: researcher
+    prompt: |
+      Research angle B.
+  - id: plan
+    depends_on: [research-a, research-b]
+    role: planner
+    skill: writing-plans
+    prompt: |
+      Synthesize a plan.
+  - id: execute
+    depends_on: [plan]
+    role: implementer
+    skill: executing-plans
+    prompt: |
+      Execute the plan.
