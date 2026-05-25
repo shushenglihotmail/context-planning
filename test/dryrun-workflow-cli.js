@@ -250,6 +250,104 @@ section('cp workflow import cycle.yaml → refuses (invalid), exit 2');
 }
 
 // ============================================================
+// Section 8.5: export (NEW — plan 44-01)
+// ============================================================
+section('cp workflow export → usage error when no name');
+{
+  const dir = mkFixture('export0');
+  const r = cp(['workflow', 'export'], dir);
+  ok('exit 2', r.status === 2, 'status=' + r.status);
+  ok('stderr shows Usage', r.stderr.includes('Usage:'), 'stderr=' + r.stderr);
+}
+
+section('cp workflow export dev → writes ./dev.yaml without # template: header, exit 0');
+{
+  const dir = mkFixture('export1');
+  const r = cp(['workflow', 'export', 'dev'], dir);
+  ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+  const dest = path.join(dir, 'dev.yaml');
+  ok('dev.yaml created at cwd', fs.existsSync(dest), 'dest=' + dest);
+  if (fs.existsSync(dest)) {
+    const body = fs.readFileSync(dest, 'utf8');
+    ok('no "# template:" header line', !/^# template:/m.test(body),
+      'first 80 chars: ' + JSON.stringify(body.slice(0, 80)));
+    ok('contains "workflow: dev"', /^workflow:\s+dev\s*$/m.test(body),
+      'body head: ' + JSON.stringify(body.slice(0, 80)));
+  }
+}
+
+section('cp workflow export dev (file exists, no --force) → exit 6');
+{
+  const dir = mkFixture('export2');
+  cp(['workflow', 'export', 'dev'], dir);
+  const r2 = cp(['workflow', 'export', 'dev'], dir);
+  ok('exit 6 on collision', r2.status === 6, 'status=' + r2.status);
+  ok('stderr mentions --force', r2.stderr.includes('--force'), 'stderr=' + r2.stderr);
+}
+
+section('cp workflow export dev --force → overwrites cleanly, exit 0');
+{
+  const dir = mkFixture('export3');
+  cp(['workflow', 'export', 'dev'], dir);
+  const r2 = cp(['workflow', 'export', 'dev', '--force'], dir);
+  ok('exit 0', r2.status === 0, 'status=' + r2.status + ' stderr=' + r2.stderr);
+}
+
+section('cp workflow export dev --as my-dev → embedded "workflow:" key rewritten');
+{
+  const dir = mkFixture('export4');
+  const r = cp(['workflow', 'export', 'dev', '--as', 'my-dev'], dir);
+  ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+  const dest = path.join(dir, 'my-dev.yaml');
+  ok('my-dev.yaml created (default --out uses --as name)', fs.existsSync(dest),
+    'dest=' + dest);
+  if (fs.existsSync(dest)) {
+    const body = fs.readFileSync(dest, 'utf8');
+    ok('contains "workflow: my-dev"', /^workflow:\s+my-dev\s*$/m.test(body),
+      'head: ' + JSON.stringify(body.slice(0, 80)));
+    ok('NO line "workflow: dev" anywhere', !/^workflow:\s+dev\s*$/m.test(body),
+      'rewrite missed');
+  }
+}
+
+section('cp workflow export dev --as "" → exit 2 (empty --as rejected)');
+{
+  const dir = mkFixture('export5');
+  const r = cp(['workflow', 'export', 'dev', '--as', ''], dir);
+  ok('exit 2', r.status === 2, 'status=' + r.status);
+  ok('stderr mentions --as', r.stderr.includes('--as'), 'stderr=' + r.stderr);
+}
+
+section('cp workflow export nope → exit 3 (template not found)');
+{
+  const dir = mkFixture('export6');
+  const r = cp(['workflow', 'export', 'nope'], dir);
+  ok('exit 3', r.status === 3, 'status=' + r.status);
+  ok('stderr mentions "not found"', /not found/.test(r.stderr), 'stderr=' + r.stderr);
+}
+
+section('cp workflow export dev --out subdir/x.yaml → creates parent dir');
+{
+  const dir = mkFixture('export7');
+  const r = cp(['workflow', 'export', 'dev', '--out', 'nested/sub/dev.yaml'], dir);
+  ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+  const dest = path.join(dir, 'nested', 'sub', 'dev.yaml');
+  ok('nested file created', fs.existsSync(dest), 'dest=' + dest);
+}
+
+section('cp workflow --help mentions export');
+{
+  const dir = mkFixture('exporthelp');
+  const r = cp(['workflow', '--help'], dir);
+  ok('exit 0', r.status === 0);
+  ok('help includes "cp workflow export"',
+    r.stdout.includes('cp workflow export'),
+    'stdout=' + r.stdout.slice(0, 800));
+  ok('help includes --as flag', r.stdout.includes('--as'),
+    'stdout=' + r.stdout.slice(0, 800));
+}
+
+// ============================================================
 // Section 9: brainstorm (NEW — plan 41-03)
 // ============================================================
 section('cp workflow brainstorm --workflow demo → exit 0, manual fallback (no superpowers)');

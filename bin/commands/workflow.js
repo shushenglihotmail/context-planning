@@ -11,6 +11,8 @@
  *   init                            – create .planning/workflows/ directory
  *   new <name> [--from <built-in>]  – scaffold a new template file
  *   import <path> [--name <n>]      – copy + validate an external template
+ *   export <name> [--out <path>] [--as <new-name>]
+ *                                   – write a template's YAML to a file (round-trips with import)
  *   brainstorm [--workflow <name>] [--out <path>]
  *                                   – emit a brainstorm context (delegation to provider skill)
  *
@@ -53,6 +55,11 @@ var USAGE = [
   '  cp workflow import <path> [--name <override>] [--force]',
   '                                        Copy + validate an external template.',
   '                                        --name   Override the destination filename.',
+  '                                        --force  Overwrite an existing file.',
+  '  cp workflow export <name> [--out <path>] [--as <new-name>] [--force]',
+  '                                        Write a template\'s YAML to a file for editing.',
+  '                                        --out    Destination path (default: ./<name>.yaml).',
+  '                                        --as     Rewrite the top-level "workflow:" key.',
   '                                        --force  Overwrite an existing file.',
   '  cp workflow brainstorm [--workflow <name>] [--out <path>]',
   '                                        Emit a brainstorm context for designing a new',
@@ -569,6 +576,131 @@ function workflowImport(args, cwd) {
 }
 
 /**
+ * cp workflow export <name> [--out <path>] [--as <new-name>] [--force]
+ *
+ * Companion to `cp workflow import` and convenience wrapper around
+ * `cp workflow show`. Writes a template's YAML to a file with:
+ *   - the "# template: <name> (source: ...)" comment header from
+ *     `show` stripped
+ *   - optionally the top-level `workflow:` key rewritten to a new name
+ *     (line-precise regex; YAML is NOT reserialised)
+ *   - validation before write (so we never export a broken file)
+ *
+ * Default destination: ./<as|name>.yaml (relative to cwd).
+ */
+function workflowExport(args, cwd) {
+  var name = null;
+  var outPath = null;
+  var asName = null;
+  var force = false;
+
+  for (var i = 0; i < args.length; i++) {
+    var a = args[i];
+    if (a === '--out') { outPath = args[++i]; }
+    else if (a === '--as') { asName = args[++i]; }
+    else if (a === '--force') { force = true; }
+    else if (a.startsWith('-')) { process.stderr.write('unknown option: ' + a + '\n'); process.exit(2); }
+    else if (!name) { name = a; }
+    else { process.stderr.write('unexpected arg: ' + a + '\n'); process.exit(2); }
+  }
+
+  if (!name) {
+    process.stderr.write('Usage: cp workflow export <name> [--out <path>] [--as <new-name>] [--force]\n');
+    process.exit(2);
+  }
+
+  if (asName !== null && (typeof asName !== 'string' || asName.trim() === '')) {
+    process.stderr.write('error: --as requires a non-empty name\n');
+    process.exit(2);
+  }
+
+  // Resolve the source template (built-in or project).
+  var srcPath;
+  try {
+    srcPath = resolveNameOrPath(name, cwd);
+  } catch (e) {
+    var msg = e.message || String(e);
+    if (msg.startsWith('Template not found:') || e.notFound) {
+      process.stderr.write('error: template "' + name + '" not found.\n');
+      process.exit(3);
+    }
+    process.stderr.write('error: ' + msg + '\n');
+    process.exit(1);
+  }
+
+  var body = fs.readFileSync(srcPath, 'utf8');
+
+  // Ensure trailing newline (mirrors what `show` emits).
+  if (body.length > 0 && body[body.length - 1] !== '\n') {
+    body = body + '\n';
+  }
+
+  // If --as: rewrite the first top-level `workflow:` line.
+  // Line-precise regex on the per-line basis avoids matching `workflow:` that
+  // appears inside string values, nested keys, or comments.
+  if (asName) {
+    var lines = body.split('\n');
+    var rewritten = false;
+    for (var j = 0; j < lines.length; j++) {
+      if (/^workflow:\s+\S/.test(lines[j])) {
+        lines[j] = 'workflow: ' + asName;
+        rewritten = true;
+        break;
+      }
+    }
+    if (!rewritten) {
+      process.stderr.write('error: could not find top-level "workflow:" key in source template\n');
+      process.exit(1);
+    }
+    body = lines.join('\n');
+  }
+
+  // Validate the result BEFORE writing. We parse the in-memory body via
+  // wfLib.loadTemplate by writing to a temp path (loadTemplate expects a
+  // file). Cheaper alternative: rely on wfLib having a parseTemplateString
+  // — but loadTemplate is the canonical entrypoint, so prefer it.
+  var os = require('os');
+  var tmpPath = path.join(os.tmpdir(), 'cp-workflow-export-' + process.pid + '-' + Date.now() + '.yaml');
+  fs.writeFileSync(tmpPath, body);
+  var tpl;
+  try {
+    tpl = wfLib.loadTemplate(tmpPath, {});
+  } catch (e2) {
+    fs.unlinkSync(tmpPath);
+    process.stderr.write('error: exported YAML failed to parse: ' + (e2.message || String(e2)) + '\n');
+    process.exit(1);
+  }
+  var vr = wfLib.validate(tpl);
+  fs.unlinkSync(tmpPath);
+  if (!vr.ok) {
+    for (var k = 0; k < vr.errors.length; k++) {
+      process.stderr.write('error: ' + vr.errors[k] + '\n');
+    }
+    process.exit(2);
+  }
+
+  // Resolve output path.
+  var destBaseName = asName || name;
+  var dest = outPath
+    ? path.resolve(cwd || process.cwd(), outPath)
+    : path.resolve(cwd || process.cwd(), destBaseName + '.yaml');
+
+  if (fs.existsSync(dest) && !force) {
+    process.stderr.write('error: ' + dest + ' already exists. Use --force to overwrite.\n');
+    process.exit(6);
+  }
+
+  // Ensure parent directory exists (handles --out subdir/file.yaml).
+  var destDir = path.dirname(dest);
+  if (!fs.existsSync(destDir)) {
+    fs.mkdirSync(destDir, { recursive: true });
+  }
+
+  fs.writeFileSync(dest, body);
+  process.stderr.write('exported: ' + dest + (asName ? ' (as "' + asName + '")' : '') + '\n');
+}
+
+/**
  * cp workflow brainstorm [--workflow <name>] [--out <path>]
  */
 function workflowBrainstorm(args, cwd) {
@@ -679,6 +811,7 @@ function run(args) {
     case 'init':        return workflowInit(rest, cwd);
     case 'new':         return workflowNew(rest, cwd);
     case 'import':      return workflowImport(rest, cwd);
+    case 'export':      return workflowExport(rest, cwd);
     case 'brainstorm':  return workflowBrainstorm(rest, cwd);
     default:
       process.stderr.write('error: unknown workflow subcommand "' + sub + '".\n');
