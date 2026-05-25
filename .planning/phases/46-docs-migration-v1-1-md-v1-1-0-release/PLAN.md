@@ -6,7 +6,7 @@ status: in-progress
 plan-status:
   46-01: complete
   46-02: complete
-  46-03: pending
+  46-03: complete
 created: 2026-05-25
 base-commit: ce06ed62fb23b1dc8f5d16fa76abfdd9633dfbc7
 # expected-key-files (optional, v0.8 P5) — declare what each plan
@@ -54,7 +54,7 @@ CLI subcommand, and a migration guide for users upgrading from v1.0.
 
 - [x] 46-01: README.md + docs/ updates — document 5 new `cp-workflow-*` agent skills and new `cp workflow export` CLI subcommand.
 - [x] 46-02: MIGRATION-v1.1.md (new file) + CHANGELOG.md v1.1.0 entry — explain v1.0 → v1.1 delta, what's new, what's deferred, discovery path for new skills.
-- [ ] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`.
+- [x] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`.
 
 ## Notes
 

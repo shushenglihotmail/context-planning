@@ -340,16 +340,12 @@ Plans:
 - [x] 44-03: `commands/cp/workflow-customize.md` skill — drives the export → edit → import round-trip in one skill (replaces previously-planned cp-workflow-import skill).
 - [x] 44-04: Tests — installer auto-pickup for both new skills + integration test exercising export → import round-trip end-to-end.
 
-### Phase 45: ~~Refactor cp-quick + cp-autonomous to shims~~ (deferred to v1.2)
-
-Deferred — design analysis after phase 44 showed cp-autonomous (drives milestone phases) and cp-workflow-run dev (drives a workflow's waves) are fundamentally different orchestrators with different state layouts. A clean shim refactor would require either back-compat breaks or near-duplication. Re-scoping for v1.2.
-
 ### Phase 46: Docs + MIGRATION-v1.1.md + v1.1.0 release
 
 Plans:
 - [x] 46-01: README.md + docs/ updates — document 5 new `cp-workflow-*` agent skills and new `cp workflow export` CLI subcommand.
 - [x] 46-02: MIGRATION-v1.1.md (new file) + CHANGELOG.md v1.1.0 entry — explain v1.0 → v1.1 delta, what's new, what's deferred, discovery path for new skills.
-- [ ] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`. **Paused** during execution to expand v1.1 scope — see Phase 47. Resumes after Phase 47 + docs refresh in Phase 48.
+- [x] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`. **Paused** during execution to expand v1.1 scope — see Phase 47. Resumes after Phase 47 + docs refresh in Phase 48.
 
 ### Phase 47: Complete CLI-verb-to-agent-skill coverage + `cp workflow inspect`
 
