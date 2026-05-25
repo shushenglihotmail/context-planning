@@ -13,7 +13,7 @@ Phase: 41 (v1.0 Workflow Engine)
 Plan: 41-01
 Status: Ready to execute
 Current focus: CLI surface + built-in templates + AI authoring
-Last activity: tick plan 40-02
+Last activity: regenerate STATE.md after phase 40 completion
 
 Progress: [████░░░░░░] 43%
 
