@@ -5,6 +5,13 @@ milestone: v1.0 Workflow Engine
 status: in-progress
 created: 2026-05-25
 base-commit: 41cdc0b6e91bcf45e6aecf404f714993550cdacb
+plan-status:
+  40-01: in-progress
+  40-02: pending
+  40-03: in-progress
+plan-started:
+  40-01: 2026-05-25T17:30:00.000Z
+  40-03: 2026-05-25T17:30:00.000Z
 expected-key-files:
   40-01:
     - lib/workflow.js
