@@ -5,8 +5,8 @@ milestone: v1.1 Workflow Skills
 status: in-progress
 plan-status:
   46-01: complete
-  46-02: in-progress
-  46-03: pending
+  46-02: complete
+  46-03: in-progress
 created: 2026-05-25
 base-commit: ce06ed62fb23b1dc8f5d16fa76abfdd9633dfbc7
 # expected-key-files (optional, v0.8 P5) — declare what each plan
