@@ -154,12 +154,92 @@ section('cp run abandon <slug> --yes → status becomes "abandoned"');
 // ============================================================
 // Cleanup
 // ============================================================
+// Part 4: cp workflow export → import round-trip (added in plan 44-04)
+// (The cp-workflow-customize skill assumes this CLI round-trip works.)
+// ============================================================
+section('cp workflow export dev → ./dev.yaml is clean, round-trips through import');
+const dir2 = mkFixture();
+{
+  // Step a: export the dev built-in
+  const r = spawnSync(process.execPath, [CLI, 'workflow', 'export', 'dev'], {
+    cwd: dir2, encoding: 'utf8',
+  });
+  ok('export exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+}
+{
+  const out = path.join(dir2, 'dev.yaml');
+  ok('./dev.yaml exists', fs.existsSync(out), 'out=' + out);
+  if (fs.existsSync(out)) {
+    const body = fs.readFileSync(out, 'utf8');
+    ok('no "# template:" header (would break import round-trip)',
+      !/^# template:/m.test(body),
+      'body head: ' + JSON.stringify(body.slice(0, 80)));
+    ok('contains "workflow: dev"',
+      /^workflow:\s+dev\s*$/m.test(body),
+      'body head: ' + JSON.stringify(body.slice(0, 80)));
+  }
+
+  // Step b: round-trip back in via import (with --force since dev exists as built-in;
+  // import resolves to .planning/workflows/dev.yaml which would shadow the built-in).
+  // First ensure .planning/workflows/ exists.
+  spawnSync(process.execPath, [CLI, 'workflow', 'init'], { cwd: dir2, encoding: 'utf8' });
+  const r2 = spawnSync(process.execPath, [CLI, 'workflow', 'import', 'dev.yaml', '--force'], {
+    cwd: dir2, encoding: 'utf8',
+  });
+  ok('import dev.yaml --force exit 0', r2.status === 0,
+    'status=' + r2.status + ' stderr=' + r2.stderr);
+}
+
+section('cp workflow export dev --as my-dev --out my-dev.yaml → rename + import as new template');
+{
+  // Step a: export with rename
+  const r = spawnSync(process.execPath, [CLI, 'workflow', 'export', 'dev', '--as', 'my-dev', '--out', 'my-dev.yaml'], {
+    cwd: dir2, encoding: 'utf8',
+  });
+  ok('export --as exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+
+  const out = path.join(dir2, 'my-dev.yaml');
+  ok('my-dev.yaml exists at explicit --out', fs.existsSync(out), 'out=' + out);
+  if (fs.existsSync(out)) {
+    const body = fs.readFileSync(out, 'utf8');
+    ok('contains "workflow: my-dev" (rename took)',
+      /^workflow:\s+my-dev\s*$/m.test(body),
+      'body head: ' + JSON.stringify(body.slice(0, 80)));
+    ok('does NOT contain a bare "workflow: dev" line',
+      !/^workflow:\s+dev\s*$/m.test(body),
+      'rewrite missed somewhere');
+  }
+}
+{
+  // Step b: import the renamed file as a new template
+  const r = spawnSync(process.execPath, [CLI, 'workflow', 'import', 'my-dev.yaml'], {
+    cwd: dir2, encoding: 'utf8',
+  });
+  ok('import my-dev.yaml exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+}
+{
+  // Step c: confirm `cp workflow ls --json` lists my-dev as a project template
+  const r = spawnSync(process.execPath, [CLI, 'workflow', 'ls', '--json'], {
+    cwd: dir2, encoding: 'utf8',
+  });
+  let arr = null;
+  try { arr = JSON.parse(r.stdout); } catch (_) {}
+  ok('workflow ls --json parses', Array.isArray(arr), 'stdout=' + r.stdout.slice(0, 200));
+  const entry = arr && arr.find(e => e.name === 'my-dev');
+  ok('my-dev appears in ls', !!entry, 'arr=' + JSON.stringify(arr && arr.map(e => e.name)));
+  ok('my-dev source is "project"',
+    entry && entry.source === 'project',
+    'source=' + (entry ? entry.source : 'null'));
+}
+
+// ============================================================
 section('cleanup');
 try {
   fs.rmSync(dir1, { recursive: true, force: true });
-  ok('fixture cleaned up', true);
+  fs.rmSync(dir2, { recursive: true, force: true });
+  ok('fixtures cleaned up', true);
 } catch (_) {
-  ok('fixture cleaned up', false, 'could not remove ' + dir1);
+  ok('fixtures cleaned up', false, 'could not remove dir1 or dir2');
 }
 
 // ============================================================

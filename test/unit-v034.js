@@ -246,7 +246,7 @@ section('install/copilot + install/claude: v1.1 cp-workflow-* skills auto-pickup
   // no installer code change is needed. This section asserts that the
   // three new skill files actually land in both install targets.
 
-  const expectedSkills = ['cp-workflow-run', 'cp-workflow-list', 'cp-workflow-resume'];
+  const expectedSkills = ['cp-workflow-run', 'cp-workflow-list', 'cp-workflow-resume', 'cp-workflow-new', 'cp-workflow-customize'];
 
   // --- copilot ---
   const copilotRepo = mktmp('install-copilot-workflow');
