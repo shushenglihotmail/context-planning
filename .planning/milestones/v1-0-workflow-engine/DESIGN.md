@@ -39,7 +39,11 @@ Forces driving v1.0:
 
 Introduce **YAML workflow templates** as a new top-level abstraction. A template describes a **directed acyclic graph (DAG)** of phases; cp's runtime walks the DAG, emits per-wave instructions to the running agent, and tracks state in one of three first-class state tiers (`milestone | phase | custom`). The harness owns process structure, parallelism mechanism, and model resolution.
 
+Templates may declare top-level **`principles:`** — a list of plain-English strings encoding workflow-wide discipline (e.g. *"Don't commit until confirmed with user"*, *"Try to run autonomously until hitting a blocking issue"*). cp prepends them to every wave instruction; they layer on top of `PROJECT.md`'s `## Constraints` section.
+
 Three reference templates ship with cp: `dev`, `debug`, `quick`. A 14-command CLI surface covers running, inspecting, authoring, and importing templates.
+
+**Decision:** Approved (with one post-approval refinement: added top-level `principles:` field on 2026-05-24, captured in MILESTONE-CONTEXT.md Q11).
 
 ## Consequences
 
@@ -49,6 +53,7 @@ Three reference templates ship with cp: `dev`, `debug`, `quick`. A 14-command CL
 - **Customizable per-project** — local `.planning/workflows/*.yaml` overrides built-ins.
 - **AI-authorable** — `cp workflow brainstorm` designs new workflows via the provider's brainstorm skill (fulfils original "by people or AI agent" requirement).
 - **No state-shape forcing** — `custom` tier accommodates work that isn't milestone-shaped (debug sessions, investigations).
+- **Workflow-level discipline** — `principles:` field lets templates encode "always do X / never do Y" rules that travel with the workflow.
 - **Portable templates** — no harness/model coupling in templates; one file runs under Copilot, Claude, Aider, etc.
 - **Backward compatible** — existing `cp scaffold-milestone`/`cp scaffold-phase` unchanged; users opt into workflows.
 - **Discoverability via convention** — directory IS the registry (`.planning/workflows/`, `.planning/custom/`); no separate index file to maintain.
@@ -111,7 +116,7 @@ Three reference templates ship with cp: `dev`, `debug`, `quick`. A 14-command CL
 
 - **Purpose:** parse YAML template, validate schema + DAG (no cycles, no dangling deps, topo-order warning), compute execution waves (BFS over the DAG).
 - **Public interface:**
-  - `loadTemplate(nameOrPath) → {meta, phases, defaults}`
+  - `loadTemplate(nameOrPath) → {meta, principles, defaults, phases}`
   - `validate(template) → {ok, warnings[], errors[]}`
   - `computeWaves(template) → [[phase, phase], [phase], …]`
   - `resolveTemplate(name) → path` (project-local first, then built-in)
@@ -120,6 +125,7 @@ Three reference templates ship with cp: `dev`, `debug`, `quick`. A 14-command CL
 ### `lib/runtime.js` — Wave-walker and instruction emitter
 
 - **Purpose:** drive a workflow run end-to-end. For each wave, emit an instruction string to stdout (consumed by the running agent). Track state in the binding tier's state file.
+- **Instruction format (every wave):** numbered preamble of *(a)* PROJECT.md `## Constraints`, *(b)* template `principles:`, followed by the wave's phase blocks. Preamble is constant across waves of one run.
 - **Public interface:**
   - `startRun(template, opts) → {slug, binding, firstWaveInstruction}`
   - `resumeRun(slug) → {currentWave, instruction}`
@@ -198,6 +204,8 @@ Three built-in templates shipped in the npm package:
 | `depends_on:` references unknown phase | `validate()` | Abort with offending phase id |
 | File order isn't topological | `validate()` | Warn (not error); offer `--fix` to reorder |
 | Phase id collision | `validate()` | Abort |
+| `principles:` contains non-string entries | `validate()` | Abort with offending entry |
+| `principles:` count > 10 | `validate()` | Warn (cognitive overload); no abort |
 | Agent doesn't honor parallelism hint | Cannot detect | Phases run sequentially; correct but slower |
 | Agent doesn't write phase summary at canonical path | Path missing after agent claims done | Runtime prompts user: retry / skip / abandon |
 | `cp run resume` on unknown slug | `custom.readState()` ENOENT | Print available slugs, abort |
@@ -273,6 +281,14 @@ All destructive ops (`abandon`, `prune`) require `--yes` flag or interactive con
 **Cons:** Forces every workflow into the milestone shape, contradicting the original requirement *"workflow may not always fit cp's milestone-phase structure."*
 
 **Verdict:** rejected; three-tier hybrid (milestone / phase / custom).
+
+### Option H — Structured principles (objects with id/severity/rule)
+
+**Pros:** cp could programmatically categorize and enforce principles; `severity: blocking` could let cp refuse to mark a phase done if violated.
+
+**Cons:** Over-engineered for v1.0; enforcement is impossible anyway (cp can't inspect agent behavior). Free-form strings cover every actual use case at zero schema cost.
+
+**Verdict:** rejected for v1.0; revisit if a real categorization need emerges in v1.x.
 
 ## Open Questions
 

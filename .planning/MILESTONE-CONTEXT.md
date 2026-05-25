@@ -137,6 +137,31 @@ Plus: manual file drop into `.planning/workflows/` always works (directory IS th
 
 **Decision:** Accept all 4 authoring paths.
 
+## Q11 — Global principles / discipline at the template level
+
+> Followed up after spec was approved: "besides phases in the template, we should add a global section in template to hold global level principals or discipline. like 'Don't commit until confirmed with user', 'Try to run autonomously until hit blocking issue'."
+
+**Refinement:** add a top-level `principles:` field — a list of plain-English strings — that cp prepends to **every** wave instruction as a numbered preamble. Cannot be overridden per phase (project-wide discipline). Free-form strings, not structured objects (over-engineering for v1.0). Built-in templates ship with sensible defaults per work-shape. Layered with `PROJECT.md`'s `## Constraints` section: cp emits PROJECT constraints first (always), then template principles (workflow-specific) — agent gets full layered context.
+
+Worked example:
+
+```yaml
+workflow: dev
+binds_to: milestone
+
+defaults:
+  model: middle
+
+principles:
+  - Don't commit until confirmed with user
+  - Try to run autonomously until hitting a blocking issue
+  - Stop immediately on test failure; don't try alternative approaches without approval
+
+phases: [...]
+```
+
+**Decision:** Accept all (list-of-strings, at root, defaults per built-in template, layered with PROJECT.md constraints).
+
 ---
 
 ## Locked-in design (summary)
@@ -144,6 +169,7 @@ Plus: manual file drop into `.planning/workflows/` always works (directory IS th
 - **Format:** YAML, DAG-based, phases listed in topological order
 - **Three state tiers:** milestone | phase | custom (default)
 - **Per-phase fields:** `id`, `depends_on`, `role` (free-form), `model` (high|middle|low, advisory), `skill`, `persist_output` (bool, default true), `prompt`
+- **Top-level principles:** list of free-form strings; cp prepends them to every wave instruction; layered with PROJECT.md `## Constraints`; per-template defaults ship with each built-in
 - **Strict separation:** templates declare WHAT; harnesses decide HOW
 - **cp owns paths:** destinations computed from binding + id + topo order
 - **Built-in templates:** dev / debug / quick (3 starters)
