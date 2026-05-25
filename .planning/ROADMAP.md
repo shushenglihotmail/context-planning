@@ -372,6 +372,13 @@ Plans:
 - [ ] 49-01: TBD
 - [ ] 49-02: TBD
 - [ ] 49-03: TBD
+
+### Phase 50: Milestone-phase to workflow binding
+
+Plans:
+- [ ] 50-01: TBD
+- [ ] 50-02: TBD
+- [ ] 50-03: TBD
 ## Progress
 
 **Execution Order:**
