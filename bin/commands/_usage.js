@@ -114,6 +114,17 @@ Usage:
                                   stops via \`.planning/.continue-here.md\`.
                                   Bare CLI is most useful with --check;
                                   /cp-autonomous slash skill drives the full loop.
+  cp run <workflow> [name] [--plan-only] [--projectDir <path>]
+  cp run resume <slug> [--projectDir <path>]
+  cp run retry <slug> <phase-id> [--projectDir <path>]
+  cp run abandon <slug> [--yes] [--projectDir <path>]
+  cp run mark-complete <slug> <phase-id> [--projectDir <path>]
+  cp run status [slug] [--json] [--projectDir <path>]
+                                  Run and manage workflow template instances.
+                                  \`cp run <workflow> [name]\` starts a new run
+                                  (--plan-only prints waves without mutating state).
+                                  \`cp run status\` lists all active runs.
+                                  See \`cp run --help\` for full sub-command details.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

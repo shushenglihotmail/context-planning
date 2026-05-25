@@ -37,4 +37,5 @@ module.exports = {
   deviate: require('./deviate'),
   update: require('./update'),
   autonomous: require('./autonomous'),
+  run: require('./run'),
 };
