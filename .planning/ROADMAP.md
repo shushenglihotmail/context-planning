@@ -337,7 +337,7 @@ Plans:
 Plans:
 - [x] 44-01: `cp workflow export <name>` CLI command — thin convenience over `cp workflow show` with default destination + `--as <new-name>` rename. Unit tests.
 - [x] 44-02: `commands/cp/workflow-new.md` skill — drives `cp workflow new --from <built-in>` for "I want a fresh blank template" path.
-- [ ] 44-03: `commands/cp/workflow-customize.md` skill — drives the export → edit → import round-trip in one skill (replaces previously-planned cp-workflow-import skill).
+- [x] 44-03: `commands/cp/workflow-customize.md` skill — drives the export → edit → import round-trip in one skill (replaces previously-planned cp-workflow-import skill).
 - [ ] 44-04: Tests — installer auto-pickup for both new skills + integration test exercising export → import round-trip end-to-end.
 
 ### Phase 45: Refactor cp-quick + cp-autonomous to shims
