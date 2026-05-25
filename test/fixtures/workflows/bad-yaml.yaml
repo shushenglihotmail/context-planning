@@ -1,0 +1,3 @@
+workflow: bad
+  - unclosed: [bracket
+  invalid: yaml: here:

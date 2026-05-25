@@ -1,0 +1,7 @@
+workflow: missing-id-test
+version: 1
+phases:
+  - id: valid-phase
+    role: tester
+  - role: orphan
+    prompt: This phase has no id

@@ -1,0 +1,20 @@
+workflow: linear
+version: 1
+binds_to: custom
+principles:
+  - Keep it simple
+  - One thing at a time
+defaults:
+  model: default
+phases:
+  - id: brainstorm
+    role: researcher
+    prompt: Brainstorm ideas
+  - id: plan
+    depends_on: [brainstorm]
+    role: planner
+    prompt: Create the plan
+  - id: execute
+    depends_on: [plan]
+    role: executor
+    prompt: Execute the plan

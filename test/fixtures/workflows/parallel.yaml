@@ -1,0 +1,19 @@
+workflow: parallel
+version: 1
+binds_to: phase
+phases:
+  - id: discuss
+    role: facilitator
+    prompt: Discuss requirements
+  - id: research-a
+    depends_on: [discuss]
+    role: researcher
+    prompt: Research track A
+  - id: research-b
+    depends_on: [discuss]
+    role: researcher
+    prompt: Research track B
+  - id: execute
+    depends_on: [research-a, research-b]
+    role: executor
+    prompt: Execute

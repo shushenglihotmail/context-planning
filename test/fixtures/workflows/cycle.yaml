@@ -1,0 +1,9 @@
+workflow: cycle-test
+version: 1
+phases:
+  - id: a
+    depends_on: [b]
+  - id: b
+    depends_on: [c]
+  - id: c
+    depends_on: [a]
