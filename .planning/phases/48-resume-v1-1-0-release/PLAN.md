@@ -6,6 +6,7 @@ status: in-progress
 plan-status:
   48-01: complete
 created: 2026-05-25
+base-commit: 05539f908b64ea8cda2c5b34eb97427322a2a954
 ---
 
 # Phase 48: Resume v1.1.0 release
