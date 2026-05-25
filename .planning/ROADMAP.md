@@ -300,6 +300,12 @@ Plans:
 
 ### 🚧 v1.0 Workflow Engine (In Progress)
 
+### Phase 40: Core engine + custom tier
+
+Plans:
+- [ ] 40-01: TBD
+- [ ] 40-02: TBD
+- [ ] 40-03: TBD
 ## Progress
 
 **Execution Order:**
