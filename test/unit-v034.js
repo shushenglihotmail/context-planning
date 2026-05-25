@@ -239,6 +239,45 @@ section('install/claude: e2e collision protection');
 }
 
 // =============================================================
+section('install/copilot + install/claude: v1.1 cp-workflow-* skills auto-pickup');
+{
+  // v1.1 phase 43 adds three new cp-workflow-* skill files to commands/cp/.
+  // Both installers iterate commands/cp/*.md via common.listCommandFiles —
+  // no installer code change is needed. This section asserts that the
+  // three new skill files actually land in both install targets.
+
+  const expectedSkills = ['cp-workflow-run', 'cp-workflow-list', 'cp-workflow-resume'];
+
+  // --- copilot ---
+  const copilotRepo = mktmp('install-copilot-workflow');
+  copilot.install({ pluginRoot: REPO, repoRoot: copilotRepo });
+  for (const skill of expectedSkills) {
+    const skillMd = path.join(copilotRepo, '.github', 'skills', skill, 'SKILL.md');
+    ok(`copilot: ${skill}/SKILL.md exists`, fs.existsSync(skillMd));
+    if (fs.existsSync(skillMd)) {
+      const body = fs.readFileSync(skillMd, 'utf8');
+      // Frontmatter `name:` MUST match the skill file name so cp-* dispatch works.
+      ok(`copilot: ${skill} frontmatter name matches file`,
+        new RegExp(`^name:\\s+${skill}\\s*$`, 'm').test(body));
+    }
+  }
+
+  // --- claude ---
+  const claudeRepo = mktmp('install-claude-workflow');
+  claude.install({ pluginRoot: REPO, repoRoot: claudeRepo });
+  for (const skill of expectedSkills) {
+    // claude installer flattens to `.claude/commands/<skill>.md` (no SKILL.md dir).
+    const cmdMd = path.join(claudeRepo, '.claude', 'commands', `${skill}.md`);
+    ok(`claude: ${skill}.md command exists`, fs.existsSync(cmdMd));
+    if (fs.existsSync(cmdMd)) {
+      const body = fs.readFileSync(cmdMd, 'utf8');
+      ok(`claude: ${skill} frontmatter name matches file`,
+        new RegExp(`^name:\\s+${skill}\\s*$`, 'm').test(body));
+    }
+  }
+}
+
+// =============================================================
 section('bin/cp: normalizeArgv splits --key=value');
 {
   ok('bare flag preserved',
