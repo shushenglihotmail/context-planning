@@ -1,37 +1,5 @@
 ---
-phase: "44"
-name: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export)
-milestone: v1.1 Workflow Skills
-status: in-progress
-created: 2026-05-25
-base-commit: a7d80bd
-plan-status:
-  44-01: complete
-  44-02: complete
-  44-03: complete
-  44-04: in-progress
-plan-started:
-  44-01: 2026-05-25T21:20:00.000Z
-  44-02: 2026-05-25T21:40:00.000Z
-  44-03: 2026-05-25T21:55:00.000Z
-  44-04: 2026-05-25T22:10:00.000Z
-plan-completed:
-  44-01: 2026-05-25T21:35:00.000Z
-  44-02: 2026-05-25T21:53:00.000Z
-  44-03: 2026-05-25T22:08:00.000Z
-expected-key-files:
-  44-01:
-    - bin/commands/workflow.js
-    - lib/workflows.js
-    - test/unit-workflow.js
-    - test/dryrun-workflow-cli.js
-  44-02:
-    - commands/cp/workflow-new.md
-  44-03:
-    - commands/cp/workflow-customize.md
-  44-04:
-    - test/unit-v034.js
-    - test/integration-workflow-skills.js
+base-commit: e561ff25ddf4e739b2ecbb3cf9e1495f4fff745d
 ---
 
 # Phase 44: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export)
