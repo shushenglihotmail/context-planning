@@ -349,7 +349,21 @@ Deferred — design analysis after phase 44 showed cp-autonomous (drives milesto
 Plans:
 - [x] 46-01: README.md + docs/ updates — document 5 new `cp-workflow-*` agent skills and new `cp workflow export` CLI subcommand.
 - [x] 46-02: MIGRATION-v1.1.md (new file) + CHANGELOG.md v1.1.0 entry — explain v1.0 → v1.1 delta, what's new, what's deferred, discovery path for new skills.
-- [ ] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`.
+- [ ] 46-03: Version bump to 1.1.0, full `npm test` green, `git tag v1.1.0`, `npm publish`. **Paused** during execution to expand v1.1 scope — see Phase 47. Resumes after Phase 47 + docs refresh in Phase 48.
+
+### Phase 47: Complete CLI-verb-to-agent-skill coverage + `cp workflow inspect`
+
+Closes the remaining gap from v1.1's "every write-side workflow CLI verb has a slash skill" goal: standalone agent skills for the 6 read-side/utility verbs (import, export, validate, show, diagram, brainstorm) plus a new `cp workflow inspect` CLI that shows the template YAML alongside the deduced wave order, with its own `/cp-workflow-inspect` agent skill.
+
+Plans:
+- [ ] 47-01: `cp workflow inspect <name> [--json]` CLI subcommand — combines `show` output with computed wave-by-wave decomposition from `lib/workflow.js#computeWaves`; dryrun-cli tests.
+- [ ] 47-02: 7 new agent skills under `commands/cp/`: workflow-import, workflow-export, workflow-validate, workflow-show, workflow-diagram, workflow-brainstorm, workflow-inspect; installer + integration tests extended.
+- [ ] 47-03: README + MIGRATION-v1.1.md + CHANGELOG amendments documenting the expanded surface (12 total `cp-workflow-*` skills, 2 new CLI verbs).
+
+### Phase 48: Resume v1.1.0 release (re-tag, publish, push)
+
+Plans:
+- [ ] 48-01: Re-run full `npm test`, re-create `git tag v1.1.0`, `npm publish` (handle OTP interactively), `git push origin main && git push origin v1.1.0`.
 ## Progress
 
 **Execution Order:**
