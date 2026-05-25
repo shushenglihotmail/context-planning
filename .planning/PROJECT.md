@@ -37,6 +37,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - ✓ npm publish (`context-planning@0.7.1`) + restructured Install docs — v0.7.1
 - ✓ Consistency stack: prevent / detect / repair drift via SHA pinning, auto key-files, file-existence block, derived STATE, audit + `audit --fix` (GSD-mimic), 4 repair commands (reconcile/supersede/deviate/--continue), agent literacy injection, opt-in git hooks + CI template — v0.8 (published as `context-planning@0.8.1`)
 - ✓ Onboarding wave: `cp map-codebase` auto-init (case-2 one-liner), `cp update` + `/cp-update` skill mirroring `/gsd-update`'s npx one-liner (case-4), README "Choose your starting path" 4-row decision matrix, milestone digest surfaces phase DESIGN.md + REVIEW-LOG.md refs, scaffoldMilestone tail-insert bug fix — v0.9 (published as `context-planning@0.9.0`)
+- ✓ Autonomy: `/cp-autonomous` slash skill + `cp autonomous` CLI looping `plan-phase → execute-phase → tick → write-summary → state regen` across pending phases of the active milestone; smart-gated on test failure, audit HIGH, executor deviation; clean stop via `.planning/.continue-here.md` so `/cp-resume` picks up — v0.10 (published as `context-planning@0.10.x`)
 
 ### Known minor issues
 - 5 MEDIUM concerns in `.planning/codebase/CONCERNS.md` open: `bin/cp.js`
@@ -47,7 +48,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 - No CI yet (LOW concern) — `npm test` runs locally only.
 
 ### Active
-- Autonomy: ship `/cp-autonomous` slash skill + `cp autonomous` CLI that loops `plan-phase → execute-phase → tick → write-summary → state regen` across pending phases of the active milestone. Bounded to a single milestone. Smart-gated on test failure, audit HIGH, and executor deviation; stops cleanly via `.planning/.continue-here.md` so `/cp-resume` picks up. Closes the gap where every milestone today must be hand-driven step by step. — v0.10
+- **Workflow Engine**: ship YAML-based workflow templates as a new top-level abstraction. Templates declare a DAG of phases (`depends_on:`) with per-phase `role` / `model` (abstract level) / `skill` / `persist_output`. cp emits per-wave instructions to the running agent; harness owns parallelism mechanism and model resolution. Three first-class state tiers: `milestone` / `phase` / `custom` (default). Ship 3 built-in templates (`dev`/`debug`/`quick`), 14-command CLI surface (`cp run` + `cp workflow`), and AI-driven authoring via `cp workflow brainstorm`. Deferred to v1.1+: named accumulators, npm distribution, JSON Schema, branching/loops. — v1.0
 
 ### Out of Scope
 - **No knowledge-graph layer** — gsd-graphify-style indexing is heavy and
@@ -93,5 +94,5 @@ pick up exactly where work left off without re-reading the whole repo.**
 | Agent literacy is always-on after `cp install`; agents always suggest, never refuse | Refusal-based gating is user-hostile; hooks are the enforcement safety net | v0.8 P11 |
 
 ---
-*Last updated: 2026-05-21 — started v0.10 Autonomy milestone (phases 36-38)*
+*Last updated: 2026-05-24 — started v1.0 Workflow Engine milestone (phases 40-42)*
 

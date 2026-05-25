@@ -5,15 +5,15 @@
 See: .planning/PROJECT.md (updated 2026-05-19)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 22 — scaffold-phase prior-summary check (v0.8 Consistency)
+**Current focus:** Phase 40 — Core engine + custom tier (v1.0 Workflow Engine)
 
 ## Current Position
 
-Phase: -
-Plan: 73 of 73
-Status: Idle
-Current focus: -
-Last activity: v0.10.3 - collapse-aware audit + status renderer (hotfix)
+Phase: 40 (v1.0 Workflow Engine)
+Plan: 40-01
+Status: Ready to plan
+Current focus: Core engine + custom tier
+Last activity: 2026-05-24 — started milestone v1.0 Workflow Engine (phases 40-42)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -74,6 +74,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-22
-Stopped at: shipped v0.10.1 Collapse-aware milestone close
+Last session: 2026-05-24
+Stopped at: scaffolded v1.0 Workflow Engine (DESIGN + 3 phases)
 Resume file: None
