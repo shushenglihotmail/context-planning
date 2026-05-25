@@ -73,4 +73,23 @@ Implementation accepted as-is in commit `d8c08fe`. Notes for plan 41-03's test-w
 
 ---
 
+## 2026-05-25 21:11 — Plan 41-03 Task all — orchestrator (sequential-dispatch)
+
+**Verdict:** approved
+
+**Findings:**
+
+- `cp workflow brainstorm` implemented per DESIGN.md contract: delegates via `lib/provider.js#resolveSkill('brainstorm')`, emits a structured starter context block, writes no file. Both provider-installed and manual-fallback paths verified by the new dryrun test.
+- Three new test files land in `test/`: `dryrun-run-cli.js` (31 assertions), `dryrun-workflow-cli.js` (53), `integration-run-cli.js` (20). Assertion counts EXCEED the ~20/25/10 targets in the plan — wider coverage at zero runtime cost.
+- All three wired into `package.json` test chain. Each passes standalone. Full `npm test` now runs **34 test files**, all green, 0 failures.
+- One documented behavioral observation: `cp run resume` on a completed run returns the last wave's instruction (exit 0) instead of erroring. Captured in integration test rather than changed in lib — acceptable for v1.0.
+- Stdout/stderr discipline holds across all new CLI surface.
+
+**Resolution:**
+
+Implementation accepted as-is in commits `7483007` (brainstorm), `ec396bd` (3 test files), `b283fb9` (package.json wiring). Phase 41 closes 3/3. Phase 42 (docs + v1.0.0 release) is the only remaining work for the v1.0 Workflow Engine milestone.
+
+---
+
+
 
