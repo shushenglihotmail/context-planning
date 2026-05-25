@@ -1,7 +1,7 @@
 {
   "name": "context-planning",
   "version": "1.0.0",
-  "description": "Lightweight stateful context-management plugin that delegates dev workflow to Superpowers (or any compatible provider).",
+  "description": "Stateful planning + a reusable YAML workflow engine for AI coding agents — define phase DAGs, run them with `cp run`, customize templates per project. Delegates skill execution to Superpowers or any compatible provider.",
   "bin": {
     "cp": "bin/cp.js",
     "cplan": "bin/cp.js"
@@ -20,6 +20,9 @@
     "context",
     "planning",
     "milestone",
+    "workflow",
+    "workflow-engine",
+    "yaml-workflows",
     "superpowers",
     "copilot-cli",
     "claude-code"
