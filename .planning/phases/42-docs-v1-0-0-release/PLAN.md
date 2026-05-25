@@ -6,7 +6,7 @@ status: ready
 plan-status:
   42-01: pending
 created: 2026-05-25
-base-commit: 918b96da3b9bf6f6a01a6f6f1bf45fb52f8c1e30
+base-commit: 918b96d179a3c27238ea7406fe90fcbd9c29212f
 expected-key-files:
   42-01:
     - README.md
