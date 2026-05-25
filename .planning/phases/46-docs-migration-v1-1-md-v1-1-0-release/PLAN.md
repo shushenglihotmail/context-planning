@@ -3,6 +3,10 @@ phase: "46"
 name: Docs + MIGRATION-v1.1.md + v1.1.0 release
 milestone: v1.1 Workflow Skills
 status: in-progress
+plan-status:
+  46-01: in-progress
+  46-02: pending
+  46-03: pending
 created: 2026-05-25
 base-commit: ce06ed62fb23b1dc8f5d16fa76abfdd9633dfbc7
 # expected-key-files (optional, v0.8 P5) — declare what each plan
