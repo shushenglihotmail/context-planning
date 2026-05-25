@@ -56,8 +56,8 @@ collapses both pre-existing skills onto the same path.
 | `cp-workflow-run` | `cp run <workflow> [<name>]` + mark-complete loop | Generic driver — start any workflow and drive it to completion |
 | `cp-workflow-resume` | `cp run resume / retry / status` | Resume a paused or failed run |
 | `cp-workflow-list` | `cp workflow ls` + `cp workflow show` | Discoverability — list available templates with descriptions |
-| `cp-workflow-new` | `cp workflow new` + `cp workflow brainstorm` | AI-assisted custom template authoring |
-| `cp-workflow-import` | `cp workflow import` | Bring in an external template (validated) |
+| `cp-workflow-new` | `cp workflow new` + `cp workflow brainstorm` | AI-assisted custom template authoring (blank start or `--from <built-in>`) |
+| `cp-workflow-customize` | `cp workflow export` (new) → edit → `cp workflow import` | Round-trip customize a built-in: export, hand-edit, import as new |
 
 **Refactored skills (2):**
 
@@ -107,7 +107,7 @@ engine, runtime, validators, and CLI surface stay frozen.
 │  ┌──────────────────────────────────────────────────┐   │
 │  │   cp-workflow-run  cp-workflow-resume            │   │
 │  │   cp-workflow-list cp-workflow-new               │   │
-│  │   cp-workflow-import                              │   │
+│  │   cp-workflow-customize                          │   │
 │  │                                                    │   │
 │  │   cp-quick ──────────► (shim)                     │   │
 │  │   cp-autonomous ─────► (shim)                     │   │
@@ -156,10 +156,10 @@ engine, runtime, validators, and CLI surface stay frozen.
 - **Public interface:** `cp-workflow-new <name> [--from <built-in>]`
 - **Dependencies:** `cp workflow new`, `cp workflow brainstorm`, provider's brainstorm skill.
 
-### `commands/cp/workflow-import.md`
-- **Purpose:** Import + validate an external template file.
-- **Public interface:** `cp-workflow-import <path> [--name <override>]`
-- **Dependencies:** `cp workflow import`, `cp workflow validate`.
+### `commands/cp/workflow-customize.md` (renamed from workflow-import.md, 2026-05-25)
+- **Purpose:** Round-trip customize a built-in template — export, edit, validate, import as new name. The user-facing task that v1.0's `cp workflow show > file` + `cp workflow import` *almost* enabled but with three UX paper-cuts (header strip, name rewrite, default path) that this skill + the new `cp workflow export` CLI close together.
+- **Public interface:** `cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]`
+- **Dependencies:** `cp workflow export` (new in 44-01), `cp workflow validate`, `cp workflow import`.
 
 ### Refactored: `commands/cp/quick.md`
 - **Purpose:** Back-compat shim. Translates pre-v1.1 argv into

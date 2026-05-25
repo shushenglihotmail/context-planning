@@ -332,12 +332,13 @@ Plans:
 - [x] 43-03: `commands/cp/workflow-resume.md` — resume/retry/abandon skill (enumeration, resume, --retry, --abandon modes; delegates wave-loop to cp-workflow-run)
 - [x] 43-04: Tests — extend `test/unit-installers.js` (+6 assertions) and add `test/integration-workflow-skills.js` (~15 assertions) wired into `package.json` `test` chain
 
-### Phase 44: Creator skills: cp-workflow-new, cp-workflow-import
+### Phase 44: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export)
 
 Plans:
-- [ ] 44-01: TBD
-- [ ] 44-02: TBD
-- [ ] 44-03: TBD
+- [ ] 44-01: `cp workflow export <name>` CLI command — thin convenience over `cp workflow show` with default destination + `--as <new-name>` rename. Unit tests.
+- [ ] 44-02: `commands/cp/workflow-new.md` skill — drives `cp workflow new --from <built-in>` for "I want a fresh blank template" path.
+- [ ] 44-03: `commands/cp/workflow-customize.md` skill — drives the export → edit → import round-trip in one skill (replaces previously-planned cp-workflow-import skill).
+- [ ] 44-04: Tests — installer auto-pickup for both new skills + integration test exercising export → import round-trip end-to-end.
 
 ### Phase 45: Refactor cp-quick + cp-autonomous to shims
 
