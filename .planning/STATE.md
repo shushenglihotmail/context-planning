@@ -10,10 +10,10 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 ## Current Position
 
 Phase: 40 (v1.0 Workflow Engine)
-Plan: 40-01
-Status: Ready to plan
+Plan: 1 of 3
+Status: Ready to execute
 Current focus: Core engine + custom tier
-Last activity: 2026-05-24 — started milestone v1.0 Workflow Engine (phases 40-42)
+Last activity: 2026-05-24 — planned phase 40 (DESIGN.md + PLAN.md)
 
 Progress: [░░░░░░░░░░] 0%
 
