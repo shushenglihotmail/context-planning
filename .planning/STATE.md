@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-19)
 
 ## Current Position
 
-Phase: 40 (v1.0 Workflow Engine)
-Plan: 40-02
+Phase: 41 (v1.0 Workflow Engine)
+Plan: 41-01
 Status: Ready to execute
-Current focus: Core engine + custom tier
-Last activity: tick plan 40-01
+Current focus: CLI surface + built-in templates + AI authoring
+Last activity: start 40-02 execution
 
-Progress: [███░░░░░░░] 29%
+Progress: [████░░░░░░] 43%
 
 ## Performance Metrics
 
