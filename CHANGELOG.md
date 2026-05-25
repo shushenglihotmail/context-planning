@@ -6,34 +6,52 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-## [1.1.0] - 2026-05-25 — Workflow agent skills + `cp workflow export`
+## [1.1.0] - 2026-05-25 — Workflow agent skills + `cp workflow export` + `cp workflow inspect`
 
 ### Added
 
-- **Five new `cp-workflow-*` agent skills** closing the v1.0 agent-skill
-  gap. Every write-side workflow CLI verb now has a matching in-CLI
-  slash skill, so agent users no longer have to drop to a terminal
-  mid-session. See [MIGRATION-v1.1.md](MIGRATION-v1.1.md) for the full
-  walkthrough.
-  - `/cp-workflow-list` — list built-in + project templates with source
-    and binding (wraps `cp workflow ls`).
-  - `/cp-workflow-run <workflow> [<name>] [--scope=…] [--check]` — drive
-    any workflow wave-by-wave from inside the agent; dispatches each
-    phase to the role skill resolved by `cp doctor`. Smart-gated on
-    test fail / audit HIGH / executor deviation. Wraps `cp run` + the
-    mark-complete wave loop.
+- **Twelve `cp-workflow-*` agent skills** closing the v1.0 agent-skill
+  gap. Every `cp workflow` CLI verb except `init` now has a matching
+  in-CLI slash skill, so agent users no longer have to drop to a
+  terminal mid-session. See [MIGRATION-v1.1.md](MIGRATION-v1.1.md) for
+  the full walkthrough.
+
+  **Drive a run / discover templates:**
+  - `/cp-workflow-list` — list templates (wraps `cp workflow ls`).
+  - `/cp-workflow-run <workflow> [<name>] [--scope=…] [--check]` —
+    drive any workflow wave-by-wave; dispatches each phase to the role
+    skill resolved by `cp doctor`. Smart-gated on test fail / audit
+    HIGH / executor deviation. Wraps `cp run` + the mark-complete wave
+    loop.
   - `/cp-workflow-resume <slug>` — re-emit the current wave's
-    instruction after a session boundary or context reset
-    (wraps `cp run resume`).
-  - `/cp-workflow-new <name> [--from <built-in>] [--force]` — author a
-    new project-local workflow template from a blank or cloned starting
-    point. Interactive picker when argv is omitted. Refuses built-in
-    name reuse outright; project-name collision needs `--force`.
-    Wraps `cp workflow new`.
+    instruction (wraps `cp run resume`).
+
+  **Author + customize templates:**
+  - `/cp-workflow-new <name> [--from <built-in>] [--force]` — author
+    a new template from blank or clone. Refuses built-in name reuse
+    outright; project-name collision needs `--force`. Wraps
+    `cp workflow new`.
   - `/cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]`
-    — round-trip customize a built-in template: export → edit → validate
-    → import as a new project-local template. Wraps the new
-    `cp workflow export` + `cp workflow import`.
+    — round-trip customize a built-in: export → edit → validate →
+    import as new name. Wraps the new `cp workflow export` +
+    `cp workflow import`.
+  - `/cp-workflow-brainstorm [--workflow <name>] [--out <path>]` —
+    design a new workflow conversationally via the provider's
+    brainstorm skill (wraps `cp workflow brainstorm`).
+
+  **Inspect + validate templates:**
+  - `/cp-workflow-show <name>` — pretty-print YAML (wraps
+    `cp workflow show`).
+  - `/cp-workflow-diagram <name-or-path>` — Mermaid flowchart of the
+    phase DAG (wraps `cp workflow diagram`).
+  - `/cp-workflow-inspect <name-or-path> [--json]` — show YAML plus
+    deduced wave order (wraps the new `cp workflow inspect`).
+  - `/cp-workflow-validate <name-or-path> [--strict]` — schema + DAG
+    validation; `--strict` for CI (wraps `cp workflow validate`).
+  - `/cp-workflow-import <path> [--name <override>] [--force]` —
+    validate + copy external template (wraps `cp workflow import`).
+  - `/cp-workflow-export <name> [--out <path>] [--as <new-name>] [--force]`
+    — export built-in to file (wraps the new `cp workflow export`).
 - **`cp workflow export <name> [--out <path>] [--as <new-name>] [--force]`**
   — new CLI subcommand. Exports a built-in template to a file with the
   `# template:` header stripped and the `workflow:` key optionally
@@ -41,14 +59,20 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   reserialization). Validates before write. Default destination:
   `./<as-or-name>.yaml`. Exit codes match the rest of `cp workflow`
   (2 = usage, 3 = template not found, 6 = file exists).
-- **39 new integration test assertions** in
-  `test/integration-workflow-skills.js` covering skill file shape,
-  named-slug honor, abandon flow, and export round-trip.
-- **18 new dry-run assertions** in `test/dryrun-workflow-cli.js`
-  (Section 8.5) covering all `cp workflow export` paths.
-- **8 new unit assertions** in `test/unit-v034.js` extending the
-  `expectedSkills` data-driven array to cover all five
-  `cp-workflow-*` installer auto-pickup paths.
+- **`cp workflow inspect <name-or-path> [--json]`** — new CLI
+  subcommand. Combines `cp workflow show` output (raw YAML) with the
+  deduced wave-by-wave execution sequence computed by
+  `lib/workflow.js#computeWaves` — the topological grouping the
+  runtime uses internally but never previously exposed. Useful for
+  understanding which phases run in parallel before launching `cp run`.
+  Human-readable by default; `--json` emits structured form for tooling.
+- **~150 new test assertions** spread across:
+  - `test/integration-workflow-skills.js` — 39 → 93 (+54 for shape
+    assertions covering the 9 newly added skill files).
+  - `test/dryrun-workflow-cli.js` — 75 → 103 (+28 for `cp workflow
+    inspect` + 1 for help-mention assertion).
+  - `test/unit-v034.js` — 64 → 92 (+28 for installer auto-pickup of
+    the 7 new skills).
 
 ### Changed
 
@@ -67,6 +91,10 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   near duplication. Deferring for a proper state-layout migration in
   v1.2. v1.1 ships the new agent surface without modifying the legacy
   skills.
+- `/cp-workflow-init` — the one CLI verb without a slash companion.
+  `cp workflow init` is a one-shot bootstrap (creates an empty
+  `.planning/workflows/` directory) that doesn't benefit from agent
+  orchestration. Will reconsider if user demand emerges.
 
 ## [1.0.0] - 2026-05-24 — Workflow Engine
 

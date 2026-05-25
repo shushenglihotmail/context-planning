@@ -264,13 +264,32 @@ The v1.1 milestone closed the agent-skill gap that v1.0 left: every
 write-side workflow CLI verb now has a matching in-CLI slash skill, so
 you never have to drop to the terminal mid-session to drive a workflow.
 
+**Drive a run / discover templates:**
+
 | Command | What it does | Wraps |
 |---|---|---|
 | `/cp-workflow-list` | List built-in + project workflow templates with source and binding; show what `/cp-workflow-run` accepts | `cp workflow ls` |
 | `/cp-workflow-run <workflow> [<name>] [--scope=…] [--check]` | Drive any workflow (built-in or custom) wave-by-wave to completion. Dispatches each phase to the role skill resolved by `cp doctor`. Smart-gated on test fail / audit HIGH / executor deviation | `cp run` + the mark-complete wave loop |
 | `/cp-workflow-resume <slug>` | Re-emit the current wave's instruction after a session boundary or context reset | `cp run resume` |
+
+**Author + customize templates:**
+
+| Command | What it does | Wraps |
+|---|---|---|
 | `/cp-workflow-new <name> [--from <built-in>] [--force]` | Author a new project-local workflow template from a blank or cloned starting point (interactive picker if argv is omitted) | `cp workflow new` |
-| `/cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]` | Round-trip customize a built-in template: export → edit → validate → import as a new project-local template | `cp workflow export` (new in v1.1) + `cp workflow import` |
+| `/cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]` | Round-trip customize a built-in template: export → edit → validate → import as a new project-local template | `cp workflow export` + `cp workflow import` |
+| `/cp-workflow-brainstorm [--workflow <name>] [--out <path>]` | Design a new workflow template conversationally via the configured provider's brainstorm skill | `cp workflow brainstorm` |
+
+**Inspect + validate templates:**
+
+| Command | What it does | Wraps |
+|---|---|---|
+| `/cp-workflow-show <name>` | Pretty-print a template's YAML body | `cp workflow show` |
+| `/cp-workflow-diagram <name-or-path>` | Emit a Mermaid `flowchart TD` of the phase DAG | `cp workflow diagram` |
+| `/cp-workflow-inspect <name-or-path> [--json]` | Show YAML **plus** the deduced wave-by-wave execution sequence (parallel phase groupings) — the runtime's internal topological grouping made visible | `cp workflow inspect` (new in v1.1) |
+| `/cp-workflow-validate <name-or-path> [--strict]` | Schema + DAG validation; `--strict` fails on warnings for CI | `cp workflow validate` |
+| `/cp-workflow-import <path> [--name <override>] [--force]` | Validate + copy an external template into the project | `cp workflow import` |
+| `/cp-workflow-export <name> [--out <path>] [--as <new-name>] [--force]` | Export a built-in to a file with the `# template:` header stripped and the `workflow:` key optionally renamed | `cp workflow export` (new in v1.1) |
 
 ### Node CLI (operational tooling — not used inside the AI loop)
 
@@ -371,9 +390,9 @@ they hide.
 > **New in v1.0** — see [MIGRATION-v1.0.md](MIGRATION-v1.0.md) for the full
 > template format reference, state tier guide, and FAQ.
 > **New in v1.1** — see [MIGRATION-v1.1.md](MIGRATION-v1.1.md) for the new
-> in-CLI agent skills (`/cp-workflow-run`, `/cp-workflow-list`,
-> `/cp-workflow-resume`, `/cp-workflow-new`, `/cp-workflow-customize`) and
-> the new `cp workflow export` subcommand.
+> in-CLI agent skills (12 `/cp-workflow-*` slash skills mirroring every
+> CLI verb) and the new `cp workflow export` + `cp workflow inspect`
+> subcommands.
 
 cp ships a reusable YAML workflow format that lets you define phase DAGs once
 and run them via `cp run`. Each workflow declares phases, dependencies (for
@@ -415,6 +434,7 @@ cp run status <slug>                    # status: done
 | `cp workflow export <name> [--out <path>] [--as <new-name>] [--force]` | **New in v1.1.** Export a built-in template to a file with the `# template:` header stripped and the `workflow:` key optionally renamed. Validates before write. Default destination: `./<as-or-name>.yaml`. Pairs with `cp workflow import` for round-trip customization (or use the `/cp-workflow-customize` skill) |
 | `cp workflow validate <name-or-path> [--strict]` | Run schema + DAG validation; `--strict` fails on warnings (CI-safe) |
 | `cp workflow diagram <name-or-path>` | Emit a Mermaid `flowchart TD` of the phase DAG |
+| `cp workflow inspect <name-or-path> [--json]` | **New in v1.1.** Show template YAML plus the deduced wave-by-wave execution sequence (parallel phase groupings). The runtime's internal topological grouping made visible. `--json` for tooling |
 | `cp workflow init` | Bootstrap `.planning/workflows/` in the current project (idempotent) |
 | `cp workflow new <name> [--from <built-in>] [--force]` | Scaffold a new template, optionally cloned from a built-in |
 | `cp workflow import <path> [--name <override>] [--force]` | Validate and copy an external template into the project |

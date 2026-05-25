@@ -8,30 +8,62 @@ v1.1.0 closes the **agent-skill gap** that v1.0 left open. v1.0 shipped a
 new write-side workflow CLI surface (`cp run`, `cp workflow new`,
 `cp workflow import`, …) but provided no matching in-CLI slash skills, so
 agent users had to drop to a terminal mid-session to drive the new
-features. v1.1 fixes that with **five new `cp-workflow-*` agent skills**
-and **one new CLI subcommand** (`cp workflow export`) that pairs with
-`cp workflow import` for round-trip template customization.
+features. v1.1 fixes that with **twelve `cp-workflow-*` agent skills**
+(one for every `cp workflow` verb except `init`) and **two new CLI
+subcommands** — `cp workflow export` and `cp workflow inspect`.
 
 Key additions:
 
-- **`/cp-workflow-run <workflow> [<name>] [--scope=…] [--check]`** — drive
-  any built-in or custom workflow wave-by-wave from inside the agent;
-  delegates each phase to the role skill resolved by `cp doctor`.
-  Smart-gated on test failure / audit HIGH / executor deviation.
+**Drive a run / discover templates:**
+
 - **`/cp-workflow-list`** — list available templates with source and
-  binding; shows what `/cp-workflow-run` accepts.
+  binding.
+- **`/cp-workflow-run <workflow> [<name>] [--scope=…] [--check]`** —
+  drive any workflow wave-by-wave; delegate each phase to the role
+  skill from `cp doctor`. Smart-gated on test fail / audit HIGH /
+  executor deviation.
 - **`/cp-workflow-resume <slug>`** — re-emit the current wave's
   instruction after a session boundary or context reset.
-- **`/cp-workflow-new <name> [--from <built-in>] [--force]`** — author a
-  new project-local workflow template from a blank or cloned starting
-  point. Interactive picker when argv is omitted.
+
+**Author + customize templates:**
+
+- **`/cp-workflow-new <name> [--from <built-in>] [--force]`** — author
+  a new project-local template from a blank or cloned starting point.
+  Interactive picker when argv is omitted.
 - **`/cp-workflow-customize <built-in> [<new-name>] [--out <path>] [--force]`**
-  — round-trip customize a built-in template: export → edit → validate
-  → import as a new project-local template.
+  — round-trip customize a built-in: export → edit → validate → import
+  as a new project-local template.
+- **`/cp-workflow-brainstorm [--workflow <name>] [--out <path>]`** —
+  design a new workflow conversationally via the provider's brainstorm
+  skill.
+
+**Inspect + validate templates:**
+
+- **`/cp-workflow-show <name>`** — pretty-print template YAML.
+- **`/cp-workflow-diagram <name-or-path>`** — Mermaid flowchart of the
+  phase DAG.
+- **`/cp-workflow-inspect <name-or-path> [--json]`** — show YAML plus
+  the **deduced wave-by-wave execution sequence**. Makes the runtime's
+  internal topological grouping (which phases run in parallel) visible
+  before you launch `cp run`.
+- **`/cp-workflow-validate <name-or-path> [--strict]`** — schema + DAG
+  validation; `--strict` fails on warnings for CI.
+- **`/cp-workflow-import <path> [--name <override>] [--force]`** —
+  validate + copy an external template into the project.
+- **`/cp-workflow-export <name> [--out <path>] [--as <new-name>] [--force]`**
+  — export a built-in to a file with the `# template:` header stripped
+  and the `workflow:` key optionally renamed.
+
+**New CLI subcommands:**
+
 - **`cp workflow export <name> [--out <path>] [--as <new-name>] [--force]`**
-  — new CLI subcommand. Exports a built-in template to a file with the
-  `# template:` header stripped and the `workflow:` key optionally
-  renamed. Validates before write. Default destination is `./<as-or-name>.yaml`.
+  — exports a built-in template to a file. Validates before write.
+  Default destination is `./<as-or-name>.yaml`. Pairs with `cp workflow
+  import` for round-trip customization (or use `/cp-workflow-customize`).
+- **`cp workflow inspect <name-or-path> [--json]`** — shows the
+  template YAML alongside its deduced wave-by-wave execution sequence
+  (the topological grouping the runtime computes internally). `--json`
+  emits a structured form for tooling.
 
 ---
 
@@ -57,7 +89,7 @@ npx -y --package=context-planning@latest -- cp update
 
 ## How to Discover the New Skills
 
-After `cp update` re-installs skills into your harness, the five new
+After `cp update` re-installs skills into your harness, twelve new
 skills appear alongside the existing `cp-*` commands:
 
 ```
@@ -66,11 +98,21 @@ skills appear alongside the existing `cp-*` commands:
 /cp-workflow-resume <slug>        → pick up after a context reset
 /cp-workflow-new <name>           → author from blank/clone
 /cp-workflow-customize <built-in> → round-trip tweak a built-in
+/cp-workflow-brainstorm           → design conversationally
+/cp-workflow-show <name>          → pretty-print YAML
+/cp-workflow-diagram <name>       → Mermaid DAG diagram
+/cp-workflow-inspect <name>       → YAML + deduced wave order
+/cp-workflow-validate <name>      → schema + DAG check
+/cp-workflow-import <path>        → import external YAML
+/cp-workflow-export <name>        → export built-in to file
 ```
 
 If your harness lists slash commands, you'll see them grouped with the
 other `cp-*` commands. In Copilot CLI / Claude Code: `/cp-workflow-` +
 TAB autocompletes the prefix.
+
+The only CLI verb without a slash companion is `cp workflow init` (a
+one-shot bootstrap that doesn't benefit from agent orchestration).
 
 ---
 
@@ -137,5 +179,6 @@ To verify:
 ```bash
 cp version              # → 1.1.0
 cp workflow export --help 2>&1 | head -5
-ls .github/skills/cp-workflow-*  # five files (run/list/resume/new/customize)
+cp workflow inspect dev | tail -20    # see the deduced wave order
+ls .github/skills/cp-workflow-*  # twelve dirs
 ```
