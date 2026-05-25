@@ -137,6 +137,10 @@ Usage:
                                   Scaffold a new template file (stub or from built-in).
   cp workflow import <path> [--name <override>] [--force]
                                   Validate + copy an external template into .planning/workflows/.
+  cp workflow brainstorm [--workflow <name>] [--out <path>]
+                                  Emit a brainstorm context for designing a new workflow.
+                                  Delegates to the configured provider skill or prints a
+                                  guided prompt (manual fallback). Exit 0.
                                   See \`cp workflow --help\` for full sub-command details.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value

@@ -3,7 +3,7 @@
 /**
  * cp workflow — static template management commands.
  *
- * Dispatches to 7 sub-handlers:
+ * Dispatches to 8 sub-handlers:
  *   ls [--json]                     – list built-in + project templates
  *   show <name>                     – print resolved template YAML to stdout
  *   validate <name-or-path>         – validate a template; --strict treats warnings as errors
@@ -11,6 +11,8 @@
  *   init                            – create .planning/workflows/ directory
  *   new <name> [--from <built-in>]  – scaffold a new template file
  *   import <path> [--name <n>]      – copy + validate an external template
+ *   brainstorm [--workflow <name>] [--out <path>]
+ *                                   – emit a brainstorm context (delegation to provider skill)
  *
  * Exit codes:
  *   0  ok
@@ -22,6 +24,7 @@
 const fs = require('fs');
 const path = require('path');
 const wfLib = require('../../lib/workflow');
+const provider = require('../../lib/provider');
 
 // ---------- help ----------
 
@@ -51,6 +54,12 @@ var USAGE = [
   '                                        Copy + validate an external template.',
   '                                        --name   Override the destination filename.',
   '                                        --force  Overwrite an existing file.',
+  '  cp workflow brainstorm [--workflow <name>] [--out <path>]',
+  '                                        Emit a brainstorm context for designing a new',
+  '                                        workflow. Delegates to the configured provider',
+  '                                        skill (or prints a guided prompt if manual).',
+  '                                        --workflow  Workflow name (default: new-workflow).',
+  '                                        --out       Output path (default: .planning/workflows/<name>.yaml).',
   '',
 ].join('\n');
 
@@ -559,6 +568,97 @@ function workflowImport(args, cwd) {
   process.stderr.write('imported: ' + dest + '\n');
 }
 
+/**
+ * cp workflow brainstorm [--workflow <name>] [--out <path>]
+ */
+function workflowBrainstorm(args, cwd) {
+  var workflowName = 'new-workflow';
+  var outPath = null;
+
+  for (var i = 0; i < args.length; i++) {
+    var a = args[i];
+    if (a === '--workflow') { workflowName = args[++i]; }
+    else if (a === '--out') { outPath = args[++i]; }
+    else if (a.startsWith('-')) { process.stderr.write('unknown option: ' + a + '\n'); process.exit(2); }
+    else { process.stderr.write('unexpected arg: ' + a + '\n'); process.exit(2); }
+  }
+
+  // Resolve output path
+  var resolvedOut = outPath
+    ? path.resolve(cwd, outPath)
+    : path.join(projectDir(cwd), workflowName + '.yaml');
+
+  // Validate --out parent dir (if explicitly provided and parent doesn't exist)
+  if (outPath) {
+    var parentDir = path.dirname(resolvedOut);
+    var defaultWfDir = projectDir(cwd);
+    if (!fs.existsSync(parentDir) && parentDir !== defaultWfDir) {
+      process.stderr.write('error: parent dir not found: ' + parentDir + '\n');
+      process.exit(2);
+    }
+  }
+
+  // Resolve the brainstorm skill via provider
+  var resolved = provider.resolveSkill('brainstorm');
+
+  // Build the context block (~10-12 lines of guidance)
+  var contextLines = [
+    'Workflow brainstorm context',
+    '===========================',
+    'Target workflow name: ' + workflowName,
+    'Output path:         ' + resolvedOut,
+    '',
+    'Please design a new workflow YAML with the following structure:',
+    '',
+    '  workflow: ' + workflowName,
+    '  version: 1',
+    '  binds_to: custom  # or: phase | milestone',
+    '  principles:',
+    '    - <guiding principle 1>',
+    '    - <guiding principle 2>',
+    '  defaults:',
+    '    model: default',
+    '  phases:',
+    '    - id: <phase-id>',
+    '      role: <planner | implementer | verifier | researcher | ...>',
+    '      depends_on: [<other-phase-id>]  # omit for root phases',
+    '      prompt: |',
+    '        <What this phase should accomplish.>',
+    '',
+    'Each phase should have a single clear responsibility.',
+    'When done, write the YAML to: ' + resolvedOut,
+    'Then run: cp workflow validate ' + workflowName,
+  ];
+  var contextBlock = contextLines.join('\n');
+
+  var isManual = resolved.name === 'manual' || resolved.fallback === true;
+
+  if (isManual) {
+    // Manual path: print the manual prompt (if any) + context block to stdout
+    var manualPrompt = provider.resolvePrompt('brainstorm');
+    if (manualPrompt) {
+      process.stdout.write(manualPrompt + '\n\n');
+    }
+    process.stdout.write(contextBlock + '\n');
+    process.stderr.write(
+      'next: write your YAML to ' + resolvedOut +
+      ', then run "cp workflow validate ' + workflowName + '"\n'
+    );
+  } else {
+    // Provider path: emit structured delegation message
+    process.stdout.write(
+      'Designing a new workflow. Please invoke the ' + resolved.name +
+      ' brainstorm skill with this context:\n\n' +
+      contextBlock + '\n'
+    );
+    process.stderr.write(
+      'skill: ' + (resolved.skill || '(none)') +
+      '  provider: ' + resolved.name +
+      '  out: ' + resolvedOut + '\n'
+    );
+  }
+}
+
 // ---------- dispatcher ----------
 
 function run(args) {
@@ -572,13 +672,14 @@ function run(args) {
   var cwd = process.cwd();
 
   switch (sub) {
-    case 'ls':       return workflowLs(rest, cwd);
-    case 'show':     return workflowShow(rest, cwd);
-    case 'validate': return workflowValidate(rest, cwd);
-    case 'diagram':  return workflowDiagram(rest, cwd);
-    case 'init':     return workflowInit(rest, cwd);
-    case 'new':      return workflowNew(rest, cwd);
-    case 'import':   return workflowImport(rest, cwd);
+    case 'ls':          return workflowLs(rest, cwd);
+    case 'show':        return workflowShow(rest, cwd);
+    case 'validate':    return workflowValidate(rest, cwd);
+    case 'diagram':     return workflowDiagram(rest, cwd);
+    case 'init':        return workflowInit(rest, cwd);
+    case 'new':         return workflowNew(rest, cwd);
+    case 'import':      return workflowImport(rest, cwd);
+    case 'brainstorm':  return workflowBrainstorm(rest, cwd);
     default:
       process.stderr.write('error: unknown workflow subcommand "' + sub + '".\n');
       printHelp();
