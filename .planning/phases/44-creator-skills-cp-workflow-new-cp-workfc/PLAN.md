@@ -6,10 +6,12 @@ status: in-progress
 created: 2026-05-25
 base-commit: a7d80bd
 plan-status:
-  44-01: pending
+  44-01: in-progress
   44-02: pending
   44-03: pending
   44-04: pending
+plan-started:
+  44-01: 2026-05-25T21:20:00.000Z
 expected-key-files:
   44-01:
     - bin/commands/workflow.js
