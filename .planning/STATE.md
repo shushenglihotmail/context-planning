@@ -2,18 +2,18 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-19)
+See: .planning/PROJECT.md (updated 2026-05-25)
 
 **Core value:** Stateful planning files survive across LLM sessions
-**Current focus:** Phase 40 — Core engine + custom tier (v1.0 Workflow Engine)
+**Current focus:** Phase 43 — Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume (v1.1 Workflow Skills)
 
 ## Current Position
 
-Phase: -
-Plan: 80 of 80
-Status: Idle
-Current focus: -
-Last activity: tick plan 42-01
+Phase: 43 (v1.1 Workflow Skills)
+Plan: 43-01
+Status: Ready to execute
+Current focus: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume
+Last activity: scaffold-phase 45 (Refactor cp-quick + cp-autonomous to shims)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -75,5 +75,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-25
-Stopped at: shipped v1.0 Workflow Engine
+Stopped at: planned v1.1 Workflow Skills milestone (phases 43-46)
 Resume file: None
