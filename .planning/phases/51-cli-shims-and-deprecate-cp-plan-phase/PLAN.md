@@ -37,7 +37,7 @@ the cp-plan-phase skill, and prove parity with a smart-gate test suite.
 - [x] 51-01: Refactor `bin/commands/autonomous.js` - for each pending milestone-phase, call `cp run <workflow>`; drop cp-plan-phase invocations.
 - [x] 51-02: Refactor `bin/commands/quick.js` - scaffold `quick/<slug>/{DESIGN.md, STATE.md}`; remove quick-PLAN.md path; update cp-quick skill.
 - [x] 51-03: Collapse `.planning/custom/` into `.planning/quick/`; alias `binds_to: custom` -> quick; read-only back-compat for both old roots with deprecation warning.
-- [ ] 51-04: Deprecate `cp-plan-phase` skill (one-line nudge to `cp run dev` or configured workflow); audit and update other cp-* skills that referenced it as a prereq.
+- [x] 51-04: Deprecate `cp-plan-phase` skill (one-line nudge to `cp run dev` or configured workflow); audit and update other cp-* skills that referenced it as a prereq.
 - [ ] 51-05: Smart-gate + scope/argv parity tests for both autonomous and quick (~50 assertions).
 
 ## Notes
