@@ -395,7 +395,7 @@ Plans:
 
 Plans:
 - [x] 52-01: MIGRATION-v1.2.md — persist rename, custom→quick collapse, cp-plan-phase removal, parent:/after:/max_children: schema, fold-into-DESIGN behavior.
-- [ ] 52-02: CHANGELOG.md + README.md updates (workflow YAML examples with new schema; new tier-file storage diagram; updated CLI table).
+- [x] 52-02: CHANGELOG.md + README.md updates (workflow YAML examples with new schema; new tier-file storage diagram; updated CLI table).
 - [ ] 52-03: Bump package.json to 1.2.0; commit; tag v1.2.0; publish to npm.
 
 ## Progress
