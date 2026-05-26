@@ -1,6 +1,6 @@
 workflow: quick
 version: 1
-binds_to: custom
+binds_to: quick
 principles:
   - Discuss before acting — align on scope and approach first.
   - Verify before closing — confirm the change behaves as expected.

@@ -60,7 +60,7 @@ function listActiveRuns(opts) {
     runs = custom.listRuns(opts);
   } catch (_) {}
   if (runs.length === 0) {
-    process.stderr.write('  (no active custom runs found)\n');
+    process.stderr.write('  (no active quick runs found)\n');
     return;
   }
   process.stderr.write('Active runs:\n');
@@ -78,10 +78,10 @@ function listActiveRuns(opts) {
 function resolveRunState(slug, projectDir) {
   var pd = projectDir || process.cwd();
 
-  // 1. custom
+  // 1. quick (formerly custom — readState transparently falls back to legacy .planning/custom/)
   try {
     var st = custom.readState(slug, {projectDir: pd});
-    if (st) return {binding: 'custom', state: st};
+    if (st) return {binding: 'quick', state: st};
   } catch (_) {}
 
   // 2. phase — walk .planning/phases/*/.workflow-runs/<slug>.yaml
@@ -186,8 +186,11 @@ function runStart(args) {
     }
   }
 
-  // Check for already-in-progress custom run with the same workflow name.
-  if (preTpl && (!preTpl.meta.binds_to || preTpl.meta.binds_to === 'custom')) {
+  // Check for already-in-progress quick run with the same workflow name.
+  // (binds_to: 'custom' is a deprecated alias for 'quick'.)
+  if (preTpl && (!preTpl.meta.binds_to ||
+                 preTpl.meta.binds_to === 'quick' ||
+                 preTpl.meta.binds_to === 'custom')) {
     var wfName = preTpl.meta.workflow;
     var existing = [];
     try { existing = custom.listRuns({projectDir: projectDir}); } catch (_) {}
@@ -536,18 +539,18 @@ function runStatus(args) {
   // List all runs across all three tiers.
   var allRuns = [];
 
-  // 1. Custom runs
-  var customRuns = [];
-  try { customRuns = custom.listRuns({projectDir: projectDir}); } catch (_) {}
-  for (var ci = 0; ci < customRuns.length; ci++) {
-    var cr = customRuns[ci];
+  // 1. Quick runs (formerly "custom"; listRuns aggregates legacy custom/ too)
+  var quickRuns = [];
+  try { quickRuns = custom.listRuns({projectDir: projectDir}); } catch (_) {}
+  for (var ci = 0; ci < quickRuns.length; ci++) {
+    var cr = quickRuns[ci];
     var crWave = '?';
     try {
       var crState = custom.readState(cr.slug, {projectDir: projectDir});
       crWave = (crState.current_wave != null ? crState.current_wave : 0) + 1;
     } catch (_) {}
     allRuns.push({
-      binding: 'custom',
+      binding: 'quick',
       slug: cr.slug,
       workflow: cr.workflow || '(unknown)',
       status: cr.status || '(unknown)',

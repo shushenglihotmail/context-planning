@@ -1,6 +1,6 @@
 workflow: debug
 version: 1
-binds_to: custom
+binds_to: quick
 principles:
   - Reproduce before diagnosing — a confirmed repro case is the foundation of every fix.
   - Apply scientific method — form a hypothesis, test it, update based on evidence.

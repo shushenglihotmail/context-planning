@@ -106,12 +106,12 @@ function listYamlFiles(dir) {
 
 /**
  * Return binds_to from a template file without full validation.
- * Falls back to 'custom' on any error.
+ * Falls back to 'quick' on any error.
  */
 function safeBindsTo(filePath) {
   try {
     var tpl = wfLib.loadTemplate(filePath, {});
-    return (tpl.meta && tpl.meta.binds_to) || 'custom';
+    return (tpl.meta && tpl.meta.binds_to) || 'quick';
   } catch (_) {
     return '?';
   }
@@ -381,7 +381,7 @@ function workflowDiagram(args, cwd) {
   }
 
   var name = (tpl.meta && tpl.meta.workflow) || nameOrPath;
-  var bindsTo = (tpl.meta && tpl.meta.binds_to) || 'custom';
+  var bindsTo = (tpl.meta && tpl.meta.binds_to) || 'quick';
 
   var lines = ['flowchart TD'];
   lines.push('%% workflow: ' + name + ', binds_to: ' + bindsTo);
@@ -479,7 +479,7 @@ function workflowInspect(args, cwd) {
   }
 
   var name = (tpl.meta && tpl.meta.workflow) || nameOrPath;
-  var bindsTo = (tpl.meta && tpl.meta.binds_to) || 'custom';
+  var bindsTo = (tpl.meta && tpl.meta.binds_to) || 'quick';
 
   if (json) {
     var out = {
@@ -609,7 +609,7 @@ function workflowNew(args, cwd) {
     content = [
       'workflow: ' + name,
       'version: 1',
-      'binds_to: custom  # TODO: change to milestone or phase if needed',
+      'binds_to: quick  # or: phase | milestone',
       'principles:',
       '  - TODO: add a principle',
       '  - TODO: add another principle',
@@ -872,7 +872,7 @@ function workflowBrainstorm(args, cwd) {
     '',
     '  workflow: ' + workflowName,
     '  version: 1',
-    '  binds_to: custom  # or: phase | milestone',
+    '  binds_to: quick  # or: phase | milestone',
     '  principles:',
     '    - <guiding principle 1>',
     '    - <guiding principle 2>',
