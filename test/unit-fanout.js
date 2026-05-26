@@ -77,7 +77,7 @@ check('parent with three outputs and two children expands in item-major declarat
   ]);
 });
 
-check('child sibling after-deps are paired per item id', () => {
+check('child sibling after-deps are paired per item id (array-mode also chains prev subtree)', () => {
   const phases = [
     phase({ id: 'parent' }),
     phase({ id: 'childA', parent: 'parent' }),
@@ -85,7 +85,14 @@ check('child sibling after-deps are paired per item id', () => {
   ];
   const result = expandPhases(phases, { parent: [{ id: 'x' }, { id: 'y' }] });
   assert.deepStrictEqual(result.find((row) => row.id === 'childB::x').after, ['childA::x']);
-  assert.deepStrictEqual(result.find((row) => row.id === 'childB::y').after, ['childA::y']);
+  assert.deepStrictEqual(
+    result.find((row) => row.id === 'childB::y').after,
+    ['childA::y', 'childA::x', 'childB::x'],
+  );
+  assert.deepStrictEqual(
+    result.find((row) => row.id === 'childA::y').after,
+    ['childA::x', 'childB::x'],
+  );
 });
 
 check('items without id use the item index in expanded ids', () => {
@@ -252,6 +259,147 @@ check('returned objects are fresh and do not reuse input Phase objects', () => {
   assert.notStrictEqual(result[1], child);
   assert.notStrictEqual(result[0].after, parent.after);
   assert.notStrictEqual(result[1].after, child.after);
+});
+
+// Cross-item subtree-wait — array mode (default, no depends_on)
+check('array mode: single-child parent chains item N to item N-1', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, { parent: [{ id: 'one' }, { id: 'two' }, { id: 'three' }] });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::one').after, []);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::two').after, ['childA::one']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::three').after, ['childA::two']);
+});
+
+check('array mode: multi-child parent makes every item-N child wait on every item-N-1 child', () => {
+  const phases = [
+    phase({ id: 'parent' }),
+    phase({ id: 'childA', parent: 'parent' }),
+    phase({ id: 'childB', parent: 'parent' }),
+  ];
+  const result = expandPhases(phases, { parent: [{ id: 'one' }, { id: 'two' }] });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::two').after, ['childA::one', 'childB::one']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childB::two').after, ['childA::one', 'childB::one']);
+});
+
+check('array mode: first item has empty after (no predecessor)', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, { parent: [{ id: 'first' }, { id: 'second' }] });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::first').after, []);
+});
+
+check('array mode: single item produces no cross-item edges', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, { parent: [{ id: 'only' }] });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::only').after, []);
+});
+
+// Cross-item subtree-wait — DAG mode (every item has depends_on)
+check('dag mode: depends_on chain wires every child to deps subtree', () => {
+  const phases = [
+    phase({ id: 'parent' }),
+    phase({ id: 'childA', parent: 'parent' }),
+    phase({ id: 'childB', parent: 'parent', after: ['childA'] }),
+  ];
+  const result = expandPhases(phases, {
+    parent: [
+      { id: 'a', depends_on: [] },
+      { id: 'b', depends_on: ['a'] },
+    ],
+  });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::a').after, []);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childB::a').after, ['childA::a']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::b').after, ['childA::a', 'childB::a']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childB::b').after, ['childA::b', 'childA::a', 'childB::a']);
+});
+
+check('dag mode: items with empty depends_on are parallel (no cross-item edges)', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, {
+    parent: [
+      { id: 'one', depends_on: [] },
+      { id: 'two', depends_on: [] },
+      { id: 'three', depends_on: [] },
+    ],
+  });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::one').after, []);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::two').after, []);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::three').after, []);
+});
+
+check('dag mode: diamond (a -> b, a -> c, b+c -> d) wires correctly', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, {
+    parent: [
+      { id: 'a', depends_on: [] },
+      { id: 'b', depends_on: ['a'] },
+      { id: 'c', depends_on: ['a'] },
+      { id: 'd', depends_on: ['b', 'c'] },
+    ],
+  });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::b').after, ['childA::a']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::c').after, ['childA::a']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::d').after, ['childA::b', 'childA::c']);
+});
+
+check('dag mode: depends_on propagates through to subsequent expanded ids correctly', () => {
+  const phases = [
+    phase({ id: 'parent' }),
+    phase({ id: 'plan', parent: 'parent' }),
+    phase({ id: 'exec', parent: 'parent', after: ['plan'] }),
+  ];
+  const result = expandPhases(phases, {
+    parent: [
+      { id: 'feat-1', depends_on: [] },
+      { id: 'feat-2', depends_on: ['feat-1'] },
+    ],
+  });
+  assert.deepStrictEqual(result.find((row) => row.id === 'plan::feat-1').after, []);
+  assert.deepStrictEqual(result.find((row) => row.id === 'exec::feat-1').after, ['plan::feat-1']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'plan::feat-2').after, ['plan::feat-1', 'exec::feat-1']);
+  assert.deepStrictEqual(
+    result.find((row) => row.id === 'exec::feat-2').after,
+    ['plan::feat-2', 'plan::feat-1', 'exec::feat-1'],
+  );
+});
+
+// Mode boundary
+check('partial depends_on (some items have it, others not) falls back to array mode', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, {
+    parent: [
+      { id: 'a' },
+      { id: 'b', depends_on: [] },
+      { id: 'c', depends_on: ['a'] },
+    ],
+  });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::a').after, []);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::b').after, ['childA::a']);
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::c').after, ['childA::b']);
+});
+
+check('cross-item edges use indexed keys when items lack ids', () => {
+  const phases = [phase({ id: 'parent' }), phase({ id: 'childA', parent: 'parent' })];
+  const result = expandPhases(phases, { parent: [{ title: 'first' }, { title: 'second' }] });
+  assert.deepStrictEqual(result.find((row) => row.id === 'childA::1').after, ['childA::0']);
+});
+
+check('dag mode does not produce duplicate after entries when sibling+cross-item agree', () => {
+  const phases = [
+    phase({ id: 'parent' }),
+    phase({ id: 'childA', parent: 'parent' }),
+    phase({ id: 'childB', parent: 'parent', after: ['childA'] }),
+  ];
+  const result = expandPhases(phases, {
+    parent: [
+      { id: 'a', depends_on: [] },
+      { id: 'b', depends_on: ['a'] },
+    ],
+  });
+  const childBb = result.find((row) => row.id === 'childB::b');
+  const counts = childBb.after.reduce((acc, v) => Object.assign(acc, { [v]: (acc[v] || 0) + 1 }), {});
+  for (const id of Object.keys(counts)) {
+    assert.strictEqual(counts[id], 1, `duplicate entry '${id}' in childB::b.after`);
+  }
 });
 
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
