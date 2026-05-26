@@ -6,8 +6,8 @@ status: in-progress
 plan-status:
   49-01: complete
   49-02: complete
-  49-03: in-progress
-  49-04: pending
+  49-03: complete
+  49-04: in-progress
 created: 2026-05-25
 base-commit: 8f40fc160238d0635f06556f8f66c80153ac7813
 ---
