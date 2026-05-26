@@ -248,10 +248,10 @@ verb when a finding appears.
 |---|---|---|
 | `/cp-new-project`        | Scaffold `.planning/`, seed PROJECT.md/ROADMAP.md/STATE.md | `brainstorm` → fill in vision/constraints |
 | `/cp-new-milestone <name>` | Append milestone shell to ROADMAP, write MILESTONE-CONTEXT.md | `brainstorm` → spec the milestone → break into phases |
-| `/cp-plan-phase <N>`     | Create `phases/{NN-slug}/`, scaffold `PLAN.md` | `plan` → produce per-plan files |
+| `/cp-plan-phase <N>`     | **Deprecated in v1.2 — removed in v1.3.** Stub that redirects to `/cp-autonomous` (which delegates per-phase plan generation to the role skill resolved by `cp doctor`). | — |
 | `/cp-execute-phase <N>`  | For each plan: hand off, on success tick ROADMAP, write SUMMARY.md, update STATE.md | `execute` → write & verify code |
-| `/cp-autonomous [START] [--scope=…]` | Drive all pending phases of the active milestone without per-phase approval. Smart-gated on test fail / audit HIGH / executor deviation; stops cleanly to `.planning/.continue-here.md` and prompts inline. | Delegates to `/cp-plan-phase` + `/cp-execute-phase` per phase |
-| `/cp-quick <task>`       | Create `quick/{YYYYMMDD-slug}/PLAN.md`, atomic-commit on done | `execute_simple` → quick fix |
+| `/cp-autonomous [START] [--scope=…] [--workflow=<dev\|quick>]` | Drive all pending phases of the active milestone without per-phase approval. Per-phase delegation to the role skill from `cp doctor`. `--workflow=quick` drives a non-roadmapped quick run. Smart-gated on test fail / audit HIGH / executor deviation; stops cleanly to `.planning/.continue-here.md` and prompts inline. | Delegates per phase to the role skill |
+| `/cp-quick <task>`       | **Rewritten in v1.2.** Create `quick/{YYYYMMDD-slug}/DESIGN.md` + `STATE.md`, collaborative goal/approach/done-when fill-in, atomic-commit on done. `--full` retains v1.1 heavyweight `PLAN.md` behavior. | `execute_simple` → quick fix |
 | `/cp-progress`           | Read STATE + ROADMAP → "you are here, next is X" | — |
 | `/cp-resume`             | Restore from `.continue-here.md` + STATE | `execute` or whatever role was paused |
 | `/cp-complete-milestone` | Verify all phases done, aggregate SUMMARY frontmatter, append digest to MILESTONES.md, collapse milestone in ROADMAP, clear MILESTONE-CONTEXT.md, reset STATE | — |
@@ -445,12 +445,58 @@ cp run status <slug>                    # status: done
 | Name | Binds to | Phase chain |
 |---|---|---|
 | `dev` | `milestone` | brainstorm → research-prior-art ∥ research-constraints → plan → execute → review |
-| `debug` | `custom` | collect-symptoms → repro → plan → fix → verify |
-| `quick` | `custom` | discuss → execute → verify |
+| `debug` | `quick` | collect-symptoms → repro → plan → fix → verify |
+| `quick` | `quick` | discuss → execute → verify |
+
+> **v1.2** — the lightweight tier was renamed from `custom` to `quick`
+> (matching the `.planning/quick/` storage root). `binds_to: custom` in
+> existing templates still loads, with a one-line deprecation warning;
+> removal is scheduled for v1.3.
 
 Define your own with `cp workflow new <name> --from quick` and validate with
 `cp workflow validate <name>` before running. Project-local templates in
 `.planning/workflows/` override built-ins of the same name.
+
+### Fan-out (v1.2)
+
+A workflow phase can declare itself as the **parent** of N runtime
+children. The parent's agent returns a structured list, and the runtime
+materializes one child instance per item. Each child runs the same
+downstream phase chain in its own DESIGN.md / STATE.md context.
+
+```yaml
+phases:
+  - id: plan
+    role: planner
+    persist: true           # fold agent output into DESIGN.md ## plan
+
+  - id: child-plan
+    role: planner
+    parent: plan            # fans out under "plan"
+    persist: true
+
+  - id: child-execute
+    role: executor
+    parent: plan
+    after: child-plan       # runs after child-plan in the same fan-out unit
+    max_children: 10        # safety cap — runtime refuses >10 children per parent
+```
+
+**Inter-child ordering via `depends_on:`.** The structured list a parent
+returns supports a `depends_on:` field on each item:
+
+```json
+[
+  { "name": "feature-A", "depends_on": [] },
+  { "name": "feature-B", "depends_on": [] },
+  { "name": "feature-C", "depends_on": ["feature-A", "feature-B"] }
+]
+```
+
+The runtime computes a topo order and parallelizes safe waves. With **no**
+`depends_on:` filled, it falls back to strict array order (item 0 first).
+Agents are explicitly prompted to fill `depends_on:` for **every** item to
+unlock parallelism; partial fills also fall back to array order.
 
 ### Principles
 
@@ -483,17 +529,26 @@ workflow brings its own discipline without polluting the global config.
 ├── config.json                  # Shared GSD+cp config (cp settings under `cp:` key)
 ├── phases/
 │   └── 01-foundation/
+│       ├── DESIGN.md            # v1.2: phase intent, contract, persisted agent output
+│       ├── STATE.md              # v1.2: current status, last activity, history
 │       ├── PLAN.md              # Phase-level plan (cp-friendly short form)
 │       ├── 01-01-PLAN.md        # GSD-shape per-plan file: {phase}-{plan}-PLAN.md
 │       └── 01-01-SUMMARY.md     # written on execute completion
-└── quick/
+└── quick/                       # v1.2: lightweight tier (was .planning/custom/)
     └── 20260519-fix-login-test/
-        ├── PLAN.md
+        ├── DESIGN.md            # v1.2: goal / approach / done-when
+        ├── STATE.md             # v1.2: current-status / last-activity
         └── SUMMARY.md
 ```
 
 `.continue-here.md` is written inside the active phase dir when work is
 paused (`/cp-pause` or LLM session ends mid-execute). `/cp-resume` reads it.
+
+> **v1.2 — quick tier renamed.** `.planning/custom/` is now
+> `.planning/quick/`. Legacy slugs under `.planning/custom/` keep working
+> (read transparently, listed alongside quick runs, written in-place) with
+> a one-time deprecation warning per process. Removal in v1.3 — migrate
+> with `git mv .planning/custom/* .planning/quick/`.
 
 ## Provider abstraction
 

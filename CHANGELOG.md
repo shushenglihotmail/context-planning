@@ -6,6 +6,81 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-05-26 — Unified phase model (DESIGN.md + STATE.md), fan-out, `/cp-quick` rewrite
+
+### Added
+
+- **Unified phase storage**: every phase (built-in `dev`, lightweight
+  `quick`, custom workflows) now scaffolds `DESIGN.md` (intent /
+  contract / persisted output) + `STATE.md` (current status / history)
+  alongside the existing PLAN.md. Populated by `cp scaffoldTierFiles`
+  on `cp run start`, `/cp-quick`, and fan-out child materialization.
+- **Fan-out runtime** — first-class parent → N-children expansion.
+  - New workflow keys: `parent:`, `after:`, `max_children:`.
+  - Parent agent returns a structured list `[ { name, depends_on } ]`;
+    runtime materializes one child per item.
+  - **`depends_on:` per item** lets the parent express inter-child
+    ordering. Runtime computes a topo order and parallelizes safe
+    waves. Falls back to strict array order when `depends_on:` is
+    empty or partially filled (encouraged but optional).
+  - `max_children:` safety cap fails parent phase before materializing
+    a runaway expansion.
+- **`persist:` primitive** — when set on a phase, the runtime folds that
+  phase's agent output into the phase's DESIGN.md under a
+  `## <phaseId>` heading. Re-runs are idempotent (section replaced
+  in-place). Atomic via tmp + rename, so crashes never leave partial
+  DESIGN.md.
+- **`/cp-quick` rewrite** — scaffolds `quick-DESIGN.md` (goal /
+  approach / done-when, ~30 lines) + `quick-STATE.md` instead of the
+  heavyweight `quick-PLAN.md`. Step 4 collaborative DESIGN fill-in
+  forces explicit contract before any work. `--full` retains v1.1
+  heavyweight plan behavior.
+- **`cp autonomous --workflow=<dev|quick>`** flag — pass a workflow
+  choice through to per-phase delegation. Defaults to `dev`. Enables
+  autonomous driving of quick (non-roadmapped) runs.
+- **MIGRATION-v1.2.md** documenting every rename, deprecation, and
+  the fan-out / `depends_on` contract. See file for diff blocks,
+  deprecation table, and cheatsheet.
+
+### Changed
+
+- **`persist_output:` → `persist:`** in workflow YAML. Legacy key
+  loads with a one-line deprecation warning; `persist:` wins when
+  both are present.
+- **`.planning/custom/` → `.planning/quick/`** as the canonical
+  quick-tier run root. Legacy slugs remain readable transparently
+  (one-time deprecation warning per process). Writes to a legacy
+  slug stay in legacy (no surprise migration). New runs go to
+  `.planning/quick/` only. `cp run list` aggregates both.
+- **`binds_to: custom` → `binds_to: quick`** in workflow templates.
+  Loaders silently normalize. `cp workflow validate` accepts both.
+  Built-in `quick.yaml` and `debug.yaml` ship with the new value.
+
+### Deprecated
+
+The following remain functional in v1.2 but will be **removed in v1.3**:
+
+- `persist_output:` workflow key (use `persist:`).
+- `.planning/custom/` storage path (use `.planning/quick/`).
+- `binds_to: custom` in templates (use `binds_to: quick`).
+- `/cp-plan-phase` skill — now a stub that prints a deprecation
+  notice and tells you to use `/cp-autonomous` (which delegates
+  per-phase plan generation to the role skill).
+- `quick-PLAN.md` template (use `quick-DESIGN.md` + `quick-STATE.md`).
+- Legacy v0.10-shape pass-through in `/cp-autonomous` for projects
+  scaffolded before v1.2.
+
+### Internal
+
+- `test/unit-autonomous.js` extended from 24 to 43 assertions: smart
+  gate ordering (per-phase test + audit), runTests/runAuditGate
+  direct unit calls, CLI argv parity for `cp autonomous`, `/cp-quick`
+  skill+template contract, and lib/custom.js back-compat.
+- New helpers in `lib/custom.js`: `_resolveRunDir`,
+  `_freeSlugAcrossRoots`, `_resetDeprecationWarning`.
+- `commands/cp/plan-phase.md` rewritten as a deprecation stub with
+  `deprecated: true` frontmatter.
+
 ## [1.1.0] - 2026-05-25 — Workflow agent skills + `cp workflow export` + `cp workflow inspect`
 
 ### Added
