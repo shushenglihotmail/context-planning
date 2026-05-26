@@ -54,7 +54,7 @@ with the corrected contract from day one.
 - [x] 52.5-01: `lib/runtime-fanout.js` — extend `parseParentOutput` to extract
       top-level `optimizable` (boolean, default `false`); rewrite
       `resolveItemOrder` around the flag; rewrite `buildParentPrompt` copy.
-- [ ] 52.5-02: `lib/fanout.js` — adapt `expandPhases` to the new
+- [x] 52.5-02: `lib/fanout.js` — adapt `expandPhases` to the new
       `{ optimizable, items }` shape; update JSDoc.
 - [ ] 52.5-03: `test/unit-runtime-fanout.js` + `test/unit-fanout.js` +
       `test/integration-fanout-v12.js` — extend coverage for the 7
