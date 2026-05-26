@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 51 (v1.2 Unified Phase Model)
-Plan: 51-05
+Phase: 52 (v1.2 Unified Phase Model)
+Plan: 52-01
 Status: Ready to execute
-Current focus: CLI shims + deprecate cp-plan-phase
-Last activity: tick plan 51-04
+Current focus: Docs + MIGRATION-v1.2.md + v1.2.0 release
+Last activity: 51-04 SUMMARY
 
-Progress: [████████░░] 75%
+Progress: [████████░░] 81%
 
 ## Performance Metrics
 
