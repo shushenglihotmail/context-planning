@@ -1,7 +1,7 @@
 ---
 name: cp-autonomous
-description: Drive the active milestone autonomously — auto-plan + auto-execute each pending phase, smart-gate on test/audit/deviation, stop cleanly to .planning/.continue-here.md.
-argument-hint: "[START] [--scope=phase|N|N-M|milestone] [--check]"
+description: Drive the active milestone autonomously — for each pending phase, delegate to `cp run <workflow>`; smart-gate on test/audit/runner; stop cleanly to .planning/.continue-here.md.
+argument-hint: "[START] [--workflow=<name>] [--scope=phase|N|N-M|milestone] [--check]"
 requires: []
 ---
 
@@ -10,15 +10,15 @@ requires: []
 You are running `cp-autonomous`. Your job is to drive the active
 milestone's pending phases to completion without per-phase user
 approval, while remaining safe: stop the loop the moment a test fails,
-an audit HIGH finding appears, or the execute skill returns a
-deviation. Stops are captured in `.planning/.continue-here.md` and
-surfaced inline so the user can decide what to do next without leaving
-the session.
+an audit HIGH finding appears, or the workflow runner reports an
+error. Stops are captured in `.planning/.continue-here.md` and surfaced
+inline so the user can decide what to do next without leaving the
+session.
 
-This skill is the **outer orchestrator**. The inner work — planning a
-phase, executing each plan — is delegated to `/cp-plan-phase` and
-`/cp-execute-phase`. The cp CLI `cp autonomous` provides preview
-(`--check`) + gate primitives; the agent reasoning lives here.
+This skill is the **outer orchestrator**. The inner work — each
+phase's planning + execution — is delegated to `cp run <workflow>`.
+The cp CLI `cp autonomous` provides preview (`--check`) + gate
+primitives; the per-phase delegation lives here.
 
 ## Step 1 — Parse arguments
 
@@ -29,6 +29,9 @@ phase, executing each plan — is delegated to `/cp-plan-phase` and
   - a phase number like `36` → start at that phase
   - a quoted milestone name like `"v0.10 Autonomy"` → first pending
     phase in that milestone
+- An optional `--workflow=<name>`:
+  - The workflow template to delegate each phase to (default: `dev`,
+    overridable via `cp.behavior.default_workflow`).
 - An optional `--scope=<value>`:
   - `phase` → just the START phase
   - `<N>` → next N phases from START (inclusive)
@@ -36,7 +39,7 @@ phase, executing each plan — is delegated to `/cp-plan-phase` and
   - `milestone` (DEFAULT) → all remaining phases in the milestone
 - `--check` → preview only; do not execute anything.
 
-Sanitize as you would for `/cp-execute-phase`. Reject anything that
+Sanitize as you would for any cp slash command. Reject anything that
 isn't one of these forms.
 
 ## Step 2 — Pre-flight via `cp autonomous --check --json`
@@ -44,93 +47,127 @@ isn't one of these forms.
 Always invoke:
 
 ```
-cp autonomous [START] --scope=<value> --check --json
+cp autonomous [START] --workflow=<name> --scope=<value> --check --json
 ```
 
 (Pass through the parsed args verbatim.) The CLI will return either:
 
 - `ok: true, dryRun: true, phasesWouldRun: [..], totalPlans: N,
-  milestone: "..."` — proceed.
+  workflow: "...", milestone: "..."` — proceed.
 - `ok: false, reason: "..."` — hard stop. Show the message; suggest
   the corrective verb (`cp init`, `cp new-milestone`, etc).
 
 If the user passed `--check`, print the preview block (milestone +
-phases that would run + plan count) and **stop**. Do not enter the
-loop.
+workflow + phases that would run + plan count) and **stop**. Do not
+enter the loop.
 
 Otherwise show a one-line summary like:
 
 ```
-About to drive {N} phase(s) in milestone "{name}" autonomously.
+About to drive {N} phase(s) in milestone "{name}" via workflow "{workflow}".
   Phases: {comma list}
-  Smart gates: tests + audit-HIGH + deviation
+  Smart gates: tests + audit-HIGH + runner errors
   Stop produces: .planning/.continue-here.md
 ```
 
-## Step 3 — The per-phase loop
+## Step 3 — Resolve or start the workflow run
+
+Before entering the per-phase loop, you need the workflow run's
+**slug**:
+
+1. Run `cp run status --json` and look for an active run whose
+   `workflow` field matches `<workflow>` AND (where applicable) whose
+   binding maps to the current milestone.
+2. If one exists, capture its `slug` — you'll resume it per phase.
+3. If none exists, start a fresh run:
+   ```
+   cp run <workflow> "<milestone-name>"
+   ```
+   This scaffolds the run (and milestone phases if the milestone is
+   new). Capture the slug from stderr (`slug: <slug>`).
+   - **Skip this step if the milestone already has phases scaffolded
+     the legacy way (PLAN.md present per phase)** — in that case,
+     starting a `cp run` would conflict. Instead, treat the per-phase
+     loop as a pure pass-through: the agent simply does the phase work
+     in the existing PLAN.md model and you skip the `mark-complete`
+     hand-off until phase 51-04's deprecation work lands.
+
+## Step 4 — The per-phase loop
 
 For each `phaseNum` in `phasesWouldRun` (in order):
 
-### 3a. Plan if stub
+### 4a. Get the workflow instruction (if using `cp run`)
 
-Read `.planning/phases/{NN}-*/PLAN.md`. If the Goal section contains
-`{Describe what this phase delivers in 1-2 sentences.}` OR any plan
-description is `{brief description}`, the PLAN.md is a scaffold stub.
-
-Delegate to:
+If you have a slug from Step 3, run:
 
 ```
-/cp-plan-phase {phaseNum}
+cp run resume <slug>
 ```
 
-Then re-read PLAN.md and verify the stub markers are gone. If the
-plan skill failed to fill the stub, treat that as a `plan-failed`
-stop: write `.planning/.continue-here.md` (use `cp` writers if
-available, otherwise write the file directly with reason
-`plan-failed`, the stub markers found, and "Re-run /cp-plan-phase
-{phaseNum}" as next-step). Then jump to Step 5 (stop UX).
+This re-emits the current wave's instruction (which corresponds to
+this phase). Follow it: do the planning + implementation work as
+directed, committing atomically per task. Use whatever sub-skills the
+workflow template names (e.g. `writing-plans`,
+`subagent-driven-development`).
 
-### 3b. Execute plans one at a time
+If you have **no** slug (legacy pass-through), just execute the phase
+the same way you would have under the old `cp-plan-phase` +
+`cp-execute-phase` flow: read PLAN.md, work through each pending plan
+in order, commit per task, run `cp tick <phase-plan>` per plan, and
+write a SUMMARY at the end.
 
-Repeatedly:
+### 4b. Hand off the phase
 
-1. Run `cp status --json`. If `.nextPlan.planId` is null OR `.phase`
-   has advanced past `phaseNum`, break out of the inner loop —
-   phase {phaseNum} is done; move to the next phase.
-2. Delegate to:
-   ```
-   /cp-execute-phase {phaseNum}
-   ```
-   It executes the **next pending plan** (per `nextPlan.planId`),
-   writes SUMMARY, and ticks the plan.
-3. If `/cp-execute-phase` returned an explicit failure / deviation
-   (its prose surface uses "✗ … failed" or "pausing"), record the
-   deviation: write `.continue-here.md` with reason `deviation`,
-   `failedPhase`, `failedPlan`, the deviation message, and "Inspect
-   the failure and re-run /cp-autonomous" as next-step. Jump to
-   Step 5.
-4. **Smart-gate: tests.** Read `cp config get cp.behavior.test_command`.
-   If non-empty (and not the placeholder "echo skipped"), run it.
-   Pipe the output to a tail-capture (last ~30 lines). On non-zero
-   exit:
-   - Write `.continue-here.md` with reason `test-failure`, the
-     captured output, and "Debug the test failure" as next-step.
-   - Jump to Step 5.
-5. **Smart-gate: audit.** Run `cp audit --json`. If
-   `summary.high > 0`:
-   - Write `.continue-here.md` with reason `audit-high`, the HIGH
-     findings list, and "Run /cp-audit-fix or address findings
-     manually" as next-step.
-   - Jump to Step 5.
-6. Loop back to (1).
+If you have a slug, when the phase work is complete, mark it done:
 
-### 3c. Phase close-out
+```
+cp run mark-complete <slug> <phase-id> < <summary-file>
+```
 
-When the inner loop breaks naturally (no more pending plans in this
-phase), do nothing special — `/cp-execute-phase` already ticked the
-last plan and wrote SUMMARY. Move to the next phase.
+Where `<phase-id>` is the workflow phase id (e.g. `plan`,
+`child-plan`) and `<summary-file>` is a short markdown SUMMARY of
+what you did. Then re-run `cp run status --json <slug>` to confirm
+the run advanced.
 
-## Step 4 — Scope-end completion
+If you have no slug, the legacy pass-through has already ticked the
+last plan and written SUMMARY — nothing extra to do here.
+
+### 4c. Runner-error handling
+
+If `cp run resume` or `cp run mark-complete` returns a non-zero exit
+or surfaces a deviation message in its stderr, treat that as a
+`phase-failed` stop:
+
+- Write `.planning/.continue-here.md` with reason `phase-failed`,
+  the captured stderr, and "Inspect the failure and re-run
+  /cp-autonomous" as next-step.
+- Jump to Step 6.
+
+### 4d. Smart-gate: tests
+
+Read `cp config get cp.behavior.test_command`. If non-empty (and not
+the placeholder "echo skipped"), run it. Pipe the output to a
+tail-capture (last ~30 lines). On non-zero exit:
+
+- Write `.continue-here.md` with reason `test-failure`, the captured
+  output, and "Debug the test failure" as next-step.
+- Jump to Step 6.
+
+### 4e. Smart-gate: audit
+
+Run `cp audit --json`. If `summary.high > 0`:
+
+- Write `.continue-here.md` with reason `audit-high`, the HIGH
+  findings list, and "Run /cp-audit-fix or address findings
+  manually" as next-step.
+- Jump to Step 6.
+
+### 4f. Loop
+
+Move to the next `phaseNum`. Re-check `cp status --json` if you want
+a clean snapshot; otherwise continue down the list from Step 2.
+
+## Step 5 — Scope-end completion
 
 When the outer loop finishes (all phases in scope processed without
 stopping):
@@ -140,24 +177,23 @@ stopping):
   ```
   ✓ cp autonomous: COMPLETE
     Milestone:        {name}
+    Workflow:         {workflow}
     Phases processed: {comma list}
-    Total plans:      {sum}
     Suggested next:   /cp-complete-milestone "{name}" (if all phases done)
                       /cp-autonomous (if more phases remain in this or other milestone)
   ```
 - Do NOT auto-invoke `/cp-complete-milestone`. The milestone close
   has its own UAT gate and the user should approve it explicitly.
 
-## Step 5 — Stop UX (inline, never exit the session)
+## Step 6 — Stop UX (inline, never exit the session)
 
-When a smart gate trips OR a delegate returns a deviation:
+When a smart gate trips OR `cp run` returns a runner error:
 
-1. Confirm `.planning/.continue-here.md` was written. If the CLI
-   didn't write it (because the inner failure happened at the agent
-   layer, not in lib), write it yourself with the exact frontmatter:
+1. Confirm `.planning/.continue-here.md` was written. If it wasn't,
+   write it yourself with the exact frontmatter:
    ```
    # cp autonomous — paused
-   Stopped at: phase {N}, plan {NN-MM}
+   Stopped at: phase {N}
    Reason: {reason}
    Time: {ISO}
 
@@ -167,12 +203,12 @@ When a smart gate trips OR a delegate returns a deviation:
    ## Next
    - {reason-specific next step}
    - Re-run `cp autonomous` (or `/cp-resume`) — execution picks up at
-     the next pending plan
+     phase {N}
    <!-- written by /cp-autonomous skill -->
    ```
 2. Print a stop block to the user:
    ```
-   ✗ cp autonomous: STOPPED at phase {N} plan {NN-MM}
+   ✗ cp autonomous: STOPPED at phase {N}
      Reason: {reason}
      See:    .planning/.continue-here.md
    ```
@@ -181,34 +217,33 @@ When a smart gate trips OR a delegate returns a deviation:
 
    | Reason | Choices |
    |---|---|
-   | `test-failure` | "Debug now (open failing test)", "Skip this plan", "Stop" |
+   | `test-failure` | "Debug now (open failing test)", "Skip this phase", "Stop" |
    | `audit-high` | "Run /cp-audit-fix", "Stop" |
-   | `deviation` | "Inspect & retry", "Skip this plan", "Stop" |
-   | `plan-failed` | "Re-run /cp-plan-phase {N}", "Stop" |
-   | default | "Continue at next plan", "Stop" |
+   | `phase-failed` | "Inspect & retry", "Skip this phase", "Stop" |
+   | default | "Continue at next phase", "Stop" |
 
 4. Act on the choice:
-   - "Continue at next plan" → resume the per-phase loop at the
-     next pending plan (i.e. re-run Step 3b from (1)).
-   - "Skip this plan" → run `cp tick {NN-MM}` to mark done WITHOUT
-     SUMMARY, then resume loop. Warn the user that an unsummarised
-     skipped plan will be flagged by `cp audit`.
+   - "Continue at next phase" → resume the per-phase loop at the
+     next pending phase.
+   - "Skip this phase" → run `cp run mark-complete <slug> <phase-id>`
+     with a minimal "skipped" SUMMARY, then resume loop. Warn the
+     user that a skipped phase will be flagged by `cp audit`.
    - "Debug now" / "Inspect & retry" / "Run /cp-audit-fix" → invoke
      the relevant skill (`/cp-debug`, `/cp-audit-fix`, etc.) and
      after it returns, ask the user whether to resume.
    - "Stop" → finish this skill cleanly. Do not exit the session.
 
-## Step 6 — Report
+## Step 7 — Report
 
 When the skill ends (success or user-chosen "Stop"), print:
 
 ```
 cp autonomous: {COMPLETE | STOPPED}
   Milestone: {name}
+  Workflow:  {workflow}
   Phases done in this run: {comma list}
-  Plans executed:           {N}
-  Stop reason (if any):     {reason or "—"}
-  Continue file (if any):   .planning/.continue-here.md
+  Stop reason (if any):    {reason or "—"}
+  Continue file (if any):  .planning/.continue-here.md
 ```
 
 ## Notes
@@ -216,12 +251,18 @@ cp autonomous: {COMPLETE | STOPPED}
 - **Bounded to a single milestone.** Even with `--scope=milestone`,
   the CLI clamps to the active milestone's last phase. Cross-milestone
   drives are a separate skill, intentionally.
+- **One workflow per run.** All phases in a single `cp autonomous`
+  invocation use the same workflow. Switch workflows mid-milestone by
+  stopping and re-running with a different `--workflow=<name>`.
 - **Idempotent on success.** Re-running `/cp-autonomous` after a
   successful completion is a no-op (CLI reports `phasesWouldRun: []`).
-- **Each plan is one commit-bracket.** `/cp-execute-phase` already
-  enforces "start" + body + SUMMARY + tick commits per plan. The
-  smart gates here happen AFTER each plan's commits land, so a stop
-  always leaves git clean.
+- **Each phase is one commit-bracket.** Atomic per-task commits live
+  inside the phase; the smart gates here happen AFTER the phase's
+  commits land, so a stop always leaves git clean.
+- **Legacy pass-through is temporary.** Phase 51-04 will deprecate
+  `cp-plan-phase` and make `cp run` the unambiguous single path. Until
+  then, milestones scaffolded the legacy way (PLAN.md present per
+  phase) skip the `cp run resume` / `cp run mark-complete` calls.
 - **No agent reasoning in the lib.** `cp autonomous` (the CLI) is
   used here only for `--check` previews and the gate primitives
-  (`cp audit`, `cp status`). Per-plan delegation is in this skill.
+  (`cp audit`, `cp status`). Per-phase delegation is in this skill.
