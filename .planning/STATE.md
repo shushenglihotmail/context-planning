@@ -13,7 +13,7 @@ Phase: 51 (v1.2 Unified Phase Model)
 Plan: 51-05
 Status: Ready to execute
 Current focus: CLI shims + deprecate cp-plan-phase
-Last activity: 51-03 SUMMARY
+Last activity: tick plan 51-04
 
 Progress: [████████░░] 75%
 
