@@ -2,7 +2,7 @@
 name: cp-new-milestone
 description: Start a new milestone on an existing cp project — gather goals, break into phases, update PROJECT.md/ROADMAP.md/STATE.md.
 argument-hint: "<milestone name, e.g. 'v1.1 Notifications'>"
-requires: [cp-plan-phase, cp-execute-phase]
+requires: [cp-autonomous]
 ---
 
 # /cp-new-milestone
@@ -33,8 +33,11 @@ auto-commits. Refuses if a milestone of that name already exists. Use
 `--planned` for `### 📋 ... (Planned)` if you're queueing milestones rather
 than starting one now. Use `--dry-run` to preview without writing.
 
-Then for each phase the brainstorm identified, call `cp scaffold-phase`
-(see `/cp-plan-phase` for details) — no need to hand-edit ROADMAP anywhere.
+Then for each phase the brainstorm identified, call `cp scaffold-phase` —
+no need to hand-edit ROADMAP anywhere. The planning *content* for each
+phase is produced inside the workflow itself when you run
+`/cp-autonomous` (or `cp run resume <slug>`); there is no separate
+plan-phase step in v1.2+.
 
 ## Step 1 — Validate state
 
@@ -125,7 +128,7 @@ Print:
 ✓ Milestone "{name}" planned.
   Phases: X-Y
   Spec:   .planning/MILESTONE-CONTEXT.md
-  Next:   /cp-plan-phase X
+  Next:   /cp-autonomous       # drive all phases end-to-end
 ```
 
 ## Notes

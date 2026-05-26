@@ -90,7 +90,18 @@ Before entering the per-phase loop, you need the workflow run's
      starting a `cp run` would conflict. Instead, treat the per-phase
      loop as a pure pass-through: the agent simply does the phase work
      in the existing PLAN.md model and you skip the `mark-complete`
-     hand-off until phase 51-04's deprecation work lands.
+     hand-off.
+     - **DEPRECATION NOTICE**: This pass-through is preserved in v1.2
+       for milestones already in-flight when v1.2 ships. It will be
+       removed in v1.3. Print this warning the first time the
+       pass-through fires in a session:
+       ```
+       ! cp-autonomous: this milestone uses the v0.10 phase-scaffold
+         shape (PLAN.md per phase). Running in legacy pass-through
+         mode. New milestones should use `cp run <workflow>` for
+         workflow-driven planning; the pass-through will be removed
+         in v1.3.
+       ```
 
 ## Step 4 — The per-phase loop
 
@@ -259,10 +270,11 @@ cp autonomous: {COMPLETE | STOPPED}
 - **Each phase is one commit-bracket.** Atomic per-task commits live
   inside the phase; the smart gates here happen AFTER the phase's
   commits land, so a stop always leaves git clean.
-- **Legacy pass-through is temporary.** Phase 51-04 will deprecate
-  `cp-plan-phase` and make `cp run` the unambiguous single path. Until
-  then, milestones scaffolded the legacy way (PLAN.md present per
-  phase) skip the `cp run resume` / `cp run mark-complete` calls.
+- **Legacy pass-through is deprecated.** As of 51-04 the v0.10 phase-scaffold
+  shape (PLAN.md per phase) is supported only for milestones that began
+  before v1.2 shipped. New milestones must use the `cp run` workflow path.
+  The pass-through will be removed in v1.3 — see
+  `MIGRATION-v1.2.md` (52-01) for the upgrade recipe.
 - **No agent reasoning in the lib.** `cp autonomous` (the CLI) is
   used here only for `--check` previews and the gate primitives
   (`cp audit`, `cp status`). Per-phase delegation is in this skill.

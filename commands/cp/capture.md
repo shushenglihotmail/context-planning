@@ -104,4 +104,4 @@ Read `.planning/config.json` `cp.workflow_provider` to know which is active.
 - Don't classify the same item twice in one run.
 - Don't auto-create new phases or milestones from inbox items. Surface them
   as `phase-seed:*` / `milestone-seed:*` and let `/cp-new-milestone` or
-  `/cp-plan-phase` pick them up later.
+  `/cp-autonomous` pick them up later.

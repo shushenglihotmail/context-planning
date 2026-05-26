@@ -2,7 +2,7 @@
 name: cp-new-project
 description: Initialise a new context-planning project — scaffold .planning/, fill PROJECT.md via the provider's brainstorm skill, then create a first milestone + phase breakdown.
 argument-hint: "[project description, optional]"
-requires: [cp-new-milestone, cp-plan-phase]
+requires: [cp-new-milestone, cp-autonomous]
 ---
 
 # /cp-new-project
@@ -86,8 +86,8 @@ For each phase write:
 - `**Goal**:` one line
 - `**Depends on**:` previous phase or "Nothing"
 - `**Success Criteria**:` 2-5 observable behaviors
-- Plans list: `- [ ] NN-01: {brief}` (start with 1 plan per phase; we
-  refine in /cp-plan-phase)
+- Plans list: `- [ ] NN-01: {brief}` (start with 1 plan per phase; the
+  workflow `plan` phase produces the per-phase DESIGN later)
 
 Show the user the proposed roadmap and confirm.
 
@@ -118,7 +118,7 @@ Print:
 ```
 ✓ Project initialised.
   Phase 1: {name} — {N} plans
-  Next:    /cp-plan-phase 1
+  Next:    /cp-autonomous       # drive all phases end-to-end
 ```
 
 ## Notes

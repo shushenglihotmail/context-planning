@@ -88,8 +88,8 @@ Phase breakdown:
   ▶ Phase 2: Search                     (0/1 — In progress)
 
 Suggested next:
-  /cp-execute-phase {nextPlan.phaseNum}     # PLAN exists for nextPlan? (see step 5)
-  /cp-plan-phase    {nextPlan.phaseNum}     # if not
+  /cp-autonomous                            # drive the milestone end-to-end
+  /cp-execute-phase {nextPlan.phaseNum}     # advance just the current plan
 ```
 
 **Progress bar** — match `lib/state.progressBar(pct)` exactly so STATE.md
@@ -103,12 +103,9 @@ edits agree: `[██████░░░░] 60%` style (10-char bar of `█`/
 
 ## Step 5 — Decide the suggested next command
 
-Check `lib/paths.findPhaseDir(nextPlan.phaseNum)` — if it returns a real
-dir AND that dir contains `{nextPlan.planId}-PLAN.md`, suggest
-`/cp-execute-phase`. Otherwise suggest `/cp-plan-phase`.
-
-(Simpler heuristic: if `phases[i].total > 0` in the JSON, suggest execute;
-else suggest plan.)
+Default to `/cp-autonomous` (it handles every phase shape — planned,
+in-progress, and freshly scaffolded). Surface `/cp-execute-phase` as a
+secondary option for users who want to advance just one plan.
 
 ## Step 6 — Continue-here notice (if Step 3 found one)
 

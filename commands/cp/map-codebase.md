@@ -200,7 +200,7 @@ Print:
 ✓ Codebase mapped → .planning/codebase/ (7 docs, N total lines)
   Focus areas:    tech ✓  arch ✓  quality ✓  concerns ✓
   Next:           cp init  (for brownfield first-time setup)
-                  /cp-plan-phase N  (to start using the new context)
+                  /cp-autonomous   (to start using the new context)
 ```
 
 ## --fast mode

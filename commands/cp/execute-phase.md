@@ -18,11 +18,11 @@ keep ROADMAP + phase PLAN.md in sync, and commit atomically.
 
 ## Step 1 — Resolve the phase + plan
 
-- `PHASE_NUM` = `$ARGUMENTS` (sanitize as in cp-plan-phase).
+- `PHASE_NUM` = `$ARGUMENTS` (digits only, optionally `N.M`).
 - Run `cp status --json` to confirm the milestone, current phase, and the
   **next pending plan** (`.nextPlan.planId`). If `nextPlan` is null, all
-  plans in this phase are done — suggest `/cp-plan-phase {PHASE_NUM+1}` or
-  `/cp-complete-milestone`.
+  plans in this phase are done — suggest `/cp-autonomous` (drives the
+  next phase) or `/cp-complete-milestone`.
 - If `cp status` reports a *different* phase than `PHASE_NUM`, ask the user
   whether to switch.
 - Read the phase's `PLAN.md` and each `{NN-MM}-PLAN.md` per-plan file to
@@ -178,8 +178,7 @@ Next:     /cp-execute-phase {N}    # continues with next plan
 
 If `nextPlan` is null for this phase but other phases remain pending:
 ```
-Next:     /cp-plan-phase {N+1}     # if next phase has no PLAN yet
-          /cp-execute-phase {N+1}  # if it does
+Next:     /cp-autonomous           # auto-drive remaining phases
 ```
 
 If all plans across all phases are done:
