@@ -5,7 +5,7 @@ milestone: v1.2 Unified Phase Model
 status: in-progress
 plan-status:
   50-01: in-progress
-  50-02: pending
+  50-02: in-progress
   50-03: pending
   50-04: pending
 created: 2026-05-26
@@ -45,4 +45,5 @@ against a new `dev-v2` template.
 - [ ] 50-04: Integration tests against a new built-in `dev-v2` template using fan-out (~25 assertions).
 
 ## Notes
+
 
