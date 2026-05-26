@@ -4,7 +4,7 @@ name: Fan-out runtime
 milestone: v1.2 Unified Phase Model
 status: in-progress
 plan-status:
-  50-01: pending
+  50-01: in-progress
   50-02: pending
   50-03: pending
   50-04: pending
@@ -45,3 +45,4 @@ against a new `dev-v2` template.
 - [ ] 50-04: Integration tests against a new built-in `dev-v2` template using fan-out (~25 assertions).
 
 ## Notes
+
