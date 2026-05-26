@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 50 (v1.2 Unified Phase Model)
-Plan: 50-04
+Phase: 51 (v1.2 Unified Phase Model)
+Plan: 51-01
 Status: Ready to execute
-Current focus: Fan-out runtime (parent: field, sibling pairing, max_children, 1-level limit)
-Last activity: start 50-03 execution
+Current focus: CLI shims + deprecate cp-plan-phase
+Last activity: shipped 50-04 (fan-out runtime complete with depends_on amendment)
 
-Progress: [████░░░░░░] 44%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
