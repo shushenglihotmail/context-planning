@@ -371,7 +371,7 @@ Plans:
 Plans:
 - [x] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef + `validatePhase(obj)` runtime check; ship `test/unit-types.js` (~20 assertions).
 - [x] 49-02: `lib/milestone.js` — `readPhases(roadmapMd)` returning `Phase[]` for all ROADMAP shapes + milestone-tier DESIGN.md/STATE.md scaffolding; ship `test/unit-milestone-reader.js` (~30 assertions).
-- [ ] 49-03: `lib/workflow.js` — `phasesFromTemplate(template)` returning unified `Phase[]` with `parent`/`after`/`persist`/`max_children` fields; parity against built-in templates (~25 assertions).
+- [x] 49-03: `lib/workflow.js` — `phasesFromTemplate(template)` returning unified `Phase[]` with `parent`/`after`/`persist`/`max_children` fields; parity against built-in templates (~25 assertions).
 - [ ] 49-04: `lib/persist.js` — fold-into-DESIGN.md helper + section dedupe; rename `persist_output:` → `persist:` (default `false`) with deprecation-warning alias; ship `test/unit-persist.js` (~20 assertions).
 
 ### Phase 50: Fan-out runtime (parent: field, sibling pairing, max_children, 1-level limit)
