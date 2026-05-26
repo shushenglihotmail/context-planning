@@ -1,195 +1,71 @@
 ---
 name: cp-plan-phase
-description: Create the phase directory and PLAN.md for phase N by delegating to the provider's plan skill.
-argument-hint: "<phase number, e.g. 1 or 2.1>"
-requires: [cp-execute-phase]
+description: DEPRECATED in v1.2 — phase planning is now folded into the workflow runtime. Use /cp-autonomous or `cp run <workflow> "<milestone>"` instead.
+argument-hint: "<phase number>"
+requires: []
+deprecated: true
 ---
 
-# /cp-plan-phase
+# /cp-plan-phase  *(deprecated)*
 
-You are running `cp-plan-phase`. Your job is to take a phase that exists in
-ROADMAP.md and turn it into a concrete `PLAN.md` ready for execution.
+This skill is **deprecated as of v1.2** and will be removed in v1.3.
 
-## TL;DR — use the v0.3 `cp` CLI wrapper
+## Why
 
-If the phase doesn't yet exist in ROADMAP (e.g. the user jumped here from
-`/cp-new-milestone` without scaffolding the phases yet), create the phase
-shell first:
+Plan generation used to require a dedicated step:
 
 ```
-cp scaffold-phase {N} --name "{phase name}" --plans {initial-plan-count}
+/cp-plan-phase 1
+  -> scaffolds PLAN.md from the provider's plan skill
+  -> human reviews
+/cp-execute-phase 1
+  -> walks PLAN.md tasks
 ```
 
-Output:
-```
-✓ .planning/ROADMAP.md
-✓ .planning/phases/{NN-slug}/PLAN.md
-Phase {N} added to milestone "{active milestone}" ({M} plans: {NN-01}, ...)
-committed <hash>
-```
+In v1.2 the workflow runtime (`cp run`) folds planning *into* each
+phase. The built-in `dev` workflow has a `plan` phase whose only job
+is to produce a `DESIGN.md` for the next stage — there is no
+separate "scaffold a PLAN.md" pre-step to invoke.
 
-The wrapper inserts the `### Phase N: {name}` heading under the active
-milestone in ROADMAP, creates `.planning/phases/{NN-slug}/PLAN.md` from the
-`templates/phase-PLAN.md` template, pre-fills `- [ ] NN-MM: TBD` checkboxes
-for the requested plan count, and auto-commits. Use `--dry-run` to preview,
-`--milestone <name>` to target a non-active milestone, `--no-commit` to skip
-the commit.
+## What to do instead
 
-After the wrapper runs (or if the phase already exists), proceed below to
-fill in the per-plan details (objectives, tasks, success criteria) by
-delegating to the provider's plan skill.
-
-## Step 1 — Resolve the phase
-
-- `PHASE_NUM` = `$ARGUMENTS` (sanitize: must match `^[\d]+(\.\d+)?$`).
-- Read `.planning/ROADMAP.md`. Find the matching `### Phase {PHASE_NUM}: {Name}`
-  block. Extract:
-  - phase name
-  - goal
-  - success criteria
-  - requirements (the `**Requirements**:` line)
-  - planned plans list
-- If not found, stop and tell the user to add it first via `/cp-new-milestone`
-  or by editing ROADMAP.md.
-
-## Step 2 — Create the phase directory and PLAN file
-
-Use the cp helpers (`require('context-planning/lib/paths')`) to derive
-GSD-compatible filenames:
+For a milestone-bound phase (the normal path):
 
 ```
-phaseDirName(N, name)      -> "01-foundation"   (zero-padded; decimals kept as-is)
-phasePlanPrefix(N, planN)  -> "01-01"
-planFile(N, name, planN)   -> ".planning/phases/01-foundation/01-01-PLAN.md"
-summaryFile(...)           -> ".planning/phases/01-foundation/01-01-SUMMARY.md"
+cp run dev "<milestone name>"            # start the run if needed
+cp run resume <run-slug>                 # get the next phase instruction
+# (the provider's plan skill is invoked from inside the dev workflow)
+cp run mark-complete <run-slug> <phase-id> < summary
 ```
 
-Create the dir if missing. For each planned plan in the ROADMAP, create the
-stub PLAN file from `templates/PLAN.md`, substituting:
+Or drive the whole milestone end-to-end via the autonomous skill:
 
-- `{{PHASE_DIR}}`   — e.g. `01-foundation`
-- `{{PLAN_NUM_PADDED}}` — e.g. `01`
-- `{{PHASE_PLAN_PREFIX}}` — e.g. `01-01`
-- `{{WAVE}}`        — `1` initially; the plan skill or a future
-  parallelization pass can update it
-- `{{OBJECTIVE}}`, `{{PURPOSE}}`, `{{OUTPUT}}` — derived from the ROADMAP
-  goal + this plan's brief description
-- `{{PROVIDER}}`, `{{PLAN_SKILL}}` — from `cp doctor`
-
-PLAN frontmatter is GSD-shaped:
 ```
-phase: 01-foundation
-plan: 01
-type: execute
-wave: 1
-depends_on: []
-files_modified: []
-autonomous: true
-requirements: [REQ-01, REQ-02]   # populate from ROADMAP **Requirements**: line
-user_setup: []
-must_haves:
-  truths: []
-  artifacts: []
-  key_links: []
+/cp-autonomous
 ```
 
-The `<tasks>` block stays empty for the plan skill to fill in (see Step 4).
+For ad-hoc work that doesn't fit a phase, use the quick tier:
 
-## Step 3 — Resolve the plan skill
-
-Run `npx cp doctor`. Find the `plan` role's resolved provider + skill.
-
-- If installed (default: Superpowers' `writing-plans`): invoke it.
-- If `manual`: warn the user the provider's plan skill is missing, then fall
-  back to inline plan-writing — ask the user about each task, scope, success.
-
-## Step 3.5 — Delegate to brainstorming for DESIGN.md (v0.7)
-
-Before invoking the plan skill, invoke the provider's `brainstorm` skill
-to fill in the phase-tier DESIGN.md.
-
-- `cp scaffold-phase` already created an empty template at
-  `.planning/phases/{phase-dir}/DESIGN.md`.
-- Pass to the brainstorm skill:
-  - The phase Goal, Success Criteria, and Requirements (from ROADMAP.md)
-  - The milestone DESIGN.md at `.planning/milestones/<slug>/DESIGN.md` as
-    context (so the phase design stays consistent with the milestone)
-  - A `path:` override pointing to
-    `.planning/phases/{phase-dir}/DESIGN.md` so SP writes there directly
-    instead of `docs/superpowers/specs/...`
-- Do NOT touch frontmatter keys cp populated (`phase`, `milestone`,
-  `status`, `created`). SP fills in Status, Context, Decision,
-  Consequences, Architecture, Components, Data Flow, Error Handling,
-  Testing Strategy, Alternatives Considered, Open Questions, References.
-
-If the brainstorm skill is unavailable (provider = manual), skip this
-step — DESIGN.md stays empty and the user can fill it later.
-
-The DESIGN.md becomes a context input to the plan skill in Step 4.
-
-## Step 4 — Delegate to the plan skill
-
-Pass to the plan skill:
-- The phase DESIGN.md at `.planning/phases/{phase-dir}/DESIGN.md` (v0.7)
-  as the architectural source-of-truth; plan tasks should align with the
-  Decision and Components sections.
-- The phase Goal and Success Criteria (verbatim from ROADMAP.md)
-- The Requirements list (from ROADMAP's `**Requirements**:` line)
-- The Context block from PROJECT.md (Core Value, related Active requirements)
-- A pointer to write the resulting plan into the GSD-shaped file
-  `.planning/phases/{phase-dir}/{phase}-{plan}-PLAN.md` — replacing the
-  `<tasks>` block. **Do not rename the file.** Do not touch frontmatter
-  keys cp populated (phase, plan, type, wave, depends_on, requirements);
-  the skill MAY append/refine `files_modified`, `must_haves.*`, and
-  `autonomous` once it has decomposed the work.
-- The instruction that each task should be 2-5 minutes, file-scoped, with a
-  clear verification step (per Superpowers' writing-plans conventions), and
-  each task expressed as a `<task type="auto">...</task>` block (GSD shape).
-
-The plan skill is expected to populate the `<tasks>` section of PLAN.md with
-one `<task>` block per actionable step.
-
-## Step 5 — Reconcile with ROADMAP.md plans list
-
-After the plan skill returns:
-
-- Count `<task type="auto">` blocks in the new PLAN.md.
-- If the count differs from the plans listed in ROADMAP.md for this phase,
-  show the user and ask whether to:
-  (a) keep the original ROADMAP plan count (let PLAN.md just decompose
-      each into sub-tasks), or
-  (b) replace the ROADMAP plans list with one entry per task in PLAN.md.
-
-  Default to (a). The plans list in ROADMAP.md is the COARSE checklist;
-  PLAN.md is the fine detail.
-
-## Step 6 — Update STATE.md
-
-- `Plan:` = `1 of {plan count}`
-- `Status:` = `Ready to execute`
-- `Last activity:` = `today — planned phase {N}`
-
-## Step 7 — Commit and report
-
-If `cp.behavior.atomic_commits` is true:
 ```
-cp: plan phase {N} ({phase name})
+/cp-quick "<short task description>"
 ```
 
-Print:
-```
-✓ Phase {N} planned: {phase name}
-  Tasks:  {count}
-  File:   .planning/phases/{phase-dir}/{phase}-{plan}-PLAN.md
-  Next:   /cp-execute-phase {N}
-```
+## Migration alias
 
-## Notes
+If a caller invokes `/cp-plan-phase N`, treat it as a request to
+plan phase N and gently redirect:
 
-- The plan skill OWNS the content of PLAN.md's `<tasks>` block.
-- Don't second-guess the plan skill's output — it's the workflow provider's
-  area of expertise.
-- If the user wants to tweak the plan, let them edit PLAN.md directly and
-  re-invoke `/cp-execute-phase`.
-- Filenames follow GSD convention: `{phase}-{plan}-PLAN.md` so a GSD
-  workflow can read and continue from the same file.
+1. Ask the user whether they meant `/cp-autonomous` (full milestone
+   drive) or `cp run resume <slug>` (single phase advance).
+2. Do **not** create the legacy `.planning/phases/NN-slug/PLAN.md`
+   file. The dev workflow's `plan` phase produces `DESIGN.md`.
+3. If the user insists on the legacy shape, point them at the
+   v1.1 release notes and the `cp run` migration in
+   `MIGRATION-v1.2.md`.
+
+## Will this come back?
+
+No. The planning step is now part of every workflow's prompt
+contract. Custom workflows can attach their own plan phase via
+the v1.2 schema (parent/child phases — see
+`templates/workflows/dev.yaml`).
