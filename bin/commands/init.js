@@ -81,7 +81,7 @@ function run() {
     );
     console.log(`as a GSD-compatible project.`);
   }
-  console.log(`\nNext: edit .planning/PROJECT.md, then run /cp-new-milestone or /cp-plan-phase.`);
+  console.log(`\nNext: edit .planning/PROJECT.md, then run /cp-new-milestone or /cp-autonomous.`);
 }
 
 module.exports = { name: 'init', run };

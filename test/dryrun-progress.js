@@ -184,10 +184,8 @@ if (planExists) {
   console.log('Suggested next: /cp-execute-phase ' + current.num);
 } else {
   console.log(
-    'Suggested next: /cp-plan-phase ' +
-      current.num +
-      '   (no PLAN.md yet for plan ' +
+    'Suggested next: /cp-autonomous   (no PLAN.md yet for plan ' +
       nextPlan.id +
-      ')'
+      ' — workflow plan phase will produce DESIGN.md)'
   );
 }

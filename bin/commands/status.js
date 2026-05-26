@@ -21,7 +21,7 @@ function run(args = []) {
   console.log(`Repo:        ${root}`);
   console.log(`Milestone:   ${r.milestone || '(none in-progress)'}${r.milestoneStatus ? ` [${r.milestoneStatus}]` : ''}`);
   if (r.phases.length === 0) {
-    console.log('Phases:      (none yet — run `/cp-plan-phase 1`)');
+    console.log('Phases:      (none yet — run `/cp-autonomous` or `cp scaffold-phase 1`)');
   } else {
     console.log('Phases:');
     for (const p of r.phases) {
