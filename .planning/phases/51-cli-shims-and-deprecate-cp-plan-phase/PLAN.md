@@ -1,51 +1,43 @@
 ---
 phase: "51"
-name: CLI shims and deprecate cp-plan-phase
+name: CLI shims + deprecate cp-plan-phase
 milestone: v1.2 Unified Phase Model
-status: in-progress
+status: pending
+plan-status:
+  51-01: pending
+  51-02: pending
+  51-03: pending
+  51-04: pending
+  51-05: pending
 created: 2026-05-26
-base-commit: 7afe87101c553e632d708212d639ba1f3e98764d
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+base-commit: 3cc9262
 ---
 
-# Phase 51: CLI shims and deprecate cp-plan-phase
+# Phase 51: CLI shims + deprecate cp-plan-phase
 
 **Milestone**: v1.2 Unified Phase Model
 **Created**: 2026-05-26
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Make `cp autonomous` and `cp quick` thin shims that call `cp run <workflow>`,
+collapse the `.planning/custom/` tree into `.planning/quick/`, deprecate
+the cp-plan-phase skill, and prove parity with a smart-gate test suite.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `cp autonomous` for an in-progress milestone calls `cp run <workflow>` per pending phase.
+2. `cp quick "<task>"` scaffolds `.planning/quick/<slug>/{DESIGN.md, STATE.md}` (no PLAN.md scaffold).
+3. `.planning/custom/` is read-only with deprecation warning; new writes go to `.planning/quick/`.
+4. cp-plan-phase skill prints a deprecation notice and exits cleanly.
+5. Smart-gate + scope/argv parity tests pass (~50 assertions); `npm test` green.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 51-01: {brief description}
-- [ ] 51-02: {brief description}
-- [ ] 51-03: {brief description}
-- [ ] 51-04: {brief description}
-- [ ] 51-05: {brief description}
+- [ ] 51-01: Refactor `bin/commands/autonomous.js` - for each pending milestone-phase, call `cp run <workflow>`; drop cp-plan-phase invocations.
+- [ ] 51-02: Refactor `bin/commands/quick.js` - scaffold `quick/<slug>/{DESIGN.md, STATE.md}`; remove quick-PLAN.md path; update cp-quick skill.
+- [ ] 51-03: Collapse `.planning/custom/` into `.planning/quick/`; alias `binds_to: custom` -> quick; read-only back-compat for both old roots with deprecation warning.
+- [ ] 51-04: Deprecate `cp-plan-phase` skill (one-line nudge to `cp run dev` or configured workflow); audit and update other cp-* skills that referenced it as a prereq.
+- [ ] 51-05: Smart-gate + scope/argv parity tests for both autonomous and quick (~50 assertions).
 
 ## Notes
-
-<!-- Free-form during phase execution. -->

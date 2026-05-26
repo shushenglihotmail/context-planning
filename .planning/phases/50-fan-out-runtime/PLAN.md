@@ -3,48 +3,45 @@ phase: "50"
 name: Fan-out runtime
 milestone: v1.2 Unified Phase Model
 status: in-progress
+plan-status:
+  50-01: pending
+  50-02: pending
+  50-03: pending
+  50-04: pending
 created: 2026-05-26
-base-commit: 7afe87101c553e632d708212d639ba1f3e98764d
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+base-commit: 3cc9262
 ---
 
-# Phase 50: Fan-out runtime
+# Phase 50: Fan-out runtime (parent: field, sibling pairing, max_children, 1-level limit)
 
 **Milestone**: v1.2 Unified Phase Model
 **Created**: 2026-05-26
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Wire the v1.2 parent/child phase model into the runtime: extend template
+validation, build the fan-out expander, shape the agent prompt for
+list-output parents, and prove the whole loop with integration tests
+against a new `dev-v2` template.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. Templates declaring `parent:`, child-level `after:`, `max_children:`,
+   `min_children:` validate cleanly; invalid combinations (missing parent,
+   grandchildren, max < min) fail with actionable errors.
+2. `lib/fanout.js#expandPhases(phases, parentOutputs)` returns the
+   materialised child phases ordered by sibling pairwise dependencies.
+3. Runtime enforces `count <= max_children` and `count >= min_children`
+   on parent's structured-list output; clear error on violation.
+4. `dev-v2` built-in template runs end-to-end in a unit-level integration
+   test with parent expanding to N children, each persisting individually.
+5. `npm test` is green; no regressions across 49-01..49-04 test files.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 50-01: {brief description}
-- [ ] 50-02: {brief description}
-- [ ] 50-03: {brief description}
-- [ ] 50-04: {brief description}
+- [ ] 50-01: Workflow YAML schema extension — `parent:`, child-level `after:`, `max_children:` (default 20), `min_children:` (default 1); validation rules (parent must exist, no grandchildren, max >= min).
+- [ ] 50-02: `lib/fanout.js` — expand child phases over parent's structured list output; pairwise sibling dep resolver; subtree-wait semantics for top-level deps on a parent.
+- [ ] 50-03: Runtime agent contract — list-output prompt shaping ("produce up to N items"); enforce count <= max_children (error if exceeded); enforce count >= min_children.
+- [ ] 50-04: Integration tests against a new built-in `dev-v2` template using fan-out (~25 assertions).
 
 ## Notes
-
-<!-- Free-form during phase execution. -->

@@ -1,49 +1,36 @@
 ---
 phase: "52"
-name: Docs and v1.2.0 release
+name: Docs + MIGRATION-v1.2.md + v1.2.0 release
 milestone: v1.2 Unified Phase Model
-status: in-progress
+status: pending
+plan-status:
+  52-01: pending
+  52-02: pending
+  52-03: pending
 created: 2026-05-26
-base-commit: 7afe87101c553e632d708212d639ba1f3e98764d
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+base-commit: 3cc9262
 ---
 
-# Phase 52: Docs and v1.2.0 release
+# Phase 52: Docs + MIGRATION-v1.2.md + v1.2.0 release
 
 **Milestone**: v1.2 Unified Phase Model
 **Created**: 2026-05-26
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Document the v1.2 model end-to-end, write the migration guide, refresh
+README/CHANGELOG, bump to 1.2.0, tag, and push commits ready for npm publish.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `MIGRATION-v1.2.md` covers persist rename, custom->quick collapse, cp-plan-phase removal, parent/after/max_children schema, fold-into-DESIGN behavior.
+2. README.md + CHANGELOG.md reflect v1.2 schema, storage diagram, CLI table.
+3. `package.json` is at `1.2.0`; commit + tag `v1.2.0` pushed.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 52-01: {brief description}
-- [ ] 52-02: {brief description}
-- [ ] 52-03: {brief description}
+- [ ] 52-01: MIGRATION-v1.2.md - persist rename, custom->quick collapse, cp-plan-phase removal, parent:/after:/max_children: schema, fold-into-DESIGN behavior.
+- [ ] 52-02: CHANGELOG.md + README.md updates (workflow YAML examples with new schema; new tier-file storage diagram; updated CLI table).
+- [ ] 52-03: Bump package.json to 1.2.0; commit; tag v1.2.0 (publish to npm is user-driven).
 
 ## Notes
-
-<!-- Free-form during phase execution. -->
