@@ -6,7 +6,7 @@
 
 const assert = require('node:assert/strict');
 
-const { buildParentPrompt, parseParentOutput, enforceChildCount } = require('../lib/runtime-fanout');
+const { buildParentPrompt, parseParentOutput, enforceChildCount, resolveItemOrder } = require('../lib/runtime-fanout');
 
 let passed = 0;
 let failed = 0;
@@ -69,6 +69,14 @@ check('buildParentPrompt output is a string', () => {
   assert.strictEqual(typeof buildParentPrompt(phase(), 'Base'), 'string');
 });
 
+check('buildParentPrompt explains array-order default and depends_on rule', () => {
+  const prompt = buildParentPrompt(phase({ min_children: 1, max_children: 5 }), 'Base');
+  assert.ok(prompt.includes('Default execution order is the order you list items'));
+  assert.ok(prompt.includes('depends_on'));
+  assert.ok(prompt.includes('all-or-nothing'));
+  assert.ok(prompt.includes('Cycles, self-references'));
+});
+
 // parseParentOutput (12)
 check('parseParentOutput parses a clean response with one fenced JSON block', () => {
   assert.deepStrictEqual(parseParentOutput(responseFor({ items: [{ id: 'one', title: 'One' }] })), [{ id: 'one', title: 'One' }]);
@@ -122,6 +130,35 @@ check('parseParentOutput preserves extra fields on items verbatim', () => {
   assert.deepStrictEqual(parseParentOutput(responseFor({ items: [extraItem] })), [extraItem]);
 });
 
+check('parseParentOutput accepts depends_on as empty array', () => {
+  const parsed = parseParentOutput(responseFor({ items: [{ id: 'a', title: 'A', depends_on: [] }] }));
+  assert.deepStrictEqual(parsed[0].depends_on, []);
+});
+
+check('parseParentOutput accepts depends_on with sibling ids', () => {
+  const parsed = parseParentOutput(responseFor({
+    items: [
+      { id: 'a', title: 'A', depends_on: [] },
+      { id: 'b', title: 'B', depends_on: ['a'] },
+    ],
+  }));
+  assert.deepStrictEqual(parsed[1].depends_on, ['a']);
+});
+
+check('parseParentOutput throws when depends_on is not an array', () => {
+  assert.throws(
+    () => parseParentOutput(responseFor({ items: [{ id: 'a', title: 'A', depends_on: 'b' }] })),
+    /item at index 0 \('a'\) depends_on must be an array/,
+  );
+});
+
+check('parseParentOutput throws when depends_on contains a non-string entry', () => {
+  assert.throws(
+    () => parseParentOutput(responseFor({ items: [{ id: 'a', title: 'A', depends_on: ['b', 2] }] })),
+    /item at index 0 \('a'\) depends_on\[1\] must be a string/,
+  );
+});
+
 // enforceChildCount (5)
 check('enforceChildCount passes when items.length is between min and max', () => {
   const parsedItems = items(2);
@@ -154,6 +191,110 @@ check('response with 21 items and max=20 fails at enforceChildCount, not parse',
   const parsedItems = parseParentOutput(responseFor({ items: items(21) }));
   assert.strictEqual(parsedItems.length, 21);
   assert.throws(() => enforceChildCount(phase({ max_children: 20 }), parsedItems), /above max_children \(20\)/);
+});
+
+// resolveItemOrder (12)
+check('resolveItemOrder returns array mode on empty items', () => {
+  assert.deepStrictEqual(resolveItemOrder([]), { mode: 'array' });
+});
+
+check('resolveItemOrder returns array mode when no item has depends_on', () => {
+  assert.deepStrictEqual(resolveItemOrder([{ id: 'a', title: 'A' }, { id: 'b', title: 'B' }]), { mode: 'array' });
+});
+
+check('resolveItemOrder returns array mode when only some items have depends_on (partial)', () => {
+  assert.deepStrictEqual(
+    resolveItemOrder([{ id: 'a', title: 'A' }, { id: 'b', title: 'B', depends_on: ['a'] }]),
+    { mode: 'array' },
+  );
+});
+
+check('resolveItemOrder returns dag mode when every item has depends_on (incl. empty)', () => {
+  const result = resolveItemOrder([
+    { id: 'a', title: 'A', depends_on: [] },
+    { id: 'b', title: 'B', depends_on: ['a'] },
+  ]);
+  assert.strictEqual(result.mode, 'dag');
+  assert.deepStrictEqual(result.order, ['a', 'b']);
+});
+
+check('resolveItemOrder dag mode preserves input order when no cross-item deps', () => {
+  const result = resolveItemOrder([
+    { id: 'a', title: 'A', depends_on: [] },
+    { id: 'b', title: 'B', depends_on: [] },
+    { id: 'c', title: 'C', depends_on: [] },
+  ]);
+  assert.deepStrictEqual(result.order, ['a', 'b', 'c']);
+});
+
+check('resolveItemOrder dag mode topo-sorts a diamond', () => {
+  const result = resolveItemOrder([
+    { id: 'a', title: 'A', depends_on: [] },
+    { id: 'b', title: 'B', depends_on: ['a'] },
+    { id: 'c', title: 'C', depends_on: ['a'] },
+    { id: 'd', title: 'D', depends_on: ['b', 'c'] },
+  ]);
+  assert.strictEqual(result.order[0], 'a');
+  assert.strictEqual(result.order[3], 'd');
+  assert.ok(result.order.indexOf('b') < result.order.indexOf('d'));
+  assert.ok(result.order.indexOf('c') < result.order.indexOf('d'));
+});
+
+check('resolveItemOrder throws on self-loop in dag mode', () => {
+  assert.throws(
+    () => resolveItemOrder([{ id: 'a', title: 'A', depends_on: ['a'] }]),
+    /item 'a' depends on itself/,
+  );
+});
+
+check('resolveItemOrder throws on unknown id in dag mode', () => {
+  assert.throws(
+    () => resolveItemOrder([
+      { id: 'a', title: 'A', depends_on: [] },
+      { id: 'b', title: 'B', depends_on: ['missing'] },
+    ]),
+    /item 'b' depends_on references unknown id 'missing'/,
+  );
+});
+
+check('resolveItemOrder throws on a 2-node cycle in dag mode', () => {
+  assert.throws(
+    () => resolveItemOrder([
+      { id: 'a', title: 'A', depends_on: ['b'] },
+      { id: 'b', title: 'B', depends_on: ['a'] },
+    ]),
+    /cycle detected among items/,
+  );
+});
+
+check('resolveItemOrder throws on a 3-node cycle in dag mode', () => {
+  assert.throws(
+    () => resolveItemOrder([
+      { id: 'a', title: 'A', depends_on: ['c'] },
+      { id: 'b', title: 'B', depends_on: ['a'] },
+      { id: 'c', title: 'C', depends_on: ['b'] },
+    ]),
+    /cycle detected among items/,
+  );
+});
+
+check('resolveItemOrder ignores depends_on in partial mode (does not validate)', () => {
+  assert.deepStrictEqual(
+    resolveItemOrder([
+      { id: 'a', title: 'A' },
+      { id: 'b', title: 'B', depends_on: ['unknown-but-ignored'] },
+    ]),
+    { mode: 'array' },
+  );
+});
+
+check('resolveItemOrder dag mode is stable: input order wins ties', () => {
+  const result = resolveItemOrder([
+    { id: 'first', title: '1', depends_on: [] },
+    { id: 'second', title: '2', depends_on: [] },
+    { id: 'third', title: '3', depends_on: [] },
+  ]);
+  assert.deepStrictEqual(result.order, ['first', 'second', 'third']);
 });
 
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
