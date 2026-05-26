@@ -40,7 +40,7 @@ against a new `dev-v2` template.
 ## Plans
 
 - [x] 50-01: Workflow YAML schema extension — `parent:`, child-level `after:`, `max_children:` (default 20), `min_children:` (default 1); validation rules (parent must exist, no grandchildren, max >= min).
-- [ ] 50-02: `lib/fanout.js` — expand child phases over parent's structured list output; pairwise sibling dep resolver; subtree-wait semantics for top-level deps on a parent.
+- [x] 50-02: `lib/fanout.js` — expand child phases over parent's structured list output; pairwise sibling dep resolver; subtree-wait semantics for top-level deps on a parent.
 - [ ] 50-03: Runtime agent contract — list-output prompt shaping ("produce up to N items"); enforce count <= max_children (error if exceeded); enforce count >= min_children.
 - [ ] 50-04: Integration tests against a new built-in `dev-v2` template using fan-out (~25 assertions).
 
