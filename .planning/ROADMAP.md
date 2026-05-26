@@ -398,6 +398,14 @@ Plans:
 - [x] 52-02: CHANGELOG.md + README.md updates (workflow YAML examples with new schema; new tier-file storage diagram; updated CLI table).
 - [ ] 52-03: Bump package.json to 1.2.0; commit; tag v1.2.0; publish to npm.
 
+
+### Phase 52.5: optimizable fan-out flag
+
+Plans:
+- [ ] 52.5-01: TBD
+- [ ] 52.5-02: TBD
+- [ ] 52.5-03: TBD
+- [ ] 52.5-04: TBD
 ## Progress
 
 **Execution Order:**
