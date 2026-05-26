@@ -5,7 +5,7 @@ milestone: v1.2 Unified Phase Model
 status: in-progress
 plan-status:
   49-01: complete
-  49-02: pending
+  49-02: in-progress
   49-03: pending
   49-04: pending
 created: 2026-05-25
