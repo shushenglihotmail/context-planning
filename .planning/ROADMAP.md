@@ -402,7 +402,7 @@ Plans:
 ### Phase 52.5: optimizable fan-out flag
 
 Plans:
-- [ ] 52.5-01: TBD
+- [x] 52.5-01: TBD
 - [ ] 52.5-02: TBD
 - [ ] 52.5-03: TBD
 - [ ] 52.5-04: TBD
