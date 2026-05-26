@@ -1,18 +1,18 @@
 ---
 # Tier marker: cp scaffold substitutes one of:
-#   phase: "52"     (for phase-tier DESIGN.md)
+#   phase: "50"     (for phase-tier DESIGN.md)
 #   milestone_slug: "v1-2-unified-phase-model"  (for milestone-tier DESIGN.md)
-phase: "52"
+phase: "50"
 milestone: v1.2 Unified Phase Model
 status: proposed
-created: 2026-05-25
-updated: 2026-05-25
+created: 2026-05-26
+updated: 2026-05-26
 deciders: []
 supersedes: []
 superseded_by: null
 ---
 
-# Design: Phase 52: cp-quick as thin shim over cp run (state migration)
+# Design: Phase 50: Fan-out runtime
 
 ## Status
 

@@ -1,11 +1,11 @@
 ---
-phase: "54"
+phase: "51"
 milestone: v1.2 Unified Phase Model
 created: 2026-05-26
 schema_version: 1
 ---
 
-# Review Log: Phase 54 — Deprecate cp-plan-phase
+# Review Log: Phase 51 — CLI shims and deprecate cp-plan-phase
 
 Append-only log of subagent review cycles during execution. Each entry is
 written by the cp-execute-phase orchestrator after a review round

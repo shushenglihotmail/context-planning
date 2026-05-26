@@ -1,10 +1,10 @@
 ---
-phase: "55"
-name: Docs and v1.2.0 release
+phase: "50"
+name: Fan-out runtime
 milestone: v1.2 Unified Phase Model
 status: in-progress
 created: 2026-05-26
-base-commit: 46f08ad659f8ec592057b13cb157cac9cbd3cf58
+base-commit: 7afe87101c553e632d708212d639ba1f3e98764d
 # expected-key-files (optional, v0.8 P5) — declare what each plan
 # intends to touch. `cp write-summary` will diff against the actual
 # `key-files` and warn on drift (soft) or block (with --strict-expected).
@@ -21,7 +21,7 @@ base-commit: 46f08ad659f8ec592057b13cb157cac9cbd3cf58
 #            - bin/cli.js
 ---
 
-# Phase 55: Docs and v1.2.0 release
+# Phase 50: Fan-out runtime
 
 **Milestone**: v1.2 Unified Phase Model
 **Created**: 2026-05-26
@@ -40,9 +40,10 @@ base-commit: 46f08ad659f8ec592057b13cb157cac9cbd3cf58
 
 <!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
 
-- [ ] 55-01: {brief description}
-- [ ] 55-02: {brief description}
-- [ ] 55-03: {brief description}
+- [ ] 50-01: {brief description}
+- [ ] 50-02: {brief description}
+- [ ] 50-03: {brief description}
+- [ ] 50-04: {brief description}
 
 ## Notes
 

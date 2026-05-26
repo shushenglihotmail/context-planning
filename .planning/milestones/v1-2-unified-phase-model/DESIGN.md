@@ -121,6 +121,8 @@ recovers the old NN-MM-PLAN dynamic decomposition pattern.
 | `parent:` | Empty/omitted → top-level phase. Set to a phase-id → child of that phase. |
 | `after:` | At top level: refs to other top-level phases. At child level: refs to sibling children under the same parent. |
 | `persist:` | true → fold into tier DESIGN.md. false (default) → standalone phase doc. |
+| `max_children:` | On a parent phase only. Caps the structured list the agent may produce. Default: **20**. |
+| `min_children:` | On a parent phase only. Floors the list length. Default: **1**. |
 
 **Implicit rules:**
 
@@ -133,6 +135,9 @@ recovers the old NN-MM-PLAN dynamic decomposition pattern.
 - Runtime infers "parent must produce a structured list" because
   other phases declare `parent: <this-id>` — no explicit flag
   needed on the parent.
+- Runtime tells the parent's agent: *"produce between
+  `min_children` and `max_children` items"*; errors if the agent
+  exceeds `max_children` or under-produces below `min_children`.
 
 **Sibling pairing (pairwise fan-out):** Multiple children of the same
 parent all expand over the same parent-produced list. `execute[i]`
@@ -229,8 +234,11 @@ phases:
   - id: plan
     after: [brainstorm]
     persist: false
+    max_children: 5                # cap on items agent can produce
+    min_children: 1                # require at least one
     # Runtime detects child-plan & execute below have parent:plan
     # → instructs agent to produce a structured list of items
+    #   between min_children and max_children long
 
   - id: review
     after: [plan]                  # waits for plan + its whole subtree
@@ -283,14 +291,14 @@ phases:
 | Component | Layer | Responsibility |
 |---|---|---|
 | `lib/types.js` ✅ | shared | The `Phase` typedef + base validators (49-01) |
-| `lib/milestone.js` (new) | milestone | Parse ROADMAP → Phase[]; manage milestone-level DESIGN.md + STATE.md |
-| `lib/workflow.js` (extend) | workflow | Parse template YAML → two-level Phase[] DAG (top-level + children); resolve sibling/subtree deps |
-| `lib/persist.js` (new) | shared | Fold a phase output into target DESIGN.md under a section header; format & dedupe |
-| `lib/fanout.js` (new) | workflow | Expand child phases over parent's structured list output; pairwise sibling dependency resolver |
-| `lib/runs.js` (existing) | workflow | Run transcripts under .planning/phases/.../<run-id>/ |
-| `bin/commands/autonomous.js` | milestone | NOW: hand-rolled loop. AFTER: thin iterator that calls `cp run <wf>` per pending milestone-phase |
-| `bin/commands/quick.js` | workflow | NOW: hard-coded custom flow + creates quick-PLAN.md. AFTER: thin alias for `cp run <wf>` that scaffolds DESIGN.md + STATE.md |
-| `commands/cp/cp-plan-phase.md` | meta | Deprecated. Becomes a one-line nudge to `cp run dev` (or whichever workflow). |
+| `lib/milestone.js` (new — 49-02) | milestone | `readPhases(roadmapMd)` + `scaffoldTierFiles(slug, brief)` for milestone-tier DESIGN.md + STATE.md |
+| `lib/workflow.js` (extend — 49-03) | workflow | `phasesFromTemplate(template)` returning unified Phase[] with new fields |
+| `lib/persist.js` (new — 49-04) | shared | `foldIntoDesign(designPath, phaseId, summary)` + `persist_output:` → `persist:` alias |
+| `lib/fanout.js` (new — 50-02) | workflow | Expand child phases over parent's structured list; pairwise sibling dep resolver; subtree-wait semantics |
+| `lib/runs.js` (existing) | workflow | Run transcripts under `.planning/phases/<phase-dir>/<run-id>/` |
+| `bin/commands/autonomous.js` (refactor — 51-01) | milestone | NOW: hand-rolled loop. AFTER: thin iterator calling `cp run <wf>` per pending milestone-phase |
+| `bin/commands/quick.js` (refactor — 51-02) | workflow | NOW: hard-coded custom flow + creates quick-PLAN.md. AFTER: scaffold quick/<slug>/{DESIGN.md, STATE.md} + delegate to `cp run` |
+| `commands/cp/cp-plan-phase.md` (deprecate — 51-04) | meta | Becomes a one-line nudge to `cp run dev` (or configured workflow) |
 
 ## Data Flow
 
@@ -311,16 +319,15 @@ phases:
 /cp-autonomous → cp autonomous → for each pending milestone-phase:
                                    cp run <phase.workflow> "<milestone-phase>"
                                      ↓
-                            DESIGN.md (persist:true folds) +
-                            <run-id>/ (persist:false phase docs)
-                                     +
-                            sibling pairings via parent/fan-out
+                            milestone DESIGN.md (persist:true folds) +
+                            <phase-dir>/<run-id>/ (persist:false phase docs +
+                                                  parent/children subtree)
 
 /cp-quick → cp quick → scaffold quick/<slug>/{DESIGN.md, STATE.md}
                        → cp run <wf> "<task-slug>"
 
 /cp-workflow-run → cp run ─── unchanged at surface; runtime now handles
-                              parent:/fan-out + persist: semantics
+                              parent:/fan-out + persist: + max_children: semantics
 ```
 
 ## Validation Rules (locked)
@@ -332,10 +339,11 @@ phases:
 5. If a parent has any children, parent must produce a structured list output (runtime contract with agent)
 6. All siblings under the same parent fan out over the same list (pairwise by index)
 7. `persist:` is boolean; default false; alias from legacy `persist_output:` with deprecation warning
+8. `max_children:` integer ≥ 1 (default 20); `min_children:` integer ≥ 1 (default 1); `max_children` ≥ `min_children`; both only valid on parent phases (i.e. phases referenced as someone else's `parent:`)
 
 ## Error Handling
 
-- Smart-gate parity is the load-bearing contract. Phase 52 must
+- Smart-gate parity is the load-bearing contract. Phase 51 must
   prove that test-fail / audit-HIGH / executor-deviation all halt
   cp autonomous the same way they halt cp run today.
 - Back-compat read for `.planning/quick/<dir>/` AND
@@ -344,25 +352,30 @@ phases:
   warning on access.
 - Workflow templates using `persist_output:` continue to parse via
   alias to `persist:` for one release; warning printed.
-- Migration commits (phase 53) do NOT auto-rewrite user state
+- Agent over-produces children → runtime errors with
+  `max_children exceeded ({actual} > {max})`; agent under-produces
+  → `min_children not met ({actual} < {min})`. Both surface as
+  smart-gate halts.
+- Migration commits (phase 51) do NOT auto-rewrite user state
   dirs; only add read aliases. Users opt in to migration by doing
   a fresh `cp quick` or `cp run` after upgrading.
 
 ## Testing Strategy
 
-| Suite | New assertions (target) |
-|---|---|
-| unit-types ✅ | 23 (delivered in 49-01) |
-| unit-milestone-reader | ~30 (ROADMAP parsing, milestone-level DESIGN+STATE) |
-| unit-workflow-reader | ~35 (parent/after validation, 1-level limit, list-output contract) |
-| unit-persist | ~20 (fold-into-DESIGN.md, section dedupe, alias from persist_output) |
-| unit-fanout | ~25 (sibling pairing, subtree dep resolution, expansion against parent output) |
-| integration-autonomous-parity | ~40 (smart-gate triggers, scope handling, deviation; cp-plan-phase removal) |
-| integration-quick-parity | ~30 (argv preservation, resume slug, DESIGN.md+STATE.md scaffold) |
-| dryrun-quick-back-compat | ~15 (read from .planning/quick/<dir>/ AND .planning/custom/<slug>/) |
-| docs (CHANGELOG, MIGRATION-v1.2 link checks) | ~10 |
+| Suite | Phase | New assertions (target) |
+|---|---|---|
+| unit-types | 49-01 ✅ | 23 (delivered) |
+| unit-milestone-reader | 49-02 | ~30 |
+| unit-workflow (new-field extensions) | 49-03 | ~25 |
+| unit-persist | 49-04 | ~20 |
+| unit-fanout | 50-02 | ~25 (sibling pairing, subtree dep, max/min enforcement) |
+| integration-dev-v2-template | 50-04 | ~25 (end-to-end fan-out run) |
+| integration-autonomous-parity | 51-05 | ~25 (smart-gate triggers, scope handling) |
+| integration-quick-parity | 51-05 | ~25 (argv preservation, resume slug, DESIGN+STATE) |
+| dryrun-back-compat | 51-03 | ~15 (read from `.planning/quick/<dir>/` AND `.planning/custom/<slug>/`) |
+| docs (CHANGELOG, MIGRATION-v1.2 link checks) | 52-02 | ~10 |
 
-Total: ~228 new assertions (23 already landed).
+Total: ~223 new assertions (23 already landed).
 
 ## Alternatives Considered
 

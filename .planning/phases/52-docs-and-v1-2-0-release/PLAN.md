@@ -1,10 +1,10 @@
 ---
-phase: "53"
-name: Docs + MIGRATION-v1.2.md + v1.2.0 release
+phase: "52"
+name: Docs and v1.2.0 release
 milestone: v1.2 Unified Phase Model
 status: in-progress
-created: 2026-05-25
-base-commit: 563fd39665ae01c8b3c78c1af5f2d832da585ae9
+created: 2026-05-26
+base-commit: 7afe87101c553e632d708212d639ba1f3e98764d
 # expected-key-files (optional, v0.8 P5) — declare what each plan
 # intends to touch. `cp write-summary` will diff against the actual
 # `key-files` and warn on drift (soft) or block (with --strict-expected).
@@ -21,10 +21,10 @@ base-commit: 563fd39665ae01c8b3c78c1af5f2d832da585ae9
 #            - bin/cli.js
 ---
 
-# Phase 53: Docs + MIGRATION-v1.2.md + v1.2.0 release
+# Phase 52: Docs and v1.2.0 release
 
 **Milestone**: v1.2 Unified Phase Model
-**Created**: 2026-05-25
+**Created**: 2026-05-26
 
 ## Goal
 
@@ -40,9 +40,9 @@ base-commit: 563fd39665ae01c8b3c78c1af5f2d832da585ae9
 
 <!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
 
-- [ ] 53-01: {brief description}
-- [ ] 53-02: {brief description}
-- [ ] 53-03: {brief description}
+- [ ] 52-01: {brief description}
+- [ ] 52-02: {brief description}
+- [ ] 52-03: {brief description}
 
 ## Notes
 

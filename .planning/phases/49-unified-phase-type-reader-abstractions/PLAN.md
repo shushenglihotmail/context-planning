@@ -1,93 +1,70 @@
 ---
 phase: "49"
-name: Unified Phase type + reader abstractions
+name: Foundations + tier files + persist primitives
 milestone: v1.2 Unified Phase Model
 status: in-progress
 plan-status:
-  49-01: in-progress
+  49-01: complete
   49-02: pending
   49-03: pending
+  49-04: pending
 created: 2026-05-25
 base-commit: 8f40fc160238d0635f06556f8f66c80153ac7813
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
 ---
 
-# Phase 49: Unified Phase type + reader abstractions
+# Phase 49: Foundations + tier files + persist primitives
 
 **Milestone**: v1.2 Unified Phase Model
 **Created**: 2026-05-25
 
 ## Goal
 
-Introduce a single `Phase` data type used by both the milestone layer
-(ROADMAP.md parser) and the workflow layer (template YAML parser),
-without changing any runtime behavior. This is the foundation for
-phases 50-52 — once both layers speak the same shape, the cp-autonomous
-and cp-quick shims become straightforward.
+Lay the entire foundation for v1.2 in one phase: the unified `Phase`
+typedef, milestone + workflow readers that emit it, milestone-tier
+DESIGN.md/STATE.md scaffolding, and the persist primitive that folds
+phase output into DESIGN.md (including the `persist_output:` →
+`persist:` rename). Everything downstream (fan-out runtime, CLI
+shims, docs) depends on these primitives.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-
-1. New file `lib/types.js` exports a JSDoc `@typedef` for `Phase` plus
-   a runtime `validatePhase(obj)` helper that returns
-   `{ok: boolean, errors: string[]}`.
-2. New function `lib/milestone.js#readPhases(roadmapMd, opts?)` parses
-   ROADMAP.md and returns `Phase[]` matching the unified shape, with
-   milestone-specific extension fields (`plans`, `workflow?`,
-   `summary?`).
-3. Existing `lib/workflow.js` parsers (template → wave decomposition)
-   continue to work; a thin `phasesFromTemplate(template)` adapter is
-   added that returns the unified `Phase[]` shape. No existing call
-   sites change — both shapes coexist for one milestone.
-4. New test file `test/unit-types.js` (~20 assertions) covers the
-   typedef contract via `validatePhase`.
-5. New test file `test/unit-milestone-reader.js` (~30 assertions)
-   covers `readPhases` against fixture ROADMAP.md content including:
-   in-progress and collapsed milestones, phases with/without plans
-   lists, phases with and without the future `workflow:` annotation.
-6. `npm test` exit code 0 with zero regressions in any pre-existing
-   test file (108+ existing files must stay green).
-7. No CLI surface changes. No public API removals. `bin/commands/*`
-   not touched.
+1. `lib/types.js` exports `Phase` JSDoc typedef + `validatePhase(obj)`.
+2. `lib/milestone.js#readPhases(roadmapMd)` returns unified `Phase[]`;
+   `lib/milestone.js#scaffoldTierFiles(milestoneSlug, brief)` creates
+   `.planning/milestones/<slug>/{DESIGN.md, STATE.md}` if absent.
+3. `lib/workflow.js#phasesFromTemplate(template)` returns unified
+   `Phase[]` carrying `parent`, `after`, `persist`, `max_children`,
+   `min_children` fields.
+4. `lib/persist.js#foldIntoDesign(designPath, phaseId, summary)`
+   appends/replaces a section in DESIGN.md named after the phase id;
+   `persist_output:` is accepted as an alias for `persist:` with one
+   deprecation warning per template load.
+5. Default value of `persist:` is `false` (opt-in).
+6. Test files: `test/unit-types.js` ✅, `test/unit-milestone-reader.js`
+   (~30 assertions), additions to `test/unit-workflow.js` for new
+   fields (~25 assertions), `test/unit-persist.js` (~20 assertions).
+7. `npm test` exit code 0; zero regressions in 108+ existing test
+   files.
+8. No CLI surface changes. No public API removals.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [x] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef and the `validatePhase(obj)` runtime check (returns `{ok, errors}`); ship `test/unit-types.js` with ~20 assertions covering required-field validation, status enum, depends_on array shape, and the layer-specific extension fields (milestone vs workflow).
-- [ ] 49-02: `lib/milestone.js#readPhases(roadmapMd, opts?)` — new exported function that parses ROADMAP.md and emits `Phase[]` shape-conforming to `validatePhase`. Must handle: in-progress milestone (`### 🚧 ...`), shipped/collapsed milestones (`<details>` blocks), phases with explicit plans list, phases without plans, and tolerate the future `workflow:` annotation if present in a phase heading or frontmatter. New `test/unit-milestone-reader.js` (~30 assertions) including fixture ROADMAPs covering all four shapes.
-- [ ] 49-03: `lib/workflow.js#phasesFromTemplate(template)` — new adapter that takes the existing template object and returns `Phase[]` matching the unified shape. Does NOT remove or change existing `computeWaves`, `readTemplate`, etc. Adds ~10 parity assertions to existing `test/unit-workflow.js` (or new `test/unit-workflow-phase-adapter.js`) proving the adapter output passes `validatePhase`.
+- [x] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef and the `validatePhase(obj)` runtime check (returns `{ok, errors}`); ship `test/unit-types.js` with ~20 assertions covering required-field validation, status enum, depends_on array shape, and layer-specific extension field tolerance.
+- [ ] 49-02: `lib/milestone.js` — add `readPhases(roadmapMd)` (unified `Phase[]` for all 4 ROADMAP shapes: in-progress/collapsed/with-plans/without-plans, plus tolerate future `workflow:` annotation) AND `scaffoldTierFiles(milestoneSlug, brief)` (creates milestone-tier `DESIGN.md` + `STATE.md` if absent, never overwrites). Ship `test/unit-milestone-reader.js` with ~30 assertions covering both functions.
+- [ ] 49-03: `lib/workflow.js#phasesFromTemplate(template)` — new adapter returning unified `Phase[]` carrying `parent`, `after` (top-level + child-level), `persist`, `max_children`, `min_children` fields. Does NOT change `computeWaves` or `readTemplate`. Add ~25 parity assertions to `test/unit-workflow.js` (or new file) proving adapter output passes `validatePhase` and round-trips the new fields.
+- [ ] 49-04: `lib/persist.js` — `foldIntoDesign(designPath, phaseId, summary)` helper that appends or replaces a `## <phaseId>` section in `DESIGN.md`, dedupes on phase id, and tolerates absent file. Add `persist_output:` → `persist:` alias in template loader (`lib/workflow.js` or `lib/templates.js`) with one-time deprecation warning. Default `persist: false` (opt-in). Ship `test/unit-persist.js` with ~20 assertions.
 
 ## Notes
 
-- The unified `Phase` typedef stays in JSDoc form (no TypeScript
-  introduction) per project convention.
-- Milestone-extension fields (`plans`, `workflow?`, `summary?`,
-  `base-commit?`) and workflow-extension fields (`role`, `model?`,
-  `persist_output?`) are documented in the same typedef as optional
-  members. `validatePhase` only enforces the common required fields
-  (`id`, `depends_on`, `status`); a future stricter
-  `validateMilestonePhase` / `validateWorkflowPhase` can layer on top
-  if needed.
-- This phase deliberately ships READ-ONLY adapters. Phase 50 wires
-  the `workflow:` field into milestone-phase frontmatter and the
-  scaffold-phase CLI. Phase 51-52 then refactor cp-autonomous /
-  cp-quick to consume the unified shape.
-- Backward-compat: existing call sites of `roadmap.js` parsing
-  continue to work. `readPhases` is additive — it lives alongside,
-  not in place of, current callsites. Phase 50+ migrate callers one
-  at a time.
+- Phase 49 was consolidated from the original phase 49 + phase 50
+  during mid-v1.2 design negotiation (combined for cohesion — these
+  4 plans are tightly coupled foundations).
+- The unified `Phase` typedef stays JSDoc (no TypeScript).
+- `scaffoldTierFiles` is idempotent — safe to call on every `cp run`
+  against a milestone; only creates files when missing.
+- `foldIntoDesign` uses a section header (e.g. `## brainstorm`) as
+  the dedupe key. Re-running a workflow re-renders that section.
+- Back-compat: all existing call sites of `roadmap.js` keep working;
+  `readPhases` is additive. The `persist_output:` alias preserves
+  v1.1 templates verbatim.
+

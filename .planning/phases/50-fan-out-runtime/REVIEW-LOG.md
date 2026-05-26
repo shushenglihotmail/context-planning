@@ -1,11 +1,11 @@
 ---
-phase: "52"
+phase: "50"
 milestone: v1.2 Unified Phase Model
-created: 2026-05-25
+created: 2026-05-26
 schema_version: 1
 ---
 
-# Review Log: Phase 52 — cp-quick as thin shim over cp run (state migration)
+# Review Log: Phase 50 — Fan-out runtime
 
 Append-only log of subagent review cycles during execution. Each entry is
 written by the cp-execute-phase orchestrator after a review round

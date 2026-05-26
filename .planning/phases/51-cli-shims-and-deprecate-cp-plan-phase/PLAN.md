@@ -1,10 +1,10 @@
 ---
 phase: "51"
-name: cp-autonomous as thin shim over cp run
+name: CLI shims and deprecate cp-plan-phase
 milestone: v1.2 Unified Phase Model
 status: in-progress
-created: 2026-05-25
-base-commit: 0fe7fe0fa5f3cf111903623fa5cf24cc130d9aef
+created: 2026-05-26
+base-commit: 7afe87101c553e632d708212d639ba1f3e98764d
 # expected-key-files (optional, v0.8 P5) — declare what each plan
 # intends to touch. `cp write-summary` will diff against the actual
 # `key-files` and warn on drift (soft) or block (with --strict-expected).
@@ -21,10 +21,10 @@ base-commit: 0fe7fe0fa5f3cf111903623fa5cf24cc130d9aef
 #            - bin/cli.js
 ---
 
-# Phase 51: cp-autonomous as thin shim over cp run
+# Phase 51: CLI shims and deprecate cp-plan-phase
 
 **Milestone**: v1.2 Unified Phase Model
-**Created**: 2026-05-25
+**Created**: 2026-05-26
 
 ## Goal
 
@@ -44,6 +44,7 @@ base-commit: 0fe7fe0fa5f3cf111903623fa5cf24cc130d9aef
 - [ ] 51-02: {brief description}
 - [ ] 51-03: {brief description}
 - [ ] 51-04: {brief description}
+- [ ] 51-05: {brief description}
 
 ## Notes
 

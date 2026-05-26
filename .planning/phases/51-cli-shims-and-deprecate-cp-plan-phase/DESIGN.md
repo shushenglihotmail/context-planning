@@ -1,8 +1,8 @@
 ---
 # Tier marker: cp scaffold substitutes one of:
-#   phase: "55"     (for phase-tier DESIGN.md)
+#   phase: "51"     (for phase-tier DESIGN.md)
 #   milestone_slug: "v1-2-unified-phase-model"  (for milestone-tier DESIGN.md)
-phase: "55"
+phase: "51"
 milestone: v1.2 Unified Phase Model
 status: proposed
 created: 2026-05-26
@@ -12,7 +12,7 @@ supersedes: []
 superseded_by: null
 ---
 
-# Design: Phase 55: Docs and v1.2.0 release
+# Design: Phase 51: CLI shims and deprecate cp-plan-phase
 
 ## Status
 
