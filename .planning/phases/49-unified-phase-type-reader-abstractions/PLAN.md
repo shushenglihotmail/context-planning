@@ -3,6 +3,10 @@ phase: "49"
 name: Unified Phase type + reader abstractions
 milestone: v1.2 Unified Phase Model
 status: in-progress
+plan-status:
+  49-01: in-progress
+  49-02: pending
+  49-03: pending
 created: 2026-05-25
 base-commit: 8f40fc160238d0635f06556f8f66c80153ac7813
 # expected-key-files (optional, v0.8 P5) — declare what each plan
