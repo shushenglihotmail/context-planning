@@ -482,21 +482,29 @@ phases:
     max_children: 10        # safety cap — runtime refuses >10 children per parent
 ```
 
-**Inter-child ordering via `depends_on:`.** The structured list a parent
-returns supports a `depends_on:` field on each item:
+**Inter-child ordering via `optimizable:` + `depends_on:`.** The structured
+object a parent returns supports a top-level `optimizable: boolean` flag and
+a `depends_on:` field on each item:
 
 ```json
-[
-  { "name": "feature-A", "depends_on": [] },
-  { "name": "feature-B", "depends_on": [] },
-  { "name": "feature-C", "depends_on": ["feature-A", "feature-B"] }
-]
+{
+  "optimizable": true,
+  "items": [
+    { "name": "feature-A", "depends_on": [] },
+    { "name": "feature-B", "depends_on": [] },
+    { "name": "feature-C", "depends_on": ["feature-A", "feature-B"] }
+  ]
+}
 ```
 
-The runtime computes a topo order and parallelizes safe waves. With **no**
-`depends_on:` filled, it falls back to strict array order (item 0 first).
-Agents are explicitly prompted to fill `depends_on:` for **every** item to
-unlock parallelism; partial fills also fall back to array order.
+When `optimizable: true` the runtime computes a topo order over declared
+`depends_on` edges and parallelizes safe waves; missing `depends_on` is
+treated as `[]`. When `optimizable: false` or missing, the runtime runs
+items in strict array order (item 0 first) and ignores any declared
+`depends_on`. Agents should only set `optimizable: true` when confident
+about **every** inter-item dependency — when unsure, leave it `false` for
+safe sequential execution. A bare items array (no wrapping object) is still
+accepted and treated as `optimizable: false`.
 
 ### Principles
 

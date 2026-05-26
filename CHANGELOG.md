@@ -17,12 +17,16 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   on `cp run start`, `/cp-quick`, and fan-out child materialization.
 - **Fan-out runtime** — first-class parent → N-children expansion.
   - New workflow keys: `parent:`, `after:`, `max_children:`.
-  - Parent agent returns a structured list `[ { name, depends_on } ]`;
-    runtime materializes one child per item.
-  - **`depends_on:` per item** lets the parent express inter-child
-    ordering. Runtime computes a topo order and parallelizes safe
-    waves. Falls back to strict array order when `depends_on:` is
-    empty or partially filled (encouraged but optional).
+  - Parent agent returns a structured object
+    `{ optimizable: boolean, items: [ { name, depends_on } ] }`; runtime
+    materializes one child per item. Bare items array still accepted as
+    `optimizable: false` for back-compat.
+  - **`optimizable:` flag (v1.2.0)** disambiguates agent confidence. When
+    `true`, runtime computes a topological order over per-item
+    `depends_on` and parallelizes safe waves; missing `depends_on` is
+    treated as `[]`; cycles / self-refs / unknown ids hard-fail the
+    parent. When `false` or missing, runtime runs items in strict array
+    order and ignores any declared `depends_on` entirely.
   - `max_children:` safety cap fails parent phase before materializing
     a runaway expansion.
 - **`persist:` primitive** — when set on a phase, the runtime folds that

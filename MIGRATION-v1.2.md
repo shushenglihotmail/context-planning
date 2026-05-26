@@ -98,12 +98,14 @@ phases:
     max_children: 10      # safety cap — runtime refuses >10 children per parent
 ```
 
-When the parent's agent returns a structured list (`{ name, depends_on }`),
-the runtime materializes one child instance per list item, **honoring the
-`depends_on:` field on each item** to decide intra-fan-out ordering. By
-default (no `depends_on:` filled), children run in array order
-(item 0 → item 1 → … → item N). When children declare `depends_on:`, the
-runtime computes a topological order and parallelizes safe waves.
+When the parent's agent returns a structured object
+(`{ optimizable, items: [{ name, depends_on }, …] }`), the runtime
+materializes one child instance per list item. By default
+(`optimizable: false` or missing), children run in array order
+(item 0 → item 1 → … → item N) and any per-item `depends_on` is ignored.
+When the agent sets `optimizable: true`, the runtime computes a topological
+order over `depends_on` edges and parallelizes safe waves. See the
+"Inter-child dependencies" section below for the full table.
 
 See the new "Fan-out" section of [README.md](README.md) for the full
 contract.
@@ -267,25 +269,44 @@ If the parent's structured-list output exceeds `max_children:`, the
 runtime fails the parent phase with a clear error before materializing
 any children.
 
-### Inter-child dependencies (`depends_on:` on list items)
+### Inter-child dependencies (`optimizable:` + `depends_on:` on list items)
 
-v1.2's most important fan-out refinement: the structured list a parent
-agent returns now supports a `depends_on:` field on each item.
+v1.2's most important fan-out refinement: the structured object a parent
+agent returns now supports an explicit `optimizable: boolean` flag at the
+top level plus a `depends_on:` field on each item.
 
 ```json
-[
-  { "name": "feature-A", "depends_on": [] },
-  { "name": "feature-B", "depends_on": [] },
-  { "name": "feature-C", "depends_on": ["feature-A", "feature-B"] }
-]
+{
+  "optimizable": true,
+  "items": [
+    { "name": "feature-A", "depends_on": [] },
+    { "name": "feature-B", "depends_on": [] },
+    { "name": "feature-C", "depends_on": ["feature-A", "feature-B"] }
+  ]
+}
 ```
 
-The runtime computes a topological order across all items, then runs the
-children in parallel waves. Items with no inter-item dependency execute
-together; later items wait. If **no** items declare `depends_on:`, the
-runtime falls back to strict array order (item 0 first, then item 1,
-…). Agents are explicitly prompted to fill `depends_on:` for **every**
-item to unlock parallelism; partial fills also fall back to array order.
+| `optimizable` | per-item `depends_on` | Execution                                                     |
+|---|---|---|
+| `false` or missing | anything (ignored)               | **Array mode** — items run sequentially in declared order.    |
+| `true`             | every item declares (use `[]`)    | **DAG mode** — topological sort of declared edges.            |
+| `true`             | some items omit `depends_on`      | **DAG mode** — missing `depends_on` is treated as `[]`.       |
+| `true`             | cycle / self-ref / unknown id     | **Hard error** — phase fails fast.                            |
+
+The runtime computes a topological order across declared edges in DAG mode,
+then runs children in parallel waves. Items with no inter-item dependency
+execute together; later items wait.
+
+**Agent guidance.** Only set `optimizable: true` when you are confident about
+**every** inter-item dependency. If unsure about any item, leave
+`optimizable: false` (or omit it) and the runtime will fall back to safe
+sequential execution — any `depends_on` you wrote will be ignored. This
+disambiguates "I want full parallelism" from "I don't know the dependencies"
+— two cases the v1.1-era all-or-nothing rule silently conflated.
+
+**Back-compat.** A bare items array (no wrapping object) is still accepted
+and treated as `{ optimizable: false, items: [...] }`. Existing v1.1 fan-out
+flows continue to work unchanged.
 
 ## Test / Compatibility Notes
 
@@ -313,7 +334,7 @@ item to unlock parallelism; partial fills also fall back to array order.
 | `/cp-quick` (PLAN.md)            | `/cp-quick` (DESIGN.md + STATE.md)          |
 | `cp autonomous`                  | `cp autonomous [--workflow=dev\|quick]`     |
 | Ad-hoc per-phase artifact files  | `persist: true` → DESIGN.md `## <phaseId>`  |
-| Fan-out: array-order only        | Fan-out: `depends_on:` per item, toposort   |
+| Fan-out: array-order only        | Fan-out: `optimizable:` + `depends_on:`, topo |
 
 ## See Also
 
