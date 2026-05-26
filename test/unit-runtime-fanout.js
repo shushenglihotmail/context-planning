@@ -62,7 +62,8 @@ check('buildParentPrompt defaults max=20 when phase.max_children is missing', ()
 
 check('buildParentPrompt includes the fenced json template literal', () => {
   const prompt = buildParentPrompt(phase({ min_children: 1, max_children: 2 }), 'Base');
-  assert.ok(prompt.includes('```json\n{\n  "items"'));
+  assert.ok(prompt.includes('```json\n{\n  "optimizable"'));
+  assert.ok(prompt.includes('"items"'));
 });
 
 check('buildParentPrompt output is a string', () => {
@@ -71,20 +72,26 @@ check('buildParentPrompt output is a string', () => {
 
 check('buildParentPrompt explains array-order default and depends_on rule', () => {
   const prompt = buildParentPrompt(phase({ min_children: 1, max_children: 5 }), 'Base');
-  assert.ok(prompt.includes('Default execution order is the order you list items'));
+  assert.ok(prompt.includes('safe default is sequential execution'));
+  assert.ok(prompt.includes('optimizable'));
   assert.ok(prompt.includes('depends_on'));
-  assert.ok(prompt.includes('all-or-nothing'));
   assert.ok(prompt.includes('Cycles, self-references'));
 });
 
 // parseParentOutput (12)
 check('parseParentOutput parses a clean response with one fenced JSON block', () => {
-  assert.deepStrictEqual(parseParentOutput(responseFor({ items: [{ id: 'one', title: 'One' }] })), [{ id: 'one', title: 'One' }]);
+  assert.deepStrictEqual(
+    parseParentOutput(responseFor({ items: [{ id: 'one', title: 'One' }] })),
+    { optimizable: false, items: [{ id: 'one', title: 'One' }] },
+  );
 });
 
 check('parseParentOutput picks the LAST JSON block when multiple are present', () => {
   const response = responseFor({ items: [{ id: 'first', title: 'First' }] }) + '\nLater answer:\n' + responseFor({ items: [{ id: 'last', title: 'Last' }] });
-  assert.deepStrictEqual(parseParentOutput(response), [{ id: 'last', title: 'Last' }]);
+  assert.deepStrictEqual(
+    parseParentOutput(response),
+    { optimizable: false, items: [{ id: 'last', title: 'Last' }] },
+  );
 });
 
 check('parseParentOutput throws when no fenced block found', () => {
@@ -122,17 +129,20 @@ check('parseParentOutput throws on duplicate ids', () => {
 });
 
 check('parseParentOutput accepts an empty items array', () => {
-  assert.deepStrictEqual(parseParentOutput(responseFor({ items: [] })), []);
+  assert.deepStrictEqual(parseParentOutput(responseFor({ items: [] })), { optimizable: false, items: [] });
 });
 
 check('parseParentOutput preserves extra fields on items verbatim', () => {
   const extraItem = { id: 'with-extra', title: 'Extra', summary: 'S', priority: 3, nested: { keep: true } };
-  assert.deepStrictEqual(parseParentOutput(responseFor({ items: [extraItem] })), [extraItem]);
+  assert.deepStrictEqual(
+    parseParentOutput(responseFor({ items: [extraItem] })),
+    { optimizable: false, items: [extraItem] },
+  );
 });
 
 check('parseParentOutput accepts depends_on as empty array', () => {
   const parsed = parseParentOutput(responseFor({ items: [{ id: 'a', title: 'A', depends_on: [] }] }));
-  assert.deepStrictEqual(parsed[0].depends_on, []);
+  assert.deepStrictEqual(parsed.items[0].depends_on, []);
 });
 
 check('parseParentOutput accepts depends_on with sibling ids', () => {
@@ -142,7 +152,7 @@ check('parseParentOutput accepts depends_on with sibling ids', () => {
       { id: 'b', title: 'B', depends_on: ['a'] },
     ],
   }));
-  assert.deepStrictEqual(parsed[1].depends_on, ['a']);
+  assert.deepStrictEqual(parsed.items[1].depends_on, ['a']);
 });
 
 check('parseParentOutput throws when depends_on is not an array', () => {
@@ -160,7 +170,7 @@ check('parseParentOutput throws when depends_on contains a non-string entry', ()
 });
 
 // enforceChildCount (5)
-check('enforceChildCount passes when items.length is between min and max', () => {
+check('enforceChildCount passes when items.length is between min and max (bare items)', () => {
   const parsedItems = items(2);
   assert.strictEqual(enforceChildCount(phase({ min_children: 1, max_children: 3 }), parsedItems), parsedItems);
 });
@@ -181,120 +191,203 @@ check('enforceChildCount defaults max=20 when missing', () => {
   assert.throws(() => enforceChildCount(phase({ min_children: 1 }), items(21)), /above max_children \(20\)/);
 });
 
+check('enforceChildCount accepts the {optimizable, items} object shape too', () => {
+  const obj = { optimizable: true, items: items(2) };
+  assert.strictEqual(enforceChildCount(phase({ min_children: 1, max_children: 3 }), obj), obj);
+  assert.throws(
+    () => enforceChildCount(phase({ id: 'p', min_children: 3, max_children: 5 }), { optimizable: true, items: items(2) }),
+    /phase 'p' produced 2 items, below min_children \(3\)/,
+  );
+});
+
 // End-to-end (2)
 check('parseParentOutput + enforceChildCount chain works on a happy-path response', () => {
-  const parsedItems = enforceChildCount(phase({ min_children: 1, max_children: 2 }), parseParentOutput(responseFor({ items: [{ id: 'one', title: 'One' }] })));
-  assert.deepStrictEqual(parsedItems, [{ id: 'one', title: 'One' }]);
+  const parsed = enforceChildCount(phase({ min_children: 1, max_children: 2 }), parseParentOutput(responseFor({ items: [{ id: 'one', title: 'One' }] })));
+  assert.deepStrictEqual(parsed, { optimizable: false, items: [{ id: 'one', title: 'One' }] });
 });
 
 check('response with 21 items and max=20 fails at enforceChildCount, not parse', () => {
-  const parsedItems = parseParentOutput(responseFor({ items: items(21) }));
-  assert.strictEqual(parsedItems.length, 21);
-  assert.throws(() => enforceChildCount(phase({ max_children: 20 }), parsedItems), /above max_children \(20\)/);
+  const parsed = parseParentOutput(responseFor({ items: items(21) }));
+  assert.strictEqual(parsed.items.length, 21);
+  assert.throws(() => enforceChildCount(phase({ max_children: 20 }), parsed), /above max_children \(20\)/);
 });
 
-// resolveItemOrder (12)
+// resolveItemOrder (optimizable contract)
 check('resolveItemOrder returns array mode on empty items', () => {
   assert.deepStrictEqual(resolveItemOrder([]), { mode: 'array' });
+  assert.deepStrictEqual(resolveItemOrder({ optimizable: true, items: [] }), { mode: 'array' });
 });
 
-check('resolveItemOrder returns array mode when no item has depends_on', () => {
-  assert.deepStrictEqual(resolveItemOrder([{ id: 'a', title: 'A' }, { id: 'b', title: 'B' }]), { mode: 'array' });
-});
-
-check('resolveItemOrder returns array mode when only some items have depends_on (partial)', () => {
+check('resolveItemOrder bare items array → array mode regardless of deps', () => {
   assert.deepStrictEqual(
-    resolveItemOrder([{ id: 'a', title: 'A' }, { id: 'b', title: 'B', depends_on: ['a'] }]),
+    resolveItemOrder([{ id: 'a', title: 'A', depends_on: [] }, { id: 'b', title: 'B', depends_on: ['a'] }]),
     { mode: 'array' },
   );
 });
 
-check('resolveItemOrder returns dag mode when every item has depends_on (incl. empty)', () => {
-  const result = resolveItemOrder([
-    { id: 'a', title: 'A', depends_on: [] },
-    { id: 'b', title: 'B', depends_on: ['a'] },
-  ]);
+check('resolveItemOrder {optimizable: false} → array mode (deps ignored)', () => {
+  assert.deepStrictEqual(
+    resolveItemOrder({
+      optimizable: false,
+      items: [
+        { id: 'a', title: 'A', depends_on: [] },
+        { id: 'b', title: 'B', depends_on: ['a'] },
+      ],
+    }),
+    { mode: 'array' },
+  );
+});
+
+check('resolveItemOrder missing optimizable defaults to array mode', () => {
+  assert.deepStrictEqual(
+    resolveItemOrder({
+      items: [
+        { id: 'a', title: 'A', depends_on: [] },
+        { id: 'b', title: 'B', depends_on: ['a'] },
+      ],
+    }),
+    { mode: 'array' },
+  );
+});
+
+check('resolveItemOrder {optimizable: true} → dag mode when every item declares deps', () => {
+  const result = resolveItemOrder({
+    optimizable: true,
+    items: [
+      { id: 'a', title: 'A', depends_on: [] },
+      { id: 'b', title: 'B', depends_on: ['a'] },
+    ],
+  });
   assert.strictEqual(result.mode, 'dag');
   assert.deepStrictEqual(result.order, ['a', 'b']);
 });
 
-check('resolveItemOrder dag mode preserves input order when no cross-item deps', () => {
-  const result = resolveItemOrder([
-    { id: 'a', title: 'A', depends_on: [] },
-    { id: 'b', title: 'B', depends_on: [] },
-    { id: 'c', title: 'C', depends_on: [] },
-  ]);
+check('resolveItemOrder {optimizable: true} treats missing depends_on as []', () => {
+  const result = resolveItemOrder({
+    optimizable: true,
+    items: [
+      { id: 'a', title: 'A' },                            // no depends_on → []
+      { id: 'b', title: 'B', depends_on: ['a'] },
+      { id: 'c', title: 'C' },                            // no depends_on → []
+    ],
+  });
+  assert.strictEqual(result.mode, 'dag');
+  assert.strictEqual(result.order[0], 'a');
+  assert.ok(result.order.indexOf('a') < result.order.indexOf('b'));
+  assert.ok(result.order.includes('c'));
+});
+
+check('resolveItemOrder {optimizable: true} all-empty deps → all parallel (dag, input order)', () => {
+  const result = resolveItemOrder({
+    optimizable: true,
+    items: [
+      { id: 'a', title: 'A', depends_on: [] },
+      { id: 'b', title: 'B', depends_on: [] },
+      { id: 'c', title: 'C', depends_on: [] },
+    ],
+  });
+  assert.strictEqual(result.mode, 'dag');
   assert.deepStrictEqual(result.order, ['a', 'b', 'c']);
 });
 
-check('resolveItemOrder dag mode topo-sorts a diamond', () => {
-  const result = resolveItemOrder([
-    { id: 'a', title: 'A', depends_on: [] },
-    { id: 'b', title: 'B', depends_on: ['a'] },
-    { id: 'c', title: 'C', depends_on: ['a'] },
-    { id: 'd', title: 'D', depends_on: ['b', 'c'] },
-  ]);
+check('resolveItemOrder {optimizable: true} topo-sorts a diamond', () => {
+  const result = resolveItemOrder({
+    optimizable: true,
+    items: [
+      { id: 'a', title: 'A', depends_on: [] },
+      { id: 'b', title: 'B', depends_on: ['a'] },
+      { id: 'c', title: 'C', depends_on: ['a'] },
+      { id: 'd', title: 'D', depends_on: ['b', 'c'] },
+    ],
+  });
+  assert.strictEqual(result.mode, 'dag');
   assert.strictEqual(result.order[0], 'a');
   assert.strictEqual(result.order[3], 'd');
-  assert.ok(result.order.indexOf('b') < result.order.indexOf('d'));
-  assert.ok(result.order.indexOf('c') < result.order.indexOf('d'));
 });
 
-check('resolveItemOrder throws on self-loop in dag mode', () => {
+check('resolveItemOrder {optimizable: true} self-loop throws', () => {
   assert.throws(
-    () => resolveItemOrder([{ id: 'a', title: 'A', depends_on: ['a'] }]),
+    () => resolveItemOrder({ optimizable: true, items: [{ id: 'a', title: 'A', depends_on: ['a'] }] }),
     /item 'a' depends on itself/,
   );
 });
 
-check('resolveItemOrder throws on unknown id in dag mode', () => {
+check('resolveItemOrder {optimizable: true} unknown id throws', () => {
   assert.throws(
-    () => resolveItemOrder([
-      { id: 'a', title: 'A', depends_on: [] },
-      { id: 'b', title: 'B', depends_on: ['missing'] },
-    ]),
+    () => resolveItemOrder({
+      optimizable: true,
+      items: [
+        { id: 'a', title: 'A', depends_on: [] },
+        { id: 'b', title: 'B', depends_on: ['missing'] },
+      ],
+    }),
     /item 'b' depends_on references unknown id 'missing'/,
   );
 });
 
-check('resolveItemOrder throws on a 2-node cycle in dag mode', () => {
+check('resolveItemOrder {optimizable: true} 2-node cycle throws', () => {
   assert.throws(
-    () => resolveItemOrder([
-      { id: 'a', title: 'A', depends_on: ['b'] },
-      { id: 'b', title: 'B', depends_on: ['a'] },
-    ]),
+    () => resolveItemOrder({
+      optimizable: true,
+      items: [
+        { id: 'a', title: 'A', depends_on: ['b'] },
+        { id: 'b', title: 'B', depends_on: ['a'] },
+      ],
+    }),
     /cycle detected among items/,
   );
 });
 
-check('resolveItemOrder throws on a 3-node cycle in dag mode', () => {
-  assert.throws(
-    () => resolveItemOrder([
-      { id: 'a', title: 'A', depends_on: ['c'] },
-      { id: 'b', title: 'B', depends_on: ['a'] },
-      { id: 'c', title: 'C', depends_on: ['b'] },
-    ]),
-    /cycle detected among items/,
-  );
-});
-
-check('resolveItemOrder ignores depends_on in partial mode (does not validate)', () => {
+check('resolveItemOrder {optimizable: false} silently ignores invalid deps (no throw)', () => {
   assert.deepStrictEqual(
-    resolveItemOrder([
-      { id: 'a', title: 'A' },
-      { id: 'b', title: 'B', depends_on: ['unknown-but-ignored'] },
-    ]),
+    resolveItemOrder({
+      optimizable: false,
+      items: [
+        { id: 'a', title: 'A', depends_on: ['nonexistent'] },
+        { id: 'b', title: 'B', depends_on: ['b'] },          // self-ref ignored
+      ],
+    }),
     { mode: 'array' },
   );
 });
 
 check('resolveItemOrder dag mode is stable: input order wins ties', () => {
-  const result = resolveItemOrder([
-    { id: 'first', title: '1', depends_on: [] },
-    { id: 'second', title: '2', depends_on: [] },
-    { id: 'third', title: '3', depends_on: [] },
-  ]);
+  const result = resolveItemOrder({
+    optimizable: true,
+    items: [
+      { id: 'first', title: '1', depends_on: [] },
+      { id: 'second', title: '2', depends_on: [] },
+      { id: 'third', title: '3', depends_on: [] },
+    ],
+  });
   assert.deepStrictEqual(result.order, ['first', 'second', 'third']);
+});
+
+// parseParentOutput optimizable field
+check('parseParentOutput accepts optimizable: true', () => {
+  const parsed = parseParentOutput(responseFor({ optimizable: true, items: [{ id: 'a', title: 'A' }] }));
+  assert.strictEqual(parsed.optimizable, true);
+});
+
+check('parseParentOutput accepts optimizable: false', () => {
+  const parsed = parseParentOutput(responseFor({ optimizable: false, items: [{ id: 'a', title: 'A' }] }));
+  assert.strictEqual(parsed.optimizable, false);
+});
+
+check('parseParentOutput defaults optimizable to false when missing', () => {
+  const parsed = parseParentOutput(responseFor({ items: [{ id: 'a', title: 'A' }] }));
+  assert.strictEqual(parsed.optimizable, false);
+});
+
+check('parseParentOutput rejects non-boolean optimizable', () => {
+  assert.throws(
+    () => parseParentOutput(responseFor({ optimizable: 'yes', items: [{ id: 'a', title: 'A' }] })),
+    /'optimizable' must be a boolean/,
+  );
+  assert.throws(
+    () => parseParentOutput(responseFor({ optimizable: 1, items: [{ id: 'a', title: 'A' }] })),
+    /'optimizable' must be a boolean/,
+  );
 });
 
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);

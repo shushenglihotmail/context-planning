@@ -4,7 +4,7 @@ binds_to: milestone
 principles:
   - Decompose before designing — plan phase enumerates sub-features the agent must implement.
   - Per-feature plan→execute pairs run as a fan-out of the plan phase.
-  - Cross-feature ordering is opt-in via per-item depends_on (all-or-nothing).
+  - "Cross-feature ordering is opt-in via per-item depends_on, gated by an explicit `optimizable: true` flag."
 defaults:
   model: default
 phases:
@@ -17,12 +17,18 @@ phases:
       Decompose this milestone into 1-10 sub-features. Each sub-feature must
       have a unique slug-safe id, a short title, and an optional summary.
 
-      If you can identify dependency relationships between the sub-features
-      (e.g. feature B builds on feature A and cannot start until A's work is
-      complete), declare them via the per-item `depends_on` field — but only
-      if you populate `depends_on` on EVERY item (use [] for items with no
-      deps). Partial declarations are ignored and the runtime falls back to
-      sequential array order.
+      By default, the runtime executes items sequentially in the order you
+      list them. To opt into parallel/DAG execution, set the top-level
+      `optimizable: true` flag AND declare `depends_on` on every item
+      (use `[]` for items with no deps; omitted is also treated as `[]`).
+
+      Only set `optimizable: true` if you are confident about ALL inter-item
+      dependencies. If you are unsure about any item, set `optimizable: false`
+      (or omit the flag) and the runtime will fall back to safe sequential
+      execution — any `depends_on` you wrote will be ignored.
+
+      Return JSON shaped like:
+        { "optimizable": false, "items": [ { "id": "...", "title": "..." }, ... ] }
 
   - id: child-plan
     parent: plan

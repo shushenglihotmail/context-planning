@@ -85,26 +85,32 @@ check('phasesFromTemplate derives children with parent and after fields', () => 
 check('buildParentPrompt for plan phase quotes bounds and ordering rule', () => {
   const prompt = buildParentPrompt(parentPhase, 'Decompose the milestone.');
   assert.ok(prompt.includes('between 1 and 10 items'));
-  assert.ok(prompt.includes('Default execution order is the order you list items'));
-  assert.ok(prompt.includes('all-or-nothing'));
+  assert.ok(prompt.includes('safe default is sequential execution'));
+  assert.ok(prompt.includes('optimizable'));
 });
 
-// --- Scenario A: agent emits items with NO depends_on (array mode) ---
-const arrayModeItems = parseParentOutput(agentReply([
+// --- Scenario A: agent emits items with NO optimizable flag (array mode) ---
+const arrayModeParsed = parseParentOutput(agentReply([
   { id: 'auth-core', title: 'Auth core' },
   { id: 'api-routes', title: 'API routes' },
   { id: 'ui-shell', title: 'UI shell' },
 ]));
 
+check('array-mode reply: parses with optimizable defaulting to false', () => {
+  assert.strictEqual(arrayModeParsed.optimizable, false);
+  assert.strictEqual(arrayModeParsed.items.length, 3);
+});
+
 check('array-mode reply: enforceChildCount accepts 3 items under max 10', () => {
-  assert.strictEqual(enforceChildCount(parentPhase, arrayModeItems).length, 3);
+  const result = enforceChildCount(parentPhase, arrayModeParsed);
+  assert.strictEqual(result.items.length, 3);
 });
 
 check('array-mode reply: resolveItemOrder returns mode array', () => {
-  assert.deepStrictEqual(resolveItemOrder(arrayModeItems), { mode: 'array' });
+  assert.deepStrictEqual(resolveItemOrder(arrayModeParsed), { mode: 'array' });
 });
 
-const arrayExpanded = expandPhases(phases, { plan: arrayModeItems });
+const arrayExpanded = expandPhases(phases, { plan: arrayModeParsed });
 
 check('array-mode expansion: every parent and child appears once per item', () => {
   const ids = arrayExpanded.map((row) => row.id);
@@ -139,24 +145,30 @@ check('array-mode: item-3 children wait on item-2 subtree (chain, not full ances
   assert.deepStrictEqual(childPlanUi.after, ['child-plan::api-routes', 'child-execute::api-routes']);
 });
 
-// --- Scenario B: agent emits items with FULL depends_on (DAG mode) ---
-const dagItems = parseParentOutput(agentReply([
-  { id: 'auth-core', title: 'Auth core', depends_on: [] },
-  { id: 'api-routes', title: 'API routes', depends_on: ['auth-core'] },
-  { id: 'docs', title: 'Docs', depends_on: ['auth-core'] },
-  { id: 'ui-shell', title: 'UI shell', depends_on: ['api-routes'] },
-]));
+// --- Scenario B: agent emits optimizable: true with full depends_on (DAG mode) ---
+const dagParsed = parseParentOutput(
+  'Decomposition plan:\n\n```json\n' + JSON.stringify({
+    optimizable: true,
+    items: [
+      { id: 'auth-core', title: 'Auth core', depends_on: [] },
+      { id: 'api-routes', title: 'API routes', depends_on: ['auth-core'] },
+      { id: 'docs', title: 'Docs', depends_on: ['auth-core'] },
+      { id: 'ui-shell', title: 'UI shell', depends_on: ['api-routes'] },
+    ],
+  }, null, 2) + '\n```\n',
+);
 
-check('dag-mode reply: parser accepts depends_on on every item', () => {
-  assert.strictEqual(dagItems.length, 4);
-  for (const item of dagItems) assert.ok(Array.isArray(item.depends_on));
+check('dag-mode reply: parser captures optimizable: true and all 4 items', () => {
+  assert.strictEqual(dagParsed.optimizable, true);
+  assert.strictEqual(dagParsed.items.length, 4);
+  for (const item of dagParsed.items) assert.ok(Array.isArray(item.depends_on));
 });
 
 check('dag-mode reply: enforceChildCount accepts 4 items under max 10', () => {
-  assert.strictEqual(enforceChildCount(parentPhase, dagItems).length, 4);
+  assert.strictEqual(enforceChildCount(parentPhase, dagParsed).items.length, 4);
 });
 
-const dagResolved = resolveItemOrder(dagItems);
+const dagResolved = resolveItemOrder(dagParsed);
 
 check('dag-mode reply: resolveItemOrder reports dag with auth-core first', () => {
   assert.strictEqual(dagResolved.mode, 'dag');
@@ -164,7 +176,7 @@ check('dag-mode reply: resolveItemOrder reports dag with auth-core first', () =>
   assert.ok(dagResolved.order.indexOf('api-routes') < dagResolved.order.indexOf('ui-shell'));
 });
 
-const dagExpanded = expandPhases(phases, { plan: dagItems });
+const dagExpanded = expandPhases(phases, { plan: dagParsed });
 
 check('dag-mode expansion: auth-core children have no cross-item deps', () => {
   assert.deepStrictEqual(dagExpanded.find((row) => row.id === 'child-plan::auth-core').after, []);
@@ -183,7 +195,6 @@ check('dag-mode expansion: docs (parallel to api-routes) also waits on auth-core
     dagExpanded.find((row) => row.id === 'child-plan::docs').after,
     ['child-plan::auth-core', 'child-execute::auth-core'],
   );
-  // docs does NOT wait on api-routes — declared parallel
   const docsPlan = dagExpanded.find((row) => row.id === 'child-plan::docs');
   assert.ok(!docsPlan.after.includes('child-plan::api-routes'));
   assert.ok(!docsPlan.after.includes('child-execute::api-routes'));
@@ -192,23 +203,26 @@ check('dag-mode expansion: docs (parallel to api-routes) also waits on auth-core
 check('dag-mode expansion: ui-shell children wait on api-routes only (not auth-core directly)', () => {
   const uiPlan = dagExpanded.find((row) => row.id === 'child-plan::ui-shell');
   assert.deepStrictEqual(uiPlan.after, ['child-plan::api-routes', 'child-execute::api-routes']);
-  // Transitive ancestry through api-routes is the executor's concern, not the expander's.
 });
 
-// --- Scenario C: agent emits PARTIAL depends_on (should fall back to array) ---
-const partialItems = parseParentOutput(agentReply([
+// --- Scenario C: agent emits depends_on but forgets/omits optimizable → array mode ---
+const partialParsed = parseParentOutput(agentReply([
   { id: 'one', title: 'One' },
   { id: 'two', title: 'Two', depends_on: [] },
-  { id: 'three', title: 'Three' },
+  { id: 'three', title: 'Three', depends_on: ['one'] },
 ]));
 
-check('partial-mode reply: resolveItemOrder reports array (silent fallback)', () => {
-  assert.deepStrictEqual(resolveItemOrder(partialItems), { mode: 'array' });
+check('no-optimizable reply: optimizable defaults to false even with per-item deps declared', () => {
+  assert.strictEqual(partialParsed.optimizable, false);
 });
 
-const partialExpanded = expandPhases(phases, { plan: partialItems });
+check('no-optimizable reply: resolveItemOrder reports array (deps ignored)', () => {
+  assert.deepStrictEqual(resolveItemOrder(partialParsed), { mode: 'array' });
+});
 
-check('partial-mode expansion: array-order chain regardless of declared depends_on', () => {
+const partialExpanded = expandPhases(phases, { plan: partialParsed });
+
+check('no-optimizable expansion: array-order chain regardless of declared depends_on', () => {
   assert.deepStrictEqual(
     partialExpanded.find((row) => row.id === 'child-plan::two').after,
     ['child-plan::one', 'child-execute::one'],
@@ -220,20 +234,24 @@ check('partial-mode expansion: array-order chain regardless of declared depends_
 });
 
 // --- Scenario D: error paths ---
+function dagReply(items) {
+  return 'Plan:\n```json\n' + JSON.stringify({ optimizable: true, items }, null, 2) + '\n```\n';
+}
+
 check('cycle in dag mode is rejected with a clear error', () => {
-  const cyclicItems = parseParentOutput(agentReply([
+  const cyclic = parseParentOutput(dagReply([
     { id: 'a', title: 'A', depends_on: ['b'] },
     { id: 'b', title: 'B', depends_on: ['a'] },
   ]));
-  assert.throws(() => resolveItemOrder(cyclicItems), /cycle detected among items/);
+  assert.throws(() => resolveItemOrder(cyclic), /cycle detected among items/);
 });
 
 check('unknown depends_on id in dag mode is rejected', () => {
-  const items = parseParentOutput(agentReply([
+  const parsed = parseParentOutput(dagReply([
     { id: 'a', title: 'A', depends_on: [] },
     { id: 'b', title: 'B', depends_on: ['missing'] },
   ]));
-  assert.throws(() => resolveItemOrder(items), /unknown id 'missing'/);
+  assert.throws(() => resolveItemOrder(parsed), /unknown id 'missing'/);
 });
 
 check('depends_on with a non-string value is rejected at parse time', () => {
@@ -244,8 +262,8 @@ check('depends_on with a non-string value is rejected at parse time', () => {
 });
 
 check('over-max items rejected by enforceChildCount before expansion', () => {
-  const items = Array.from({ length: 11 }, (_, i) => ({ id: `x-${i}`, title: `X${i}` }));
-  const parsed = parseParentOutput(agentReply(items));
+  const tooMany = Array.from({ length: 11 }, (_, i) => ({ id: `x-${i}`, title: `X${i}` }));
+  const parsed = parseParentOutput(agentReply(tooMany));
   assert.throws(() => enforceChildCount(parentPhase, parsed), /above max_children \(10\)/);
 });
 
