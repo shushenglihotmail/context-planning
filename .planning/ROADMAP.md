@@ -364,7 +364,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.2 Unified Phase Model (In Progress)
+<details>
+<summary>✅ v1.2 Unified Phase Model (Phases 49-52.5) — SHIPPED 2026-05-26</summary>
 
 ### Phase 49: Foundations + tier files + persist primitives
 
@@ -406,6 +407,8 @@ Plans:
 - [x] 52.5-02: TBD
 - [x] 52.5-03: TBD
 - [x] 52.5-04: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**

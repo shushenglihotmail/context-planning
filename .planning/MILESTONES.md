@@ -615,3 +615,112 @@
 **Phase designs:**
 - Phase 43 — `.planning/phases/43-consumer-skills-cp-workflow-run-cp-workf/DESIGN.md`
 - Phase 44 — `.planning/phases/44-creator-skills-cp-workflow-new-cp-workfc/DESIGN.md`
+
+## v1.2 Unified Phase Model  — shipped 2026-05-26
+
+**Phases:** 49-52.5    **Plans:** 20    **Duration:** 36min, 11min, 11min, 19min, 13min, 15min, 17min, 55min
+
+**Requirements delivered:** REQ-V1.2-workflow-adapter, REQ-V1.2-persist-primitives, REQ-V1.2-schema-validation, REQ-V1.2-fanout-expander, REQ-V1.2-runtime-contract, REQ-V1.2-integration-coverage
+
+**Subsystems touched:** tooling
+
+**Key decisions:**
+- Single unified Phase type usable by both milestone and workflow layers  _(phase 49)_
+- validatePhase tolerates layer-specific extension fields (parent, persist, after, meta)  _(phase 49)_
+- JSDoc over TypeScript for codebase consistency  _(phase 49)_
+- readPhases derives status from ROADMAP checkbox state alone (no PLAN.md frontmatter reads)  _(phase 49)_
+- scaffoldTierFiles is idempotent — safe to call on every cp run; returns {designCreated, stateCreated}  _(phase 49)_
+- Surfaces forward-compat workflow: field from phase annotation/frontmatter for phase 51 consumption  _(phase 49)_
+- Reuses lib/roadmap.js#listPhases instead of re-implementing the parser  _(phase 49)_
+- phasesFromTemplate is an append-only adapter; loadTemplate/validate/computeWaves/resolveTemplate/normalisePhase untouched  _(phase 49)_
+- persist_output -> persist alias with one-shot console.warn deduped per template (workflow name)  _(phase 49)_
+- Parent phases get max_children=20 / min_children=1 defaults; non-parents leave them undefined  _(phase 49)_
+- Parent is inferred by scanning siblings for parent: <id> references  _(phase 49)_
+- foldIntoDesign anchors on `## <phaseId>` and replaces in-place when present, appends otherwise (idempotent)  _(phase 49)_
+- Atomic write via tmp + rename to avoid partial DESIGN.md on crash  _(phase 49)_
+- mergePersistAlias is a pure normaliser; deprecation warning stays in lib/workflow.js (no shared sink)  _(phase 49)_
+- persist wins over persist_output when both present (consistent with phasesFromTemplate precedence)  _(phase 49)_
+- Extended existing validate(template) in-place; preserved errors/warnings shape  _(phase 50)_
+- 8 v1.2 rules enforced: parent ref, no grandchildren, max/min only on parents, max>=min, positive ints, sibling-only child after, top-level after refs top-level only, persist boolean  _(phase 50)_
+- Defaults applied during validation: min=1 when only max set, max=20 when only min set  _(phase 50)_
+- Subtree-wait semantics documented in JSDoc; not implemented (executor's job)  _(phase 50)_
+- Children emitted grouped by itemIndex (item0/child0..N, item1/child0..N) for cache locality  _(phase 50)_
+- Expanded child id: <childTemplate.id>::<item.id || itemIndex>  _(phase 50)_
+- Pure function: inputs not mutated; output objects are fresh  _(phase 50)_
+- Picks LAST fenced JSON block when multiple are present (chain-of-thought tolerant)  _(phase 50)_
+- Item id must match /^[a-z0-9-]+$/ for slug-safe filenames in fan-out output dirs  _(phase 50)_
+- Empty items accepted at parse; count enforced separately so callers can compose  _(phase 50)_
+- All-or-nothing DAG rule: only switch to optimised parallel order when every item declares depends_on (incl. [])  _(phase 50)_
+- Partial depends_on silently falls back to array order to avoid ambiguous ordering bugs  _(phase 50)_
+- Cross-item ordering implemented as `after` edges on expanded children; executor scheduler needs no new primitive  _(phase 50)_
+- Field name `depends_on` chosen on items (matches phase-level vocabulary; clearer to agents than `after`)  _(phase 50)_
+- Schema unchanged — DAG is runtime data the agent supplies, not template config  _(phase 50)_
+- [object Object]  _(phase 51)_
+- [object Object]  _(phase 51)_
+- [object Object]  _(phase 51)_
+- [object Object]  _(phase 51)_
+- [object Object]  _(phase 51)_
+- DESIGN.md is the contract, STATE.md is the journal, SUMMARY.md closes the loop - same shape as milestone-phases for easy promotion later.  _(phase 51)_
+- Quick tasks default to skipping the heavyweight plan skill; --full re-enables it as opt-in.  _(phase 51)_
+- STATE.md is updated during execution (not just at end) so quick-resume can pick up mid-flight without losing progress.  _(phase 51)_
+- Discovered bin/commands/quick.js does NOT exist - cp-quick is purely a skill, so 51-02 reduced to a templates+skill refactor.  _(phase 51)_
+- Legacy .planning/custom/ runs stay in custom/ for their lifetime - writes do NOT migrate. Avoids surprising data movement; users move them with git mv when ready.  _(phase 51)_
+- createRun ALWAYS writes to quick/. New work never lands in legacy custom/, even on legacy-only projects.  _(phase 51)_
+- binds_to: custom is normalized to quick at template-load time (silent). The user-facing deprecation warning fires only when a legacy .planning/custom/ directory is actually touched.  _(phase 51)_
+- Free-slug check spans BOTH roots so a new quick-run cannot collide with a legacy custom slug.  _(phase 51)_
+- lib/custom.js filename kept (not renamed to quick.js) to minimize churn. Module exports add _quickRoot/_legacyCustomRoot/_resetDeprecationWarning for testing.  _(phase 51)_
+- ALLOWED_BINDS keeps custom as an alias so user templates with binds_to: custom still validate. The validation error message reframes custom as a deprecated alias.  _(phase 51)_
+- Keep the cp-plan-phase skill file registered (deprecated: true) instead of deleting it. Users who type /cp-plan-phase get a clear nudge rather than a 'skill not found' error. Removal moves to v1.3.  _(phase 51)_
+- Leave the autonomous legacy pass-through CODE in place for v1.2 — this very milestone (v1.2) was scaffolded the legacy way, so removing the pass-through would break the self-host. Pass-through prints a one-time deprecation warning when it fires; removal is now scheduled for v1.3 in writing.  _(phase 51)_
+- Test/install briefing (test/unit-installers.js) still mentions /cp-plan-phase by name because the installer iterates the skill files it finds. Kept the test as-is — the briefing surfacing a deprecated skill is correct behavior.  _(phase 51)_
+- Error messages route to cp scaffold-phase (low-level) rather than /cp-autonomous (high-level) because they fire from lib code that can't assume a provider is available.  _(phase 51)_
+- Smart-gate trip tests use process.platform-aware testCommand strings (cmd /c exit N on Windows, true/false on POSIX) so tests run cross-platform.  _(phase 51)_
+- CLI argv tests shell out via execSync against bin/cp.js and accept both exit 0 (clean) and exit 1 (phases pending) for --check, since bin/commands/autonomous.js intentionally exits 1 when phasesWouldRun > 0.  _(phase 51)_
+- Quick-tier parity is exercised via lib/custom.js (createRun + readState) rather than a bin/quick.js CLI, since cp-quick is a pure skill with no JS entry point.  _(phase 51)_
+- Did not attempt to mock lib/audit at runtime — runAuditGate test asserts ok=true on a synthetic fixture with no audit-trippable findings; HIGH-finding path remains covered by integration tests, not unit.  _(phase 51)_
+- All renames documented as one-release deprecation aliases (removed in v1.3) — never as immediate breaks — matching the back-compat invariants enforced by the test suite.  _(phase 52)_
+- Fan-out section documents the depends_on inter-child ordering refinement (today's design decision) as the primary v1.2 fan-out feature; array-order fallback is explained as the safety net for partial fills.  _(phase 52)_
+- Cheatsheet table at the bottom lists every old->new pairing on one page for fast scanning; full prose explanations precede it for migrators who want context.  _(phase 52)_
+- Did NOT touch CHANGELOG.md or README.md (those are 52-02). Did NOT bump package.json or tag (those are 52-03). Stayed in-scope.  _(phase 52)_
+- Listed fan-out + depends_on as the headline v1.2 feature in both CHANGELOG and README — it's the most user-visible authoring change.  _(phase 52)_
+- Marked /cp-plan-phase as deprecated in the slash-commands table rather than removing the row, so v1.1 users searching the README still find it and see the migration target.  _(phase 52)_
+- Added a short v1.2 callout banner under the built-in templates table and the State layer diagram instead of restructuring those sections — keeps existing v1.1 readers oriented while flagging the renames.  _(phase 52)_
+- Did NOT bump package.json or tag (that's 52-03). Only doc files touched.  _(phase 52)_
+- Folded the 52.5 doc work into the canonical root MIGRATION-v1.2.md rather than maintaining a parallel docs/MIGRATION-v1.2.md — single source of truth, easier for migrators.  _(phase 52)_
+- Updated CHANGELOG inline rather than appending a new [1.2.1] section: 1.2.0 has not shipped yet, so the optimizable refinement belongs in the 1.2.0 entry next to the rest of the fan-out work.  _(phase 52)_
+- Tagged v1.2.0 locally only (no push). Leaving `git push origin main --tags` and `npm publish` to the user per project convention.  _(phase 52)_
+- Defaulted optimizable to false on omission so back-compat bare arrays and partial declarations both resolve to the SAFE sequential mode — no silent DAG execution from incomplete agent output.  _(phase 52.5)_
+- When optimizable:true but some items omit depends_on, treated as [] (parallel root) rather than rejecting. This lets agents express full parallelism by just setting optimizable:true with no depends_on edges.  _(phase 52.5)_
+- Kept enforceChildCount and resolveItemOrder accepting BOTH wrapped {optimizable,items} AND bare array shapes so v1.1 callers don't break.  _(phase 52.5)_
+- Adapted in expandPhases rather than requiring callers (run/runtime loop) to pre-unwrap — keeps the public contract symmetric with parseParentOutput's return value and makes back-compat free.  _(phase 52.5)_
+- Kept the legacy bare-array test alongside the wrapped-object tests rather than deprecating it — back-compat is a real contract for any v1.1 caller upgrading.  _(phase 52.5)_
+- Renamed scenario C from 'partial depends_on -> array fallback' to 'no-optimizable -> array mode' to reflect that the trigger is now the missing top-level flag, not the partiality of per-item edges.  _(phase 52.5)_
+- Wrote MIGRATION-v1.2.md as a fresh file rather than amending CHANGELOG — the 52-02 CHANGELOG entry stays accurate for the broader v1.2 surface area; the migration note focuses just on the optimizable contract change so future readers find it under one heading.  _(phase 52.5)_
+- Quoted the principles list entry to escape the inline backtick block containing 'optimizable: true' — YAML otherwise parses the unquoted colon as a mapping.  _(phase 52.5)_
+- Kept the dev.yaml prompt prescriptive about WHEN to set optimizable:true ('only if confident about ALL') so agents default to safe sequential rather than overclaiming knowledge.  _(phase 52.5)_
+
+**Patterns established:**
+- lib/types.js as the shared typedef home for cross-layer data shapes  _(phase 49)_
+- Plain counter test harness with 'Passed: N   Failed: 0' output format  _(phase 49)_
+- Tier-file scaffolding pattern: opt-in via explicit call from CLI layer; never auto-overwrite  _(phase 49)_
+- Unified Phase[] emission from template — call site for runtime fan-out planning (consumed by phase 50)  _(phase 49)_
+- Persist primitive call site — consumed by phase 50 fan-out runtime to materialise structured-list children into milestone DESIGN.md  _(phase 49)_
+- Parent-set pre-pass once per validate call; reused by all parent-aware rules  _(phase 50)_
+- Fan-out expander returns a single flat execution order; runtime walks it like a normal Phase list  _(phase 50)_
+- Three-stage parent contract: build -> parse -> enforce, each independently testable  _(phase 50)_
+- Runtime contract amendments amplify the parent agent's expressive power without changing workflow YAML schema  _(phase 50)_
+- All-or-nothing resolution surfaces a clear opt-in path to parallelism (agent annotates everything) and a safe default (sequential)  _(phase 50)_
+
+**Files (created):** lib/types.js, test/unit-types.js, test/unit-milestone-reader.js, test/unit-workflow-phase-adapter.js, lib/persist.js, test/unit-persist.js, test/unit-workflow-schema-v12.js, lib/fanout.js, test/unit-fanout.js, lib/runtime-fanout.js, test/unit-runtime-fanout.js, templates/workflows/dev-v2.yaml, test/integration-fanout-v12.js
+**Files (modified):** package.json, lib/milestone.js, lib/workflow.js, lib/runtime-fanout.js, lib/fanout.js, test/unit-runtime-fanout.js, test/unit-fanout.js, .planning/phases/50-fan-out-runtime/DESIGN.md, lib/autonomous.js, bin/commands/autonomous.js, commands/cp/autonomous.md, test/unit-autonomous.js, test/dryrun-workflow-cli.js, test/integration-fanout-v12.js, templates/workflows/dev.yaml
+
+**Phase summaries:**
+- Phase 49: Foundations + tier files + persist primitives — see `.planning/phases/49-foundations-tier-files-persist-primitive/`
+- Phase 50: Fan-out runtime (parent: field, sibling pairing, max_children, 1-level limit) — see `.planning/phases/50-fan-out-runtime-parent-field-sibling-pai/`
+- Phase 51: CLI shims + deprecate cp-plan-phase — see `.planning/phases/51-cli-shims-deprecate-cp-plan-phase/`
+- Phase 52: Docs + MIGRATION-v1.2.md + v1.2.0 release — see `.planning/phases/52-docs-migration-v1-2-md-v1-2-0-release/`
+- Phase 52.5: optimizable fan-out flag — see `.planning/phases/52.5-optimizable-fan-out-flag/`
+
+**Phase designs:**
+- Phase 49 — `.planning/phases/49-unified-phase-type-reader-abstractions/DESIGN.md`
+- Phase 50 — `.planning/phases/50-fan-out-runtime/DESIGN.md`
