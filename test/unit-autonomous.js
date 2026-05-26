@@ -374,6 +374,285 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
     } finally { rm(dir); }
   });
 
+  // ---------- 51-05: smart-gate parity ----------
+
+  await ta('smart gate: testCommand pass — phase completes normally', async () => {
+    const dir = mkFixture({
+      phases: [{ num: '1', name: 'A', plans: [{ id: '01-01', done: false }] }],
+    });
+    try {
+      const calls = [];
+      const r = await autonomous.runAutonomous(dir, {
+        runPhase: async (p) => { calls.push(p); },
+        testCommand: process.platform === 'win32' ? 'cmd /c exit 0' : 'true',
+        skipAudit: true,
+      });
+      assert.equal(r.ok, true);
+      assert.equal(r.stopped, false);
+      assert.deepEqual(calls, ['1']);
+    } finally { rm(dir); }
+  });
+
+  await ta('smart gate: testCommand fail — stops with test-failure + .continue-here.md', async () => {
+    const dir = mkFixture({
+      phases: [
+        { num: '1', name: 'A', plans: [{ id: '01-01', done: false }] },
+        { num: '2', name: 'B', plans: [{ id: '02-01', done: false }] },
+      ],
+    });
+    try {
+      const calls = [];
+      const r = await autonomous.runAutonomous(dir, {
+        runPhase: async (p) => { calls.push(p); },
+        testCommand: process.platform === 'win32' ? 'cmd /c exit 1' : 'false',
+        skipAudit: true,
+      });
+      assert.equal(r.ok, false);
+      assert.equal(r.stopped, true);
+      assert.equal(r.stopReason, 'test-failure');
+      assert.equal(r.failedPhase, '1');
+      // Smart gate fires AFTER phase 1 runs but BEFORE phase 2 starts.
+      assert.deepEqual(calls, ['1']);
+      const ch = path.join(dir, '.planning', '.continue-here.md');
+      assert.ok(fs.existsSync(ch));
+      assert.match(fs.readFileSync(ch, 'utf8'), /Reason: test-failure/);
+    } finally { rm(dir); }
+  });
+
+  await ta('smart gate: skipTests bypasses testCommand entirely', async () => {
+    const dir = mkFixture({
+      phases: [{ num: '1', name: 'A', plans: [{ id: '01-01', done: false }] }],
+    });
+    try {
+      const r = await autonomous.runAutonomous(dir, {
+        runPhase: async () => {},
+        // This command WOULD fail — but skipTests:true makes it dead code.
+        testCommand: process.platform === 'win32' ? 'cmd /c exit 99' : 'false',
+        skipTests: true,
+        skipAudit: true,
+      });
+      assert.equal(r.ok, true);
+      assert.equal(r.stopped, false);
+    } finally { rm(dir); }
+  });
+
+  await ta('smart gate: runTests returns skipped when no test command + no package.json', () => {
+    const dir = mkFixture();
+    try {
+      const r = autonomous.runTests(dir);
+      assert.equal(r.ok, true);
+      assert.equal(r.skipped, true);
+      assert.equal(r.reason, 'no-test-command');
+    } finally { rm(dir); }
+  });
+
+  await ta('smart gate: runTests honors opts.testCommand on failure', () => {
+    const dir = mkFixture();
+    try {
+      const r = autonomous.runTests(dir, {
+        testCommand: process.platform === 'win32' ? 'cmd /c exit 1' : 'false',
+      });
+      assert.equal(r.ok, false);
+      assert.ok(typeof r.output === 'string');
+    } finally { rm(dir); }
+  });
+
+  await ta('smart gate: runAuditGate on a no-planning-issues fixture returns ok=true', () => {
+    const dir = mkFixture();
+    try {
+      const r = autonomous.runAuditGate(dir);
+      // No HIGH findings expected for a synthetic in-progress fixture.
+      assert.equal(r.ok, true);
+      assert.equal(typeof r.high, 'number');
+      assert.equal(typeof r.medium, 'number');
+      assert.equal(typeof r.low, 'number');
+      assert.ok(Array.isArray(r.findings));
+    } finally { rm(dir); }
+  });
+
+  await ta('smart gate: test gate fires per phase (not once per run)', async () => {
+    const dir = mkFixture({
+      phases: [
+        { num: '1', name: 'A', plans: [{ id: '01-01', done: false }] },
+        { num: '2', name: 'B', plans: [{ id: '02-01', done: false }] },
+        { num: '3', name: 'C', plans: [{ id: '03-01', done: false }] },
+      ],
+    });
+    try {
+      // Count testCommand invocations via a marker file.
+      const marker = path.join(dir, 'tests-ran.log');
+      const cmd = process.platform === 'win32'
+        ? `cmd /c echo ran>>"${marker}"`
+        : `sh -c 'echo ran >> ${marker}'`;
+      const r = await autonomous.runAutonomous(dir, {
+        runPhase: async () => {},
+        testCommand: cmd,
+        skipAudit: true,
+      });
+      assert.equal(r.ok, true);
+      const ranLines = fs.readFileSync(marker, 'utf8').split(/\r?\n/).filter(Boolean);
+      assert.equal(ranLines.length, 3, `expected 3 test runs, got ${ranLines.length}`);
+    } finally { rm(dir); }
+  });
+
+  // ---------- 51-05: scope/argv parity for `cp autonomous` CLI ----------
+  //
+  // These shell out via execSync so we exercise the actual argv parser
+  // in bin/commands/autonomous.js. We use --check (dry-run mode) so
+  // nothing mutates the fixture beyond reading roadmap state.
+
+  const cpBin = path.resolve(__dirname, '..', 'bin', 'cp.js');
+
+  function runCp(dir, args) {
+    try {
+      const out = execSync(`node "${cpBin}" autonomous ${args}`, {
+        cwd: dir, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'],
+      });
+      return { code: 0, stdout: out, stderr: '' };
+    } catch (e) {
+      return {
+        code: e.status || 1,
+        stdout: (e.stdout || '').toString(),
+        stderr: (e.stderr || '').toString(),
+      };
+    }
+  }
+
+  await ta('argv: --check exits 0 or 1 (1 when phases pending) and prints phasesWouldRun', () => {
+    const dir = mkFixture();
+    try {
+      const r = runCp(dir, '--check');
+      // Exit code is 1 when phases pending, 0 when none. Either is OK.
+      assert.ok(r.code === 0 || r.code === 1, `unexpected code ${r.code}: ${r.stderr}`);
+      assert.match(r.stdout, /phasesWouldRun|phase\(s\) would run|Phases:/i);
+    } finally { rm(dir); }
+  });
+
+  await ta('argv: --check --workflow=quick echoes the workflow choice', () => {
+    const dir = mkFixture();
+    try {
+      const r = runCp(dir, '--check --workflow=quick');
+      assert.ok(r.code === 0 || r.code === 1, `unexpected code ${r.code}: ${r.stderr}`);
+      assert.match(r.stdout + r.stderr, /Workflow:\s*quick/i);
+    } finally { rm(dir); }
+  });
+
+  await ta('argv: --check defaults to workflow=dev when no flag passed', () => {
+    const dir = mkFixture();
+    try {
+      const r = runCp(dir, '--check');
+      assert.ok(r.code === 0 || r.code === 1, `unexpected code ${r.code}: ${r.stderr}`);
+      assert.match(r.stdout + r.stderr, /Workflow:\s*dev/i);
+    } finally { rm(dir); }
+  });
+
+  await ta('argv: invalid scope returns non-zero exit', () => {
+    const dir = mkFixture();
+    try {
+      const r = runCp(dir, '--check totally-bogus-scope');
+      assert.notEqual(r.code, 0);
+    } finally { rm(dir); }
+  });
+
+  await ta('argv: --help mentions --workflow + --check + scope', () => {
+    const dir = mkFixture();
+    try {
+      const r = runCp(dir, '--help');
+      // --help usually exits 0; tolerate either 0 or 2.
+      assert.ok(r.code === 0 || r.code === 2);
+      const text = r.stdout + r.stderr;
+      assert.match(text, /--workflow/i);
+      assert.match(text, /--check/i);
+    } finally { rm(dir); }
+  });
+
+  // ---------- 51-05: cp-quick skill contract parity ----------
+  //
+  // cp-quick is a skill (no bin/quick.js), but the template + skill
+  // markdown form a contract. Verify the v1.2 DESIGN.md + STATE.md
+  // shape exists and the legacy quick-PLAN.md is gone.
+
+  await ta('quick contract: quick-DESIGN.md template ships with expected sections', () => {
+    const tpl = path.resolve(__dirname, '..', 'templates', 'quick-DESIGN.md');
+    assert.ok(fs.existsSync(tpl), 'templates/quick-DESIGN.md missing');
+    const body = fs.readFileSync(tpl, 'utf8');
+    assert.match(body, /^---/, 'frontmatter');
+    assert.match(body, /slug:\s*\{\{SLUG\}\}/);
+    assert.match(body, /type:\s*quick/);
+    assert.match(body, /## Goal/);
+    assert.match(body, /## Approach/);
+    assert.match(body, /## Done When/);
+  });
+
+  await ta('quick contract: quick-STATE.md template ships with expected sections', () => {
+    const tpl = path.resolve(__dirname, '..', 'templates', 'quick-STATE.md');
+    assert.ok(fs.existsSync(tpl), 'templates/quick-STATE.md missing');
+    const body = fs.readFileSync(tpl, 'utf8');
+    assert.match(body, /type:\s*quick/);
+    assert.match(body, /## Current Status/);
+    assert.match(body, /## Last Activity/);
+  });
+
+  await ta('quick contract: legacy quick-PLAN.md is GONE (51-02)', () => {
+    const tpl = path.resolve(__dirname, '..', 'templates', 'quick-PLAN.md');
+    assert.equal(fs.existsSync(tpl), false,
+      'templates/quick-PLAN.md should have been removed in 51-02');
+  });
+
+  await ta('quick contract: cp-quick skill references DESIGN.md + STATE.md (not PLAN.md)', () => {
+    const skillPath = path.resolve(__dirname, '..', 'commands', 'cp', 'quick.md');
+    assert.ok(fs.existsSync(skillPath));
+    const body = fs.readFileSync(skillPath, 'utf8');
+    assert.match(body, /quick-DESIGN\.md/);
+    assert.match(body, /quick-STATE\.md/);
+    // The skill MAY still reference the *summary* template (quick-SUMMARY.md
+    // is unchanged) but should NOT reference quick-PLAN.md as a template.
+    assert.equal(/templates\/quick-PLAN\.md/.test(body), false,
+      'cp-quick skill still references quick-PLAN.md');
+  });
+
+  await ta('quick contract: cp-plan-phase is marked deprecated in frontmatter (51-04)', () => {
+    const skillPath = path.resolve(__dirname, '..', 'commands', 'cp', 'plan-phase.md');
+    assert.ok(fs.existsSync(skillPath));
+    const body = fs.readFileSync(skillPath, 'utf8');
+    assert.match(body, /deprecated:\s*true/);
+    assert.match(body, /\/cp-autonomous/, 'should nudge users at /cp-autonomous');
+  });
+
+  // ---------- 51-05: quick tier (lib/custom.js) parity ----------
+
+  await ta('quick parity: createRun writes to .planning/quick/ not .planning/custom/', () => {
+    const custom = require('../lib/custom');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-parity-'));
+    try {
+      const slug = custom.createRun('debug', 'parity test', {
+        projectDir: dir, now: new Date('2026-05-25T10:00:00.000Z'),
+      });
+      assert.ok(fs.existsSync(path.join(dir, '.planning', 'quick', slug)));
+      assert.equal(fs.existsSync(path.join(dir, '.planning', 'custom', slug)), false);
+    } finally { rm(dir); }
+  });
+
+  await ta('quick parity: legacy .planning/custom/ slug remains readable (51-03 back-compat)', () => {
+    const custom = require('../lib/custom');
+    const yaml = require('yaml');
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-parity-'));
+    try {
+      custom._resetDeprecationWarning();
+      const legacySlug = '2026-05-24-legacy';
+      const legacyDir = path.join(dir, '.planning', 'custom', legacySlug);
+      fs.mkdirSync(legacyDir, { recursive: true });
+      fs.writeFileSync(path.join(legacyDir, 'STATE.yaml'), yaml.stringify({
+        workflow: 'debug', slug: legacySlug, status: 'in-progress',
+        started: '2026-05-24T15:30:00.000Z',
+        last_activity: '2026-05-24T15:30:00.000Z',
+      }));
+      const state = custom.readState(legacySlug, { projectDir: dir });
+      assert.equal(state.slug, legacySlug);
+      assert.equal(state.workflow, 'debug');
+    } finally { rm(dir); }
+  });
+
   console.log(`unit-autonomous: ${passed} passed`);
   process.exit(0);
 })().catch((e) => {
