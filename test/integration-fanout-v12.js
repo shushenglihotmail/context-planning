@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Integration test for v1.2 fan-out runtime against the dev-v2 workflow template.
+ * Integration test for v1.2 fan-out runtime against the dev workflow template.
  *
  * Exercises the full pipeline:
  *   loadTemplate -> validate -> phasesFromTemplate
@@ -50,17 +50,17 @@ function agentReply(items) {
 
 console.log('integration-fanout-v12');
 
-const templatePath = path.resolve(__dirname, '..', 'templates', 'workflows', 'dev-v2.yaml');
+const templatePath = path.resolve(__dirname, '..', 'templates', 'workflows', 'dev.yaml');
 const template = loadTemplate(templatePath);
 
-check('dev-v2 template loads with the expected three phases', () => {
-  assert.strictEqual(template.meta.workflow, 'dev-v2');
+check('dev template loads with the expected three phases', () => {
+  assert.strictEqual(template.meta.workflow, 'dev');
   assert.strictEqual(template.meta.binds_to, 'milestone');
   assert.strictEqual(template.phases.length, 3);
   assert.deepStrictEqual(template.phases.map((p) => p.id), ['plan', 'child-plan', 'child-execute']);
 });
 
-check('dev-v2 template passes schema validation cleanly', () => {
+check('dev template passes schema validation cleanly', () => {
   const result = validate(template);
   if (!result.ok) console.log('validation errors:', result.errors);
   assert.ok(result.ok, `validate ok (errors: ${result.errors.join('; ')})`);

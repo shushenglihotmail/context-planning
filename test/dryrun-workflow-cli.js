@@ -156,13 +156,15 @@ section('cp workflow diagram quick → stdout begins with "flowchart TD", exit 0
   ok('stdout contains arrow -->', r.stdout.includes('-->'), 'stdout=' + r.stdout.slice(0, 300));
 }
 
-section('cp workflow diagram dev → stdout contains parallel research phases');
+section('cp workflow diagram dev → stdout contains parent + child phases');
 {
   const r = cp(['workflow', 'diagram', 'dev'], repoRoot);
   ok('exit 0', r.status === 0, 'status=' + r.status);
-  ok('stdout contains research-prior-art', r.stdout.includes('research-prior-art'),
+  ok('stdout contains plan parent phase', r.stdout.includes('plan'),
     'stdout=' + r.stdout.slice(0, 400));
-  ok('stdout contains research-constraints', r.stdout.includes('research-constraints'),
+  ok('stdout contains child-plan', r.stdout.includes('child-plan'),
+    'stdout=' + r.stdout.slice(0, 400));
+  ok('stdout contains child-execute', r.stdout.includes('child-execute'),
     'stdout=' + r.stdout.slice(0, 400));
 }
 
@@ -204,16 +206,15 @@ section('cp workflow inspect dev → shows YAML + wave decomposition, exit 0');
   ok('stdout contains "Deduced execution sequence" header',
     r.stdout.includes('=== Deduced execution sequence ==='),
     'stdout missing wave header');
-  ok('stdout reports "5 wave(s)"', r.stdout.includes('5 wave(s)'),
+  ok('stdout reports "1 wave(s)"', r.stdout.includes('1 wave(s)'),
     'stdout=' + r.stdout.slice(-400));
-  ok('stdout has Wave 1 header', /Wave 1 of 5/.test(r.stdout),
+  ok('stdout has Wave 1 header', /Wave 1 of 1/.test(r.stdout),
     'stdout missing wave 1 line');
-  ok('stdout marks parallel wave', r.stdout.includes('parallel'),
-    'stdout missing parallel marker for wave 2');
-  ok('stdout shows brainstorm role', /brainstorm.*role: brainstormer/.test(r.stdout),
-    'stdout missing brainstorm role line');
-  ok('stdout shows depends_on for plan', /plan.*depends on: research-prior-art, research-constraints/.test(r.stdout),
-    'stdout missing plan depends-on line');
+  ok('stdout shows plan role', /plan.*role: planner/.test(r.stdout),
+    'stdout missing plan role line');
+  ok('stdout shows child-plan as child of plan',
+    /child-plan/.test(r.stdout) && /parent:\s*plan/.test(r.stdout),
+    'stdout missing child-plan parent line');
 }
 
 section('cp workflow inspect dev --json → structured JSON, exit 0');
@@ -227,18 +228,15 @@ section('cp workflow inspect dev --json → structured JSON, exit 0');
     ok('json.workflow=dev', parsed.workflow === 'dev', 'workflow=' + parsed.workflow);
     ok('json.binds_to=milestone', parsed.binds_to === 'milestone',
       'binds_to=' + parsed.binds_to);
-    ok('json.total_phases=6', parsed.total_phases === 6,
+    ok('json.total_phases=3', parsed.total_phases === 3,
       'total_phases=' + parsed.total_phases);
-    ok('json.total_waves=5', parsed.total_waves === 5,
+    ok('json.total_waves=1', parsed.total_waves === 1,
       'total_waves=' + parsed.total_waves);
-    ok('json.waves is array of length 5', Array.isArray(parsed.waves) && parsed.waves.length === 5,
+    ok('json.waves is array of length 1', Array.isArray(parsed.waves) && parsed.waves.length === 1,
       'waves.length=' + (parsed.waves && parsed.waves.length));
-    ok('json wave 2 has 2 parallel phases',
-      parsed.waves && parsed.waves[1] && parsed.waves[1].phases.length === 2,
-      'wave2.phases=' + JSON.stringify(parsed.waves && parsed.waves[1]));
-    ok('json wave 1 phase carries role + model',
-      parsed.waves && parsed.waves[0].phases[0].role === 'brainstormer' &&
-        parsed.waves[0].phases[0].model === 'high',
+    ok('json wave 1 phase is plan with planner role',
+      parsed.waves && parsed.waves[0].phases[0].id === 'plan' &&
+        parsed.waves[0].phases[0].role === 'planner',
       'wave1.phase=' + JSON.stringify(parsed.waves && parsed.waves[0].phases[0]));
   }
 }
