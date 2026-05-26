@@ -369,39 +369,54 @@ Plans:
 ### Phase 49: Unified Phase type + reader abstractions
 
 Plans:
-- [ ] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef + `validatePhase(obj)` runtime check; ship `test/unit-types.js` (~20 assertions).
+- [x] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef + `validatePhase(obj)` runtime check; ship `test/unit-types.js` (~20 assertions).
 - [ ] 49-02: `lib/milestone.js#readPhases(roadmapMd)` — new exported function returning `Phase[]` for all 4 ROADMAP shapes; ship `test/unit-milestone-reader.js` (~30 assertions).
-- [ ] 49-03: `lib/workflow.js#phasesFromTemplate(template)` — new adapter returning unified shape; parity tests against all 3 built-in templates (~15 assertions).
+- [ ] 49-03: `lib/workflow.js#phasesFromTemplate(template)` — new adapter returning unified shape with `parent:`/`after:`/`persist:` fields; parity tests against all 3 built-in templates (~15 assertions).
 
-### Phase 50: Milestone-phase to workflow binding
-
-Plans:
-- [ ] 50-01: TBD
-- [ ] 50-02: TBD
-- [ ] 50-03: TBD
-
-### Phase 51: cp-autonomous as thin shim over cp run
+### Phase 50: Tier files + persist semantics (DESIGN.md/STATE.md at every tier)
 
 Plans:
-- [ ] 51-01: TBD
-- [ ] 51-02: TBD
-- [ ] 51-03: TBD
-- [ ] 51-04: TBD
+- [ ] 50-01: Scaffold milestone-tier DESIGN.md + STATE.md; initial content = milestone brief; project-level STATE.md unchanged.
+- [ ] 50-02: `lib/persist.js` — fold-into-DESIGN.md helper; section dedupe; agent-summarization hook.
+- [ ] 50-03: Rename `persist_output:` → `persist:` in runtime + templates; alias old name with deprecation warning; default `false`.
 
-### Phase 52: cp-quick as thin shim over cp run (state migration)
-
-Plans:
-- [ ] 52-01: TBD
-- [ ] 52-02: TBD
-- [ ] 52-03: TBD
-- [ ] 52-04: TBD
-
-### Phase 53: Docs + MIGRATION-v1.2.md + v1.2.0 release
+### Phase 51: Fan-out runtime (parent: field, sibling pairing, 1-level limit)
 
 Plans:
-- [ ] 53-01: TBD
-- [ ] 53-02: TBD
-- [ ] 53-03: TBD
+- [ ] 51-01: Workflow YAML schema extension — `parent:` field + `after:` at child level; validation rules (parent must exist, no grandchildren).
+- [ ] 51-02: `lib/fanout.js` — expand child phases over parent's structured list output; pairwise sibling dep resolver.
+- [ ] 51-03: Runtime contract with agent — when parent has children, agent must produce structured list; prompt-shaping helper.
+- [ ] 51-04: Integration tests against a new built-in `dev-v2` template using fan-out (~25 assertions).
+
+### Phase 52: cp-autonomous as workflow shim (drop cp-plan-phase dependency)
+
+Plans:
+- [ ] 52-01: Refactor `bin/commands/autonomous.js` — for each pending milestone-phase, call `cp run <workflow>`; drop calls to cp-plan-phase.
+- [ ] 52-02: Smart-gate parity tests (test-fail / audit-HIGH / executor-deviation halt the same way).
+- [ ] 52-03: `.continue-here.md` resume parity tests.
+- [ ] 52-04: Scope/argv contract parity (--check, --max, --scope flags preserved).
+
+### Phase 53: Quick tier unification (DESIGN+STATE; collapse custom into quick)
+
+Plans:
+- [ ] 53-01: Scaffold quick/<slug>/{DESIGN.md, STATE.md} replacing quick-PLAN.md; update cp-quick skill + bin/commands/quick.js.
+- [ ] 53-02: Collapse `.planning/custom/` into `.planning/quick/`; alias `binds_to: custom` → quick; lib/custom.js read-only back-compat.
+- [ ] 53-03: Dry-run back-compat tests reading from old `.planning/quick/<dir>/` and `.planning/custom/<slug>/` layouts.
+- [ ] 53-04: cp-quick parity tests (argv preservation, resume slug, integrated DESIGN.md fold).
+
+### Phase 54: Deprecate cp-plan-phase
+
+Plans:
+- [ ] 54-01: Mark `cp-plan-phase` skill deprecated; rewrite as one-line nudge to `cp run dev` (or configured workflow).
+- [ ] 54-02: Audit and update all other cp-* skills that referenced cp-plan-phase as a prereq.
+- [ ] 54-03: Add explicit migration note in MIGRATION-v1.2.md (driven by phase 55).
+
+### Phase 55: Docs + MIGRATION-v1.2.md + v1.2.0 release
+
+Plans:
+- [ ] 55-01: MIGRATION-v1.2.md — persist rename, custom→quick collapse, cp-plan-phase deprecation, parent:/after:/fan-out schema.
+- [ ] 55-02: CHANGELOG.md + README.md updates (workflow YAML examples with new schema; new tier-file storage diagram).
+- [ ] 55-03: Bump package.json to 1.2.0; tag + publish.
 ## Progress
 
 **Execution Order:**

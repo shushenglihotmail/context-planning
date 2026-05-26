@@ -26,140 +26,271 @@ export`, `cp workflow inspect`), bringing the v1.0 workflow engine to
 full parity with the rest of cp's write-side surface.
 
 **Deferred from v1.1 (was Phase 45):** the cp-quick + cp-autonomous
-shim refactor over `/cp-workflow-run`. Design analysis at the end of
-v1.1 found a deeper issue:
+shim refactor over `/cp-workflow-run`. Mid-v1.2 design discussion
+surfaced a deeper architectural mismatch:
 
-- `cp-autonomous` walks **milestone phases** in ROADMAP.md and loops
-  `plan-phase → execute-phase → tick → write-summary` per pending
-  plan. State lives in `STATE.md` + `.continue-here.md`.
+- `cp-autonomous` walks **milestone phases** in ROADMAP.md, calling
+  `cp-plan-phase` then `cp-execute-phase` per pending plan. State
+  lives in `STATE.md` + `.continue-here.md`.
 - `cp-quick` runs **one-off ad-hoc tasks** through a hard-coded
   custom-tier flow. State lives in `.planning/quick/<dir>/`.
 - `cp-workflow-run` (v1.1) executes **workflow template phases** from
-  a YAML DAG. State lives in `.planning/runs/<slug>/`.
+  a YAML DAG. State lives in `.planning/runs/<slug>/` (or
+  `.planning/custom/<slug>/` for `binds_to: custom`).
 
-All three call their unit-of-work a "phase" but mean three different
-things, persist state in three different shapes, and duplicate
-substantial machinery (smart-gates, deviation handling,
-`.continue-here.md` resume points). A v1.1-style shim could be
-written, but it would either break back-compat or near-duplicate the
-v1.0 workflow engine in shim code.
+Three "phase" notions, three persistence shapes, three smart-gate
+implementations.
 
-**Observation that broke the deadlock (user, mid-discussion):**
-*"Generalize phases — make phases in milestone and phases in
-workflow the same type, so we don't have to change `cp autonomous`."*
+**Key user observations that shaped the design:**
 
-The right unification is at the **type / data shape** level, not at
-the persistence level.
+1. *"Generalize phases — make phases in milestone and phases in
+   workflow the same type."* (Drives the unified `Phase` typedef.)
+2. *"Phase output should always be visible to agent. The persist
+   property should mean if we want this phase's output summarized
+   and persisted in CP plan doc."* (Redefines `persist_output` from
+   informational flag to functional fold-into-DESIGN trigger.)
+3. *"PLAN doc has no lasting value — what we want to persist is the
+   design idea and how we plan to implement it."* (Eliminates the
+   PLAN.md generation step entirely; DESIGN.md becomes the durable
+   knowledge accumulator.)
+4. *"In old way, agent could cut a feature into smaller features.
+   Workflow design missed this. Let parent phase spawn child phases
+   via dependency."* (Drives the two-level fan-out via `parent:`
+   field — recovers the old NN-MM-PLAN decomposition pattern
+   inside workflows.)
 
 ## Decision
 
-Introduce a single `Phase` type used by both layers, then refactor
-cp-autonomous and cp-quick into thin shims over `cp run`.
+Five surgical changes that together collapse the three-engine
+problem into one:
 
-**Layered model:**
+### Decision 1 — Unified `Phase` type
 
-```
-┌──────────────────────────────────────────────────────────┐
-│  MILESTONE LAYER — owns overall plan, roadmap, state     │
-│  ├─ ROADMAP.md   (which phases exist, what's in each)    │
-│  ├─ STATE.md     (where we are right now)                │
-│  └─ Phase[]      (id, depends_on, status, plans[],       │
-│                   summary?, workflow-to-use)             │
-└──────────────────────────┬───────────────────────────────┘
-                           │ "execute this phase using workflow X"
-                           ▼
-┌──────────────────────────────────────────────────────────┐
-│  WORKFLOW LAYER — knows nothing about roadmap or state   │
-│  ├─ template.yaml      (DAG of execution steps)          │
-│  ├─ Phase[]            (id, depends_on, role, status —   │
-│  │                      same SHAPE as above,             │
-│  │                      different SEMANTICS)             │
-│  └─ runs/<slug>/       (transcript of one execution)     │
-└──────────────────────────────────────────────────────────┘
-```
+Introduce a single `Phase` typedef (`lib/types.js`) used by both
+milestone-layer readers and workflow-layer readers. Same data shape,
+layer-specific extension via `meta`. (Already landed in 49-01.)
 
-**Principle (verbatim from user):** *"Milestone maintains overall
-plan, roadmap and state. Workflow defines how each phase runs and
-might generate its own phase's plan, but is not aware of roadmap
-and state."*
+### Decision 2 — `DESIGN.md` + `STATE.md` at every tier
 
-**What gets unified:**
-- The `Phase` **TYPE** (data shape: `id`, `depends_on`, `status`,
-  `summary?`)
-- Plan-status tracking conventions
-- `runs/<slug>/` becomes the single transcript home
+Both milestone and quick tiers get the same two files:
 
-**What stays separate (by design):**
-- Persistence — milestone uses ROADMAP.md + STATE.md; workflow uses
-  YAML + runs/. Layers, not lumps.
-- Plans — only the milestone layer has `plans[]` (the workflow may
-  populate them, but doesn't own them).
-- CLI surfaces — `cp autonomous`, `cp run`, `cp quick` argv contracts
-  all stay frozen. Refactor is internal.
+- **`DESIGN.md`** — durable accumulator. Initial content = the
+  brief (milestone description or quick task description). Grows
+  as workflow phases run with `persist: true` (see Decision 3).
+- **`STATE.md`** — live operational pointer (same shape as today's
+  project `STATE.md`, scoped to the tier).
+
+Records continue to live where they do today — per-plan
+`SUMMARY.md`, `REVIEW-LOG.md`, `MILESTONES.md` archive, git log.
+No new record artifact is introduced.
+
+### Decision 3 — `persist:` semantics (rename + redefine)
+
+Rename `persist_output:` → `persist:` (shorter, clearer).
+Default value: **`false`** (opt-in for DESIGN.md promotion).
+
+| `persist:` | Phase output destination |
+|---|---|
+| `true` | Agent summarizes the phase's output into the **tier's `DESIGN.md`** under a section named after the phase id. Phase output is ALSO visible to the next phase's agent. |
+| `false` (default) | Written verbatim to `<phase-dir>/<run-id>/<phase-id>.md`. Phase output is still visible to the next phase's agent. |
+
+**Key rule:** `persist:` only governs durable promotion into the
+canonical plan doc. Phase output is ALWAYS visible at runtime
+regardless of the flag.
+
+### Decision 4 — Drop `cp-plan-phase` (workflows own decomposition)
+
+`cp-plan-phase` is removed. Workflows declare their own phases via
+YAML and handle decomposition themselves through the two-level fan-out
+machinery (Decision 5). The milestone-phase concept stays in
+ROADMAP.md; what disappears is the manual `PLAN.md` generation step
+that used to precede execution.
+
+`cp-autonomous` no longer calls `cp-plan-phase` — it drives directly
+into `cp run <workflow>` per pending milestone-phase.
+
+### Decision 5 — Two-level phase structure with `parent:` field
+
+Workflows can declare child phases via a `parent:` field. This
+recovers the old NN-MM-PLAN dynamic decomposition pattern.
+
+**Schema rules:**
+
+| Field | Meaning |
+|---|---|
+| `parent:` | Empty/omitted → top-level phase. Set to a phase-id → child of that phase. |
+| `after:` | At top level: refs to other top-level phases. At child level: refs to sibling children under the same parent. |
+| `persist:` | true → fold into tier DESIGN.md. false (default) → standalone phase doc. |
+
+**Implicit rules:**
+
+- Children automatically run after their parent completes (parent
+  produces the structured list of items children iterate over).
+- A top-level phase with `after: [X]` where X has children waits for
+  X **and its entire subtree**.
+- **1-level limit**: a phase listed as someone's `parent:` cannot
+  itself have a `parent:`. No grandchildren.
+- Runtime infers "parent must produce a structured list" because
+  other phases declare `parent: <this-id>` — no explicit flag
+  needed on the parent.
+
+**Sibling pairing (pairwise fan-out):** Multiple children of the same
+parent all expand over the same parent-produced list. `execute[i]`
+pairs with `child-plan[i]` by index. A child phase `after:` declaring
+a sibling resolves pairwise (sibling[i] waits for sibling[i]).
+
+**What stays the same:**
+- `binds_to:` template field (workflows can still scaffold a
+  milestone). User explicitly kept this.
+- Project-level `STATE.md`, `ROADMAP.md`, `MILESTONES.md`
+- Per-plan `SUMMARY.md` and `REVIEW-LOG.md`
+- ROADMAP phase structure (milestone-phases remain the high-level
+  unit; workflows run within them)
+- All CLI argv contracts (`cp autonomous`, `cp run`, `cp quick`)
+
+**What gets removed:**
+- `cp-plan-phase` skill (deprecated with migration alias)
+- `PLAN.md` and `NN-MM-PLAN.md` generation pre-step
+- `.planning/custom/` tier (collapsed into `.planning/quick/`;
+  `binds_to: custom` aliased to quick for back-compat)
+- `templates/quick-PLAN.md` (replaced by DESIGN.md + STATE.md pair)
 
 ## Consequences
 
 ### Positive
+- Workflows become first-class: every milestone-phase and quick-task
+  is just "DESIGN.md + STATE.md + workflow runs that fold into them."
+- One state shape (DESIGN+STATE) at every tier; one persist rule;
+  one fold-into-DESIGN.md mechanism.
 - cp-autonomous and cp-quick collapse to <100 LOC each (thin
-  delegators) once the unified runtime exists.
-- One smart-gate implementation, one deviation handler, one
-  `.continue-here.md` writer.
-- Adding a new workflow (e.g. `debug`) automatically makes it
-  available to milestone-driving without per-skill plumbing.
-- ROADMAP.md gains an optional `workflow:` annotation per phase,
-  enabling "phase 49 runs the `dev` workflow, phase 50 runs the
-  `debug` workflow" granularity.
+  delegators over `cp run`).
+- The two-level fan-out (`parent:` field) recovers the dynamic
+  decomposition pattern (old NN-MM-PLAN) inside workflows — without
+  the manual cp-plan-phase step.
+- DESIGN.md becomes a curated, accreted knowledge artifact instead
+  of a one-shot brainstorm output.
+- Adding a new workflow (e.g. `debug`) automatically works at every
+  tier without per-skill plumbing.
 
 ### Negative
 - Behavioral parity testing burden — cp-autonomous and cp-quick
   have entrenched user expectations (scope handling, resume slugs,
-  smart-gate triggers). Phase 51 and 52 each need explicit parity
-  tests against pre-v1.2 behavior.
+  smart-gate triggers).
 - One release of read-only back-compat for `.planning/quick/<dir>/`
-  state directories. Removed in v1.3.
+  AND `.planning/custom/<slug>/` state directories. Removed in v1.3.
+- Workflow authors must learn the new `parent:`/`persist:`/`after:`
+  schema; the v1.1 flat-DAG schema still works (back-compat) but new
+  features assume the v1.2 shape.
+- Existing workflow templates with `persist_output:` will continue
+  to parse (alias to `persist:`) with a deprecation warning.
 
 ### Neutral
 - The unified `Phase` interface stays JSDoc-typed (no TypeScript
   introduction) for codebase consistency.
-- No changes to the YAML schema for workflow templates.
+- `binds_to:` stays — workflows can still scaffold milestones.
 
 ---
 
 ## Architecture
 
-**Type shape (JSDoc, in `lib/types.js` — new file):**
+**Type shape (JSDoc, in `lib/types.js` — landed in 49-01):**
 
 ```js
 /**
  * @typedef {Object} Phase
  * @property {string} id              - e.g. "47" (milestone) or "brainstorm" (workflow)
- * @property {string[]} depends_on    - other phase ids in same DAG
+ * @property {string} [parent]        - workflow-only: parent phase id (1-level limit)
+ * @property {string[]} [after]       - dependencies (siblings or top-level peers)
+ * @property {boolean} [persist]      - workflow-only: fold into tier DESIGN.md when true (default false)
  * @property {"pending"|"in-progress"|"complete"|"failed"} status
  * @property {Object} [meta]          - layer-specific extension
  *
- * Milestone-Phase extends with: plans[], workflow?, summary?, base-commit
- * Workflow-Phase extends with:  role, model?, persist_output?
+ * Milestone-Phase extends with: plans[], summary?, base-commit
+ * Workflow-Phase extends with:  role, model?, parent?, persist?
  */
 ```
 
 **Reader surface:**
 - `lib/milestone.js#readPhases(roadmapMd)` → `Phase[]` (milestone-layer)
-- `lib/workflow.js#readPhases(templateYaml)` → `Phase[]` (workflow-layer)
+- `lib/workflow.js#readPhases(templateYaml)` → `Phase[]` (workflow-layer; resolves parent/after into a two-level DAG)
 
 Both return shape-compatible `Phase` arrays.
+
+## Example workflow (the full schema)
+
+```yaml
+name: dev
+binds_to: milestone
+phases:
+  # ── Top level ──
+  - id: brainstorm
+    persist: true                  # → milestone DESIGN.md
+
+  - id: plan
+    after: [brainstorm]
+    persist: false
+    # Runtime detects child-plan & execute below have parent:plan
+    # → instructs agent to produce a structured list of items
+
+  - id: review
+    after: [plan]                  # waits for plan + its whole subtree
+    persist: true                  # → milestone DESIGN.md
+
+  # ── Children of plan (1-level) ──
+  - id: child-plan
+    parent: plan
+    persist: false
+
+  - id: execute
+    parent: plan
+    after: [child-plan]            # pairwise: execute[i] waits for child-plan[i]
+    persist: false
+```
+
+## Storage layout
+
+```
+.planning/
+├── STATE.md                              ← project pointer (unchanged)
+├── ROADMAP.md                            ← unchanged
+├── MILESTONES.md                         ← unchanged
+├── milestones/<slug>/
+│   ├── DESIGN.md                         ← accretes (initial: milestone brief)
+│   └── STATE.md                          ← milestone-level pointer (new at this tier)
+├── quick/<slug>/                         ← unified (custom collapsed in)
+│   ├── DESIGN.md                         ← replaces quick-PLAN.md
+│   └── STATE.md                          ← quick-level pointer (new)
+└── phases/<phase-dir>/
+    ├── NN-MM-SUMMARY.md                  ← unchanged (per-plan record)
+    ├── REVIEW-LOG.md                     ← unchanged
+    └── <run-id>/                         ← one folder per workflow run
+        ├── brainstorm.md                 ← persist:false top-level
+        ├── plan.md                       ← contains list of sub-features
+        ├── plan/                         ← folder named after parent phase id
+        │   ├── child-plan/
+        │   │   ├── 1-feature-a.md
+        │   │   ├── 2-feature-b.md
+        │   │   └── 3-feature-c.md
+        │   └── execute/
+        │       ├── 1-feature-a.md
+        │       ├── 2-feature-b.md
+        │       └── 3-feature-c.md
+        └── review.md
+```
 
 ## Components
 
 | Component | Layer | Responsibility |
 |---|---|---|
-| `lib/types.js` | shared | The `Phase` typedef + base validators |
-| `lib/milestone.js` (extends existing roadmap.js) | milestone | Parse ROADMAP.md → Phase[]; surface `workflow:` field |
-| `lib/workflow.js` (existing) | workflow | Parse template YAML → Phase[]; existing wave/run machinery |
-| `lib/runs.js` (existing) | workflow | Run transcripts under .planning/runs/ |
-| `bin/commands/autonomous.js` | milestone | NOW: hand-rolled loop. AFTER: thin iterator that calls `cp run <wf> <phase-slug>` per pending phase |
-| `bin/commands/quick.js` | workflow | NOW: hard-coded custom-tier flow. AFTER: thin alias for `cp run quick <task-slug>` |
-| `commands/cp/cp-autonomous.md` | milestone | NOW: invokes `cp autonomous` + custom orchestration. AFTER: invokes `cp autonomous` (which now delegates to cp run) |
-| `commands/cp/cp-quick.md` | workflow | Similar — surface unchanged, internals delegate |
+| `lib/types.js` ✅ | shared | The `Phase` typedef + base validators (49-01) |
+| `lib/milestone.js` (new) | milestone | Parse ROADMAP → Phase[]; manage milestone-level DESIGN.md + STATE.md |
+| `lib/workflow.js` (extend) | workflow | Parse template YAML → two-level Phase[] DAG (top-level + children); resolve sibling/subtree deps |
+| `lib/persist.js` (new) | shared | Fold a phase output into target DESIGN.md under a section header; format & dedupe |
+| `lib/fanout.js` (new) | workflow | Expand child phases over parent's structured list output; pairwise sibling dependency resolver |
+| `lib/runs.js` (existing) | workflow | Run transcripts under .planning/phases/.../<run-id>/ |
+| `bin/commands/autonomous.js` | milestone | NOW: hand-rolled loop. AFTER: thin iterator that calls `cp run <wf>` per pending milestone-phase |
+| `bin/commands/quick.js` | workflow | NOW: hard-coded custom flow + creates quick-PLAN.md. AFTER: thin alias for `cp run <wf>` that scaffolds DESIGN.md + STATE.md |
+| `commands/cp/cp-plan-phase.md` | meta | Deprecated. Becomes a one-line nudge to `cp run dev` (or whichever workflow). |
 
 ## Data Flow
 
@@ -172,101 +303,124 @@ Both return shape-compatible `Phase` arrays.
 /cp-quick → cp quick → custom-tier flow → .planning/quick/<dir>/
 
 /cp-workflow-run → cp run → wave machine → .planning/runs/<slug>/
+                                       or  .planning/custom/<slug>/  (binds_to: custom)
 ```
 
 **Target (v1.2):**
 ```
-/cp-autonomous → cp autonomous → for each pending phase:
-                                   cp run <phase.workflow> "<milestone>-<phase>"
+/cp-autonomous → cp autonomous → for each pending milestone-phase:
+                                   cp run <phase.workflow> "<milestone-phase>"
                                      ↓
-                                .planning/runs/<slug>/  ←─┐
-                                                          │
-/cp-quick → cp quick → cp run quick "<task-slug>"  ──────┤
-                                                          │
-/cp-workflow-run → cp run ───────────────────────────────┘
-                                     ↓
-                              ONE transcript shape, ONE state machine
+                            DESIGN.md (persist:true folds) +
+                            <run-id>/ (persist:false phase docs)
+                                     +
+                            sibling pairings via parent/fan-out
+
+/cp-quick → cp quick → scaffold quick/<slug>/{DESIGN.md, STATE.md}
+                       → cp run <wf> "<task-slug>"
+
+/cp-workflow-run → cp run ─── unchanged at surface; runtime now handles
+                              parent:/fan-out + persist: semantics
 ```
+
+## Validation Rules (locked)
+
+1. `parent: X` → X must be an existing top-level phase id
+2. `after:` at top level → must reference other top-level phases
+3. `after:` at child level → must reference sibling children under same parent
+4. A phase with `parent:` cannot also be referenced as someone else's `parent:` (1-level)
+5. If a parent has any children, parent must produce a structured list output (runtime contract with agent)
+6. All siblings under the same parent fan out over the same list (pairwise by index)
+7. `persist:` is boolean; default false; alias from legacy `persist_output:` with deprecation warning
 
 ## Error Handling
 
-- Smart-gate parity is the load-bearing contract. Phase 51 must
+- Smart-gate parity is the load-bearing contract. Phase 52 must
   prove that test-fail / audit-HIGH / executor-deviation all halt
   cp autonomous the same way they halt cp run today.
-- Back-compat read for `.planning/quick/<dir>/` — if a user has a
-  v1.1-era quick state dir, cp quick resume should still find it.
-  Emit one deprecation warning per resume.
-- Migration commit (phase 52) does NOT auto-rewrite user state
-  dirs; it only adds the read alias. Users opt in to migration by
-  doing a fresh `cp quick` after upgrading.
+- Back-compat read for `.planning/quick/<dir>/` AND
+  `.planning/custom/<slug>/` — both aliased to the unified
+  `.planning/quick/<slug>/` tier for one release. Deprecation
+  warning on access.
+- Workflow templates using `persist_output:` continue to parse via
+  alias to `persist:` for one release; warning printed.
+- Migration commits (phase 53) do NOT auto-rewrite user state
+  dirs; only add read aliases. Users opt in to migration by doing
+  a fresh `cp quick` or `cp run` after upgrading.
 
 ## Testing Strategy
 
 | Suite | New assertions (target) |
 |---|---|
-| unit-types | ~20 (Phase typedef validators, shape parity) |
-| unit-milestone-reader | ~30 (ROADMAP parsing with workflow: field) |
-| integration-autonomous-parity | ~40 (smart-gate triggers, scope handling, deviation) |
-| integration-quick-parity | ~30 (argv preservation, resume slug, transcript shape) |
-| dryrun-quick-back-compat | ~15 (read from .planning/quick/ when .planning/runs/quick-* absent) |
+| unit-types ✅ | 23 (delivered in 49-01) |
+| unit-milestone-reader | ~30 (ROADMAP parsing, milestone-level DESIGN+STATE) |
+| unit-workflow-reader | ~35 (parent/after validation, 1-level limit, list-output contract) |
+| unit-persist | ~20 (fold-into-DESIGN.md, section dedupe, alias from persist_output) |
+| unit-fanout | ~25 (sibling pairing, subtree dep resolution, expansion against parent output) |
+| integration-autonomous-parity | ~40 (smart-gate triggers, scope handling, deviation; cp-plan-phase removal) |
+| integration-quick-parity | ~30 (argv preservation, resume slug, DESIGN.md+STATE.md scaffold) |
+| dryrun-quick-back-compat | ~15 (read from .planning/quick/<dir>/ AND .planning/custom/<slug>/) |
 | docs (CHANGELOG, MIGRATION-v1.2 link checks) | ~10 |
 
-Total: ~145 new assertions.
+Total: ~228 new assertions (23 already landed).
 
 ## Alternatives Considered
 
 ### Option A — Pure shim (no unification)
 
 Have cp-autonomous and cp-quick directly invoke cp run with hand-rolled
-adapters for each state-layout difference.
-
-**Pros:** Minimal core changes. No new types.
-**Cons:** Two state layouts to maintain forever. Duplicate
-smart-gate code paths. Defeats v1.1's "one execution engine" goal.
-
-**Verdict:** rejected — the analysis at end-of-v1.1 found this would
-need either back-compat breaks or near-duplication. User explicitly
-opted for full unification.
+adapters for each state-layout difference. **Rejected** — would need
+either back-compat breaks or near-duplication of v1.0 engine.
 
 ### Option B — Generalize cp run with --mode=milestone
 
 Add a flag to cp run telling it to walk ROADMAP phases instead of
-template phases.
+template phases. **Rejected** — bloats cp run's contract, mixes layer
+concerns.
 
-**Pros:** Single CLI entry point.
-**Cons:** Bloats cp run's contract. Mixes layer concerns (cp run
-should not need to know about ROADMAP). User-facing complexity grows.
+### Option C — Recursive workflow templates (child_template field)
 
-**Verdict:** rejected — violates layering principle.
+Each child phase references another workflow YAML template, fan-out
+expansion clones that workflow per item. **Rejected** mid-design —
+user noted: *"that will increase complexity. Let's remove
+child_template thing and limit fan out level at most 1."* Replaced
+with inline `parent:` field + 1-level limit.
 
-### Option C — New built-in `milestone-loop` workflow template
+### Option D — Imperative child spawn from agent
 
-Write a YAML template whose phases are plan-phase / execute-phase /
-tick, with a loop construct over ROADMAP.
+Phase agent calls a `spawn_child_phase()` tool at will; runtime
+queues children with no upfront declaration. **Rejected** — workflow
+shape unknown until runtime; hard to reason about; defeats the
+declarative-DAG model.
 
-**Pros:** Cleanest at the surface — "everything is a workflow."
-**Cons:** Workflow engine doesn't support looping over external
-state today. Would require an engine extension. Larger scope than
-unification.
+### Option E — Keep cp-plan-phase as the canonical decomposition step
 
-**Verdict:** rejected for v1.2 — could be revisited in v1.3+ if
-ergonomic gains justify the engine work.
+Workflows would NOT decompose; cp-plan-phase stays. **Rejected** —
+user observation: *"workflow itself already defines how many phases
+and how to execute phases."* cp-plan-phase becomes redundant once
+workflows can fan out.
 
 ## Open Questions
 
-- [ ] Should `workflow:` per phase default to project config
-      (`workflow_for_milestone`) or always be explicit?
-- [ ] When migrating .planning/quick/<dir>/ to .planning/runs/quick-<slug>/,
-      should the migration be lazy-on-read or batch-on-`cp update`?
+- [ ] Should the parent's structured-list output be JSON,
+      front-matter array, or freeform list parsed by the agent? Lean
+      toward: structured front-matter array at top of phase's output
+      doc, with phase agent told this format in its prompt.
+- [ ] Migration of `.planning/quick/<dir>/` → `.planning/quick/<slug>/`:
+      lazy-on-read or batch-on-`cp update`? Lean toward lazy.
 - [ ] Does cp autonomous --check (dry-run) flow through cp run --dry-run,
-      or does it remain a milestone-layer concern?
+      or stays milestone-layer concern?
+- [ ] When DESIGN.md grows large from many `persist: true` folds,
+      should sections be collapsed/summarized? Defer to v1.3.
 
 ## References
 
 - v1.1 DESIGN.md — Phase 45 deferral notes
+- v1.2 design negotiation (this conversation, 2026-05-25)
 - bin/commands/autonomous.js — current loop implementation
 - bin/commands/run.js — wave machine + smart-gate origin
 - lib/workflow.js#computeWaves — DAG topological sort already in place
+- lib/runtime.js:302 — current (informational) `persist_output:` emission
 - v1.1 Phase 47 SUMMARY — cp workflow inspect rationale (wave visibility)
 
 ---
