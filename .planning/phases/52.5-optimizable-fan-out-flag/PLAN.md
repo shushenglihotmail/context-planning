@@ -59,7 +59,7 @@ with the corrected contract from day one.
 - [x] 52.5-03: `test/unit-runtime-fanout.js` + `test/unit-fanout.js` +
       `test/integration-fanout-v12.js` — extend coverage for the 7
       resolution scenarios (~15 new assertions).
-- [ ] 52.5-04: `templates/workflows/dev.yaml` plan-phase prompt + 
+- [x] 52.5-04: `templates/workflows/dev.yaml` plan-phase prompt + 
       `docs/MIGRATION-v1.2.md` — describe `optimizable` semantics.
 
 ## Notes
