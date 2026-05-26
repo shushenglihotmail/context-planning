@@ -369,9 +369,9 @@ Plans:
 ### Phase 49: Unified Phase type + reader abstractions
 
 Plans:
-- [ ] 49-01: TBD
-- [ ] 49-02: TBD
-- [ ] 49-03: TBD
+- [ ] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef + `validatePhase(obj)` runtime check; ship `test/unit-types.js` (~20 assertions).
+- [ ] 49-02: `lib/milestone.js#readPhases(roadmapMd)` — new exported function returning `Phase[]` for all 4 ROADMAP shapes; ship `test/unit-milestone-reader.js` (~30 assertions).
+- [ ] 49-03: `lib/workflow.js#phasesFromTemplate(template)` — new adapter returning unified shape; parity tests against all 3 built-in templates (~15 assertions).
 
 ### Phase 50: Milestone-phase to workflow binding
 
