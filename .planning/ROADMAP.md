@@ -404,7 +404,7 @@ Plans:
 Plans:
 - [x] 52.5-01: TBD
 - [x] 52.5-02: TBD
-- [ ] 52.5-03: TBD
+- [x] 52.5-03: TBD
 - [ ] 52.5-04: TBD
 ## Progress
 
