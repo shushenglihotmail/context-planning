@@ -58,7 +58,7 @@ const linear = workflow.loadTemplate(fixture('linear.yaml'));
 ok('loads linear template object', !!linear && typeof linear === 'object');
 ok('linear meta.workflow is preserved', linear.meta.workflow === 'linear');
 ok('linear meta.version is preserved', linear.meta.version === 1);
-ok('linear meta.binds_to is preserved', linear.meta.binds_to === 'custom');
+ok('linear meta.binds_to is normalized from custom to quick (51-03)', linear.meta.binds_to === 'quick');
 ok('linear principles has 2 entries', Array.isArray(linear.principles) && linear.principles.length === 2);
 ok('linear defaults model preserved', linear.defaults && linear.defaults.model === 'default');
 ok('linear first phase id preserved', linear.phases[0].id === 'brainstorm');
@@ -73,7 +73,7 @@ ok('parallel meta.binds_to is preserved', parallel.meta.binds_to === 'phase');
 
 section('2. loadTemplate binds_to/defaults');
 const noOptional = workflow.loadTemplate(fixture('cycle.yaml'));
-ok('missing binds_to defaults to custom', noOptional.meta.binds_to === 'custom');
+ok('missing binds_to defaults to quick (51-03)', noOptional.meta.binds_to === 'quick');
 ok('missing principles defaults to []', deepEquals(noOptional.principles, []));
 ok('missing defaults defaults to {}', deepEquals(noOptional.defaults, {}));
 

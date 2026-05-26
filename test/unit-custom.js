@@ -31,10 +31,19 @@ function ok(label, cond, detail) {
   }
 }
 
-/** Create an isolated project dir with .planning/custom/ */
+/** Create an isolated project dir with .planning/quick/ */
 function freshProject() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-custom-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-quick-'));
+  fs.mkdirSync(path.join(dir, '.planning', 'quick'), { recursive: true });
+  custom._resetDeprecationWarning();
+  return dir;
+}
+
+/** Create an isolated project dir with legacy .planning/custom/ only. */
+function freshLegacyProject() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-custom-legacy-'));
   fs.mkdirSync(path.join(dir, '.planning', 'custom'), { recursive: true });
+  custom._resetDeprecationWarning();
   return dir;
 }
 
@@ -113,7 +122,7 @@ section('createRun — STATE.yaml shape');
   const dir = freshProject();
   const now = new Date('2026-05-24T15:30:00.000Z');
   const slug = custom.createRun('perf', 'Slow Query', { projectDir: dir, now });
-  const stateFile = path.join(dir, '.planning', 'custom', slug, 'STATE.yaml');
+  const stateFile = path.join(dir, '.planning', 'quick', slug, 'STATE.yaml');
 
   ok('STATE.yaml file exists', fs.existsSync(stateFile), stateFile);
 
@@ -121,7 +130,7 @@ section('createRun — STATE.yaml shape');
   ok('has workflow field', parsed.workflow === 'perf', parsed.workflow);
   ok('has slug field', parsed.slug === slug, parsed.slug);
   ok('status is in-progress', parsed.status === 'in-progress', parsed.status);
-  ok('binding is custom', parsed.binding === 'custom', parsed.binding);
+  ok('binding is quick', parsed.binding === 'quick', parsed.binding);
   ok('started is ISO string', typeof parsed.started === 'string' && !isNaN(Date.parse(parsed.started)));
   ok('last_activity equals started at creation', parsed.last_activity === parsed.started);
   ok('completed is empty array', Array.isArray(parsed.completed) && parsed.completed.length === 0);
@@ -180,7 +189,7 @@ section('readState and writeState');
     merged.artifacts['phase-b'] === '02-phase-b.md', JSON.stringify(merged.artifacts));
 
   // writeState is atomic: YAML is parseable after write
-  const raw = fs.readFileSync(path.join(dir, '.planning', 'custom', slug, 'STATE.yaml'), 'utf8');
+  const raw = fs.readFileSync(path.join(dir, '.planning', 'quick', slug, 'STATE.yaml'), 'utf8');
   let parseable = false;
   try { yaml.parse(raw); parseable = true; } catch (_) {}
   ok('STATE.yaml parseable after writeState', parseable);
@@ -238,12 +247,12 @@ section('listRuns');
 }
 
 {
-  // Missing custom dir
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-custom-nodir-'));
-  // Don't create .planning/custom
+  // Missing quick + custom dirs
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-quick-nodir-'));
+  // Don't create either .planning/quick or .planning/custom
   let result;
   try { result = custom.listRuns({ projectDir: dir }); } catch (_) { result = null; }
-  ok('missing custom dir returns [] without throwing',
+  ok('missing quick + custom dirs returns [] without throwing',
     Array.isArray(result) && result.length === 0);
 }
 
@@ -287,7 +296,7 @@ section('listRuns');
   const now = new Date('2026-05-24T15:30:00.000Z');
   const s1 = custom.createRun('debug', 'good run', { projectDir: dir, now });
   // Create a directory with garbage STATE.yaml
-  const badDir = path.join(dir, '.planning', 'custom', 'bad-run');
+  const badDir = path.join(dir, '.planning', 'quick', 'bad-run');
   fs.mkdirSync(badDir, { recursive: true });
   fs.writeFileSync(path.join(badDir, 'STATE.yaml'), '{ this is: [not valid yaml: {{{{');
   const runs = custom.listRuns({ projectDir: dir });
@@ -349,7 +358,7 @@ section('pruneAbandoned');
   ok('apply:true sets dryRun:false', result.dryRun === false);
   ok('apply:true populates removed', result.removed.includes(slug), JSON.stringify(result.removed));
   ok('apply:true actually deletes dir',
-    !fs.existsSync(path.join(dir, '.planning', 'custom', slug)));
+    !fs.existsSync(path.join(dir, '.planning', 'quick', slug)));
 }
 
 {
@@ -380,7 +389,105 @@ section('runDir');
   const nonExistentSlug = 'does-not-exist-' + Date.now();
   custom.runDir(nonExistentSlug, { projectDir: dir });
   ok('runDir is pure: does not create dir',
-    !fs.existsSync(path.join(dir, '.planning', 'custom', nonExistentSlug)));
+    !fs.existsSync(path.join(dir, '.planning', 'quick', nonExistentSlug)));
+}
+
+// ---------- 9. Legacy .planning/custom/ back-compat ----------
+
+section('legacy .planning/custom/ back-compat (51-03)');
+
+{
+  // listRuns aggregates legacy custom entries.
+  const dir = freshLegacyProject();
+  const now = new Date('2026-05-24T15:30:00.000Z');
+  // Write a state file directly into legacy custom/<slug>/.
+  const slug = '2026-05-24-legacy-bug';
+  const legacyDir = path.join(dir, '.planning', 'custom', slug);
+  fs.mkdirSync(legacyDir, { recursive: true });
+  fs.writeFileSync(path.join(legacyDir, 'STATE.yaml'), yaml.stringify({
+    workflow: 'debug', slug, status: 'in-progress', binding: 'custom',
+    started: now.toISOString(), last_activity: now.toISOString(),
+    current_phase: null, completed: [], artifacts: {},
+  }));
+
+  const runs = custom.listRuns({ projectDir: dir });
+  ok('listRuns surfaces legacy custom run',
+    runs.length === 1 && runs[0].slug === slug, JSON.stringify(runs));
+}
+
+{
+  // readState transparently reads from legacy custom/.
+  const dir = freshLegacyProject();
+  const slug = '2026-05-24-legacy-read';
+  const legacyDir = path.join(dir, '.planning', 'custom', slug);
+  fs.mkdirSync(legacyDir, { recursive: true });
+  fs.writeFileSync(path.join(legacyDir, 'STATE.yaml'), yaml.stringify({
+    workflow: 'debug', slug, status: 'in-progress', binding: 'custom',
+    started: '2026-05-24T15:30:00.000Z', last_activity: '2026-05-24T15:30:00.000Z',
+    current_phase: null, completed: [], artifacts: {},
+  }));
+
+  const state = custom.readState(slug, { projectDir: dir });
+  ok('readState returns legacy custom run',
+    state.slug === slug && state.workflow === 'debug', JSON.stringify(state));
+}
+
+{
+  // writeState on a legacy slug keeps it in legacy custom/ (does not migrate).
+  const dir = freshLegacyProject();
+  const slug = '2026-05-24-legacy-write';
+  const legacyDir = path.join(dir, '.planning', 'custom', slug);
+  fs.mkdirSync(legacyDir, { recursive: true });
+  fs.writeFileSync(path.join(legacyDir, 'STATE.yaml'), yaml.stringify({
+    workflow: 'debug', slug, status: 'in-progress', binding: 'custom',
+    started: '2026-05-24T15:30:00.000Z', last_activity: '2026-05-24T15:30:00.000Z',
+    completed: [], artifacts: {},
+  }));
+
+  custom.writeState(slug, { status: 'done' }, {
+    projectDir: dir, now: new Date('2026-05-25T10:00:00.000Z'),
+  });
+
+  ok('legacy run updated in place (custom/) not migrated to quick/',
+    fs.existsSync(path.join(legacyDir, 'STATE.yaml')) &&
+    !fs.existsSync(path.join(dir, '.planning', 'quick', slug)));
+  const updated = yaml.parse(fs.readFileSync(path.join(legacyDir, 'STATE.yaml'), 'utf8'));
+  ok('legacy run STATE persists the patch', updated.status === 'done');
+}
+
+{
+  // createRun ALWAYS writes to quick/, never to legacy custom/.
+  const dir = freshLegacyProject();
+  fs.mkdirSync(path.join(dir, '.planning', 'quick'), { recursive: true });
+  const slug = custom.createRun('debug', 'new run', {
+    projectDir: dir, now: new Date('2026-05-25T10:00:00.000Z'),
+  });
+  ok('createRun writes to quick/',
+    fs.existsSync(path.join(dir, '.planning', 'quick', slug, 'STATE.yaml')));
+  ok('createRun does NOT write to legacy custom/',
+    !fs.existsSync(path.join(dir, '.planning', 'custom', slug)));
+}
+
+{
+  // listRuns aggregates BOTH roots, quick wins on slug collision.
+  const dir = freshProject();
+  fs.mkdirSync(path.join(dir, '.planning', 'custom'), { recursive: true });
+  // Create a legacy entry.
+  const legacySlug = '2026-05-24-only-legacy';
+  fs.mkdirSync(path.join(dir, '.planning', 'custom', legacySlug), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.planning', 'custom', legacySlug, 'STATE.yaml'),
+    yaml.stringify({ workflow: 'debug', slug: legacySlug, status: 'in-progress',
+      started: '2026-05-24T15:30:00.000Z', last_activity: '2026-05-24T15:30:00.000Z' }));
+  // Create a quick entry.
+  const newSlug = custom.createRun('debug', 'fresh', {
+    projectDir: dir, now: new Date('2026-05-25T10:00:00.000Z'),
+  });
+
+  const runs = custom.listRuns({ projectDir: dir });
+  const slugs = runs.map((r) => r.slug).sort();
+  ok('listRuns aggregates both roots (legacy + quick)',
+    slugs.includes(legacySlug) && slugs.includes(newSlug),
+    JSON.stringify(slugs));
 }
 
 // ---------- Results ----------

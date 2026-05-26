@@ -63,9 +63,9 @@ table:
 
 ```
 Available built-in workflows:
-  - quick   one-shot tasks (binds_to: custom)
+  - quick   one-shot tasks (binds_to: quick)
   - dev     multi-phase milestone work (binds_to: milestone)
-  - debug   debugging session (binds_to: custom)
+  - debug   debugging session (binds_to: quick)
 
 Which would you like to customize?
 ```

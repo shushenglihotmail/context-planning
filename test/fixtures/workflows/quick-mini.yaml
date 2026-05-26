@@ -1,6 +1,6 @@
 workflow: quick-mini
 version: 1
-binds_to: custom
+binds_to: quick
 phases:
   - id: discuss
     prompt: |

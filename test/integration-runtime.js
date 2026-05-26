@@ -3,7 +3,7 @@
 /**
  * Integration test for lib/runtime.js — stateful wave-walker.
  *
- * Tests all three binding tiers (custom, milestone, phase), formatInstruction
+ * Tests all three binding tiers (quick, milestone, phase), formatInstruction
  * output format, markPhaseComplete wave advancement, resumeRun round-trip,
  * retryPhase / abandonRun lifecycle.
  *
@@ -133,9 +133,9 @@ section('formatInstruction — output format');
 }
 
 // ============================================================
-// Section 2: startRun — custom tier
+// Section 2: startRun — quick tier
 // ============================================================
-section('startRun — custom tier');
+section('startRun — quick tier');
 
 {
   const dir = freshProject();
@@ -143,7 +143,7 @@ section('startRun — custom tier');
   const result = runtime.startRun(DEBUG_MINI, {projectDir: dir, name: 'my-debug-run', now});
 
   ok('returns slug', typeof result.slug === 'string' && result.slug.length > 0, result.slug);
-  ok('binding is custom', result.binding === 'custom', result.binding);
+  ok('binding is quick', result.binding === 'quick', result.binding);
   ok('slug matches date pattern', /^\d{4}-\d{2}-\d{2}/.test(result.slug), result.slug);
   ok('firstInstruction is non-empty string',
     typeof result.firstInstruction === 'string' && result.firstInstruction.length > 0);
@@ -151,7 +151,7 @@ section('startRun — custom tier');
   ok('waves array returned', Array.isArray(result.waves) && result.waves.length > 0);
 
   // State file exists
-  const stateFile = path.join(dir, '.planning', 'custom', result.slug, 'STATE.yaml');
+  const stateFile = path.join(dir, '.planning', 'quick', result.slug, 'STATE.yaml');
   ok('STATE.yaml created', fs.existsSync(stateFile), stateFile);
 
   const state = yaml.parse(fs.readFileSync(stateFile, 'utf8'));
@@ -166,8 +166,8 @@ section('startRun — custom tier');
   ok('dryRun returns waves array', Array.isArray(result.waves) && result.waves.length > 0);
   ok('dryRun waves have instruction field',
     result.waves[0] && typeof result.waves[0].instruction === 'string');
-  const customRoot = path.join(dir, '.planning', 'custom');
-  ok('dryRun does NOT create custom dir',
+  const customRoot = path.join(dir, '.planning', 'quick');
+  ok('dryRun does NOT create quick dir',
     !fs.existsSync(customRoot) || fs.readdirSync(customRoot).length === 0);
 }
 
@@ -269,7 +269,7 @@ section('startRun — phase tier');
 }
 
 // ============================================================
-// Section 5: markPhaseComplete — single-phase waves (custom)
+// Section 5: markPhaseComplete — single-phase waves (quick)
 // ============================================================
 section('markPhaseComplete — single-phase wave advancement');
 
@@ -354,7 +354,7 @@ section('resumeRun — round-trip');
   const resumed = runtime.resumeRun(slug, {projectDir: dir});
   ok('resumeRun returns currentWave 0', resumed.currentWave === 0, String(resumed.currentWave));
   ok('resumeRun instruction matches firstInstruction', resumed.instruction === firstInstruction);
-  ok('resumeRun returns binding custom', resumed.binding === 'custom', resumed.binding);
+  ok('resumeRun returns binding quick', resumed.binding === 'quick', resumed.binding);
 }
 
 {

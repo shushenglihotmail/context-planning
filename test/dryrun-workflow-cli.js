@@ -248,7 +248,7 @@ section('cp workflow inspect quick → 3 waves, exit 0');
   const parsed = JSON.parse(r.stdout);
   ok('quick.total_waves=3', parsed.total_waves === 3,
     'total_waves=' + parsed.total_waves);
-  ok('quick.binds_to=custom', parsed.binds_to === 'custom',
+  ok('quick.binds_to=quick (51-03)', parsed.binds_to === 'quick',
     'binds_to=' + parsed.binds_to);
 }
 
