@@ -7,7 +7,7 @@ plan-status:
   50-01: in-progress
   50-02: in-progress
   50-03: in-progress
-  50-04: pending
+  50-04: in-progress
 created: 2026-05-26
 base-commit: 3cc9262
 ---
@@ -45,6 +45,7 @@ against a new `dev-v2` template.
 - [ ] 50-04: Integration tests against a new built-in `dev-v2` template using fan-out (~25 assertions).
 
 ## Notes
+
 
 
 
