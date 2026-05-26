@@ -225,7 +225,7 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
 
   // ---------- runAutonomous real loop (stubbed callbacks) ----------
 
-  await ta('runAutonomous walks all pending plans via executePhase stub', async () => {
+  await ta('runAutonomous walks all pending phases via runPhase stub', async () => {
     const dir = mkFixture({
       phases: [
         { num: '1', name: 'A', plans: [{ id: '01-01', done: false }] },
@@ -235,18 +235,39 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
     try {
       const calls = [];
       const r = await autonomous.runAutonomous(dir, {
-        executePhase: async (p, plan) => { calls.push(`${p}/${plan}`); },
+        runPhase: async (p, wf) => { calls.push(`${p}/${wf}`); },
         skipTests: true,
         skipAudit: true,
       });
       assert.equal(r.ok, true);
       assert.equal(r.stopped, false);
-      assert.deepEqual(calls, ['1/01-01', '2/02-01', '2/02-02']);
+      assert.deepEqual(calls, ['1/dev', '2/dev']);
       assert.equal(r.phasesProcessed.length, 2);
+      assert.equal(r.workflow, 'dev');
     } finally { rm(dir); }
   });
 
-  await ta('runAutonomous stops on executor deviation and writes .continue-here.md', async () => {
+  await ta('runAutonomous honors opts.workflow override', async () => {
+    const dir = mkFixture({
+      phases: [
+        { num: '1', name: 'A', plans: [{ id: '01-01', done: false }] },
+      ],
+    });
+    try {
+      const calls = [];
+      const r = await autonomous.runAutonomous(dir, {
+        workflow: 'quick',
+        runPhase: async (p, wf) => { calls.push(`${p}/${wf}`); },
+        skipTests: true,
+        skipAudit: true,
+      });
+      assert.equal(r.ok, true);
+      assert.deepEqual(calls, ['1/quick']);
+      assert.equal(r.workflow, 'quick');
+    } finally { rm(dir); }
+  });
+
+  await ta('runAutonomous stops on runner error and writes .continue-here.md', async () => {
     const dir = mkFixture({
       phases: [
         { num: '1', name: 'A', plans: [{ id: '01-01', done: false }] },
@@ -255,33 +276,32 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
     });
     try {
       const r = await autonomous.runAutonomous(dir, {
-        executePhase: async (p, plan) => {
-          if (plan === '02-01') throw new Error('synthetic executor deviation');
+        runPhase: async (p) => {
+          if (p === '2') throw new Error('synthetic runner failure');
         },
         skipTests: true,
         skipAudit: true,
       });
       assert.equal(r.ok, false);
       assert.equal(r.stopped, true);
-      assert.equal(r.stopReason, 'deviation');
+      assert.equal(r.stopReason, 'phase-failed');
       assert.equal(r.failedPhase, '2');
-      assert.equal(r.failedPlan, '02-01');
       const continueHerePath = path.join(dir, '.planning', '.continue-here.md');
       assert.ok(fs.existsSync(continueHerePath));
       const body = fs.readFileSync(continueHerePath, 'utf8');
-      assert.match(body, /Stopped at: phase 2, plan 02-01/);
-      assert.match(body, /Reason: deviation/);
+      assert.match(body, /Stopped at: phase 2/);
+      assert.match(body, /Reason: phase-failed/);
     } finally { rm(dir); }
   });
 
-  await ta('runAutonomous hard-errors with missing-executor when callback absent', async () => {
+  await ta('runAutonomous hard-errors with missing-runner when callback absent', async () => {
     const dir = mkFixture();
     try {
       const r = await autonomous.runAutonomous(dir, {
         skipTests: true, skipAudit: true,
       });
       assert.equal(r.ok, false);
-      assert.equal(r.reason, 'missing-executor');
+      assert.equal(r.reason, 'missing-runner');
     } finally { rm(dir); }
   });
 
@@ -310,12 +330,32 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
       const calls = [];
       const r = await autonomous.runAutonomous(dir, {
         scope: '2-3',
-        executePhase: async (p, plan) => { calls.push(`${p}/${plan}`); },
+        runPhase: async (p) => { calls.push(p); },
         skipTests: true,
         skipAudit: true,
       });
       assert.equal(r.ok, true);
-      assert.deepEqual(calls, ['2/02-01', '3/03-01']);
+      assert.deepEqual(calls, ['2', '3']);
+    } finally { rm(dir); }
+  });
+
+  await ta('runAutonomous skips already-fully-done phases mid-loop', async () => {
+    const dir = mkFixture({
+      phases: [
+        { num: '1', name: 'A', plans: [{ id: '01-01', done: false }] },
+        { num: '2', name: 'B', plans: [{ id: '02-01', done: true }] },
+        { num: '3', name: 'C', plans: [{ id: '03-01', done: false }] },
+      ],
+    });
+    try {
+      const calls = [];
+      const r = await autonomous.runAutonomous(dir, {
+        runPhase: async (p) => { calls.push(p); },
+        skipTests: true,
+        skipAudit: true,
+      });
+      assert.equal(r.ok, true);
+      assert.deepEqual(calls, ['1', '3']);
     } finally { rm(dir); }
   });
 
@@ -324,12 +364,11 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
     try {
       const p = autonomous.writeContinueHere(dir, {
         failedPhase: '7',
-        failedPlan: '07-02',
         reason: 'test-failure',
         details: 'FAIL test/foo.js > should pass',
       });
       const body = fs.readFileSync(p, 'utf8');
-      assert.match(body, /phase 7, plan 07-02/);
+      assert.match(body, /phase 7/);
       assert.match(body, /Reason: test-failure/);
       assert.match(body, /FAIL test\/foo\.js/);
     } finally { rm(dir); }

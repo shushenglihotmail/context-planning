@@ -1,20 +1,22 @@
 'use strict';
 
 /**
- * `cp autonomous` — v0.10 P36.
+ * `cp autonomous` — v1.2.
  *
- * Walks pending phases of the active milestone, delegating per-phase
- * planning + execution to caller-supplied hooks. Smart-gated on test
- * failure, audit HIGH, and executor deviation; stops cleanly via
- * `.planning/.continue-here.md`.
+ * Walks pending phases of the active milestone, delegating each phase
+ * to the workflow runtime (`cp run resume <slug>` → agent works →
+ * `cp run mark-complete`). Smart-gated on test failure, audit HIGH,
+ * and runner errors; stops cleanly via `.planning/.continue-here.md`.
  *
- * From the CLI alone (no skill wrapping), the per-phase delegation
- * callbacks are not available — so the bare CLI is most useful for
+ * From the CLI alone (no skill wrapping), the per-phase runner
+ * callback is not available — so the bare CLI is most useful for
  * --check / --json previews and for unit-test fixtures. The full
- * autonomous loop is driven by `/cp-autonomous` (phase 37) which
- * supplies the real per-phase callbacks.
+ * autonomous loop is driven by `/cp-autonomous` which supplies the
+ * real runner that bridges to `cp run`.
  *
  * Flags:
+ *   --workflow=<name> Workflow template to delegate to (default: dev,
+ *                     overridable via cp.behavior.default_workflow).
  *   --scope=<value>   phase | <N> | <N>-<M> | milestone (default: milestone)
  *   --check           Preview; exit 1 if any phase would run.
  *   --json            Machine-readable structured output.
@@ -28,10 +30,21 @@
 
 const { repoRoot } = require('../../lib/paths');
 const autonomous = require('../../lib/autonomous');
+const provider = require('../../lib/provider');
+
+function resolveDefaultWorkflow(root) {
+  try {
+    const cfg = provider.loadConfig(root);
+    const w = provider.cpGet(cfg, 'behavior.default_workflow', null);
+    if (w && typeof w === 'string' && w.trim()) return w.trim();
+  } catch (_) { /* fall through */ }
+  return 'dev';
+}
 
 async function run(args = []) {
   let scopeArg;
   let startArg;
+  let workflowArg;
   let check = false;
   let json = false;
   let quiet = false;
@@ -44,6 +57,8 @@ async function run(args = []) {
     else if (a === '--help' || a === '-h') { printUsage(); process.exit(0); }
     else if (a.startsWith('--scope=')) scopeArg = a.slice('--scope='.length);
     else if (a === '--scope') { scopeArg = args[++i]; }
+    else if (a.startsWith('--workflow=')) workflowArg = a.slice('--workflow='.length);
+    else if (a === '--workflow') { workflowArg = args[++i]; }
     else if (a.startsWith('--')) {
       process.stderr.write(`cp autonomous: unknown flag "${a}"\n`);
       printUsage();
@@ -58,9 +73,11 @@ async function run(args = []) {
   }
 
   const root = repoRoot(process.cwd());
+  const workflow = workflowArg || resolveDefaultWorkflow(root);
   const result = await autonomous.runAutonomous(root, {
     start: startArg,
     scope: scopeArg,
+    workflow,
     dryRun: check,
   });
 
@@ -84,6 +101,7 @@ async function run(args = []) {
           `cp autonomous --check: ${result.phasesWouldRun.length} phase(s) would run ` +
           `(${result.totalPlans} pending plan(s)).\n` +
           `  Milestone: ${result.milestone}\n` +
+          `  Workflow:  ${result.workflow}\n` +
           `  Phases:    ${result.phasesWouldRun.join(', ')}\n`
         );
       } else {
@@ -111,8 +129,8 @@ async function run(args = []) {
     process.stdout.write(
       `\ncp autonomous: COMPLETE\n` +
       `  Milestone:        ${result.milestone}\n` +
-      `  Phases processed: ${result.phasesProcessed.map((p) => p.phase).join(', ')}\n` +
-      `  Total plans:      ${result.phasesProcessed.reduce((s, p) => s + p.plans, 0)}\n`
+      `  Workflow:         ${result.workflow}\n` +
+      `  Phases processed: ${result.phasesProcessed.map((p) => p.phase).join(', ')}\n`
     );
   }
   process.exit(0);
@@ -120,10 +138,11 @@ async function run(args = []) {
 
 function printUsage() {
   process.stdout.write(
-    'Usage: cp autonomous [START] [--scope=<value>] [--check] [--json] [--quiet]\n' +
+    'Usage: cp autonomous [START] [--workflow=<name>] [--scope=<value>] [--check] [--json] [--quiet]\n' +
     '\n' +
     '  Walks pending phases of the active milestone autonomously.\n' +
-    '  Bounded to a single milestone. Smart-gated on test/audit/deviation.\n' +
+    '  Each phase is delegated to `cp run` for the chosen workflow.\n' +
+    '  Bounded to a single milestone. Smart-gated on test/audit/runner.\n' +
     '\n' +
     'START (optional):\n' +
     '  (omitted)            auto-detect from STATE.md\n' +
@@ -131,6 +150,8 @@ function printUsage() {
     '  "<milestone-name>"   e.g. "v0.10 Autonomy" — first pending phase\n' +
     '\n' +
     'Flags:\n' +
+    '  --workflow=<name>    workflow template to delegate to (DEFAULT: dev,\n' +
+    '                       overridable via cp.behavior.default_workflow).\n' +
     '  --scope=phase        just the START phase\n' +
     '  --scope=<N>          next N phases from START (inclusive)\n' +
     '  --scope=<N>-<M>      explicit phase range (e.g. --scope=32-34)\n' +
