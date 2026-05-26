@@ -68,7 +68,7 @@ and cp-quick shims become straightforward.
 
 <!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
 
-- [ ] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef and the `validatePhase(obj)` runtime check (returns `{ok, errors}`); ship `test/unit-types.js` with ~20 assertions covering required-field validation, status enum, depends_on array shape, and the layer-specific extension fields (milestone vs workflow).
+- [x] 49-01: `lib/types.js` — define the `Phase` JSDoc typedef and the `validatePhase(obj)` runtime check (returns `{ok, errors}`); ship `test/unit-types.js` with ~20 assertions covering required-field validation, status enum, depends_on array shape, and the layer-specific extension fields (milestone vs workflow).
 - [ ] 49-02: `lib/milestone.js#readPhases(roadmapMd, opts?)` — new exported function that parses ROADMAP.md and emits `Phase[]` shape-conforming to `validatePhase`. Must handle: in-progress milestone (`### 🚧 ...`), shipped/collapsed milestones (`<details>` blocks), phases with explicit plans list, phases without plans, and tolerate the future `workflow:` annotation if present in a phase heading or frontmatter. New `test/unit-milestone-reader.js` (~30 assertions) including fixture ROADMAPs covering all four shapes.
 - [ ] 49-03: `lib/workflow.js#phasesFromTemplate(template)` — new adapter that takes the existing template object and returns `Phase[]` matching the unified shape. Does NOT remove or change existing `computeWaves`, `readTemplate`, etc. Adds ~10 parity assertions to existing `test/unit-workflow.js` (or new `test/unit-workflow-phase-adapter.js`) proving the adapter output passes `validatePhase`.
 

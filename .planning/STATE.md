@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 ## Current Position
 
 Phase: 49 (v1.2 Unified Phase Model)
-Plan: 49-01
+Plan: 49-02
 Status: Ready to execute
 Current focus: Unified Phase type + reader abstractions
-Last activity: scaffold-phase 52 (cp-quick as thin shim over cp run (state migration))
+Last activity: scaffold-phase 54 (Deprecate cp-plan-phase)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 4%
 
 ## Performance Metrics
 
