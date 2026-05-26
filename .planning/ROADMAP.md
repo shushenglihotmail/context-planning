@@ -417,6 +417,13 @@ Plans:
 - [ ] 55-01: MIGRATION-v1.2.md — persist rename, custom→quick collapse, cp-plan-phase deprecation, parent:/after:/fan-out schema.
 - [ ] 55-02: CHANGELOG.md + README.md updates (workflow YAML examples with new schema; new tier-file storage diagram).
 - [ ] 55-03: Bump package.json to 1.2.0; tag + publish.
+
+### Phase 54: Deprecate cp-plan-phase
+
+Plans:
+- [ ] 54-01: TBD
+- [ ] 54-02: TBD
+- [ ] 54-03: TBD
 ## Progress
 
 **Execution Order:**
