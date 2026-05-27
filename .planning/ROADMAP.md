@@ -449,7 +449,7 @@ Plans:
 
 Plans:
 - [x] 57-01: TBD
-- [ ] 57-02: TBD
+- [x] 57-02: TBD
 - [ ] 57-03: TBD
 
 ### Phase 58: Docs and v1.3.0 release

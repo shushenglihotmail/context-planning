@@ -43,7 +43,7 @@ workflow during the v1.3 cycle.
 ## Plans
 
 - [x] 57-01: Ship `feature-plan` + `feature-execute` phase-templates
-- [ ] 57-02: Ship `_examples/dev-templated.yaml` workflow using the templates
+- [x] 57-02: Ship `_examples/dev-templated.yaml` workflow using the templates
 - [ ] 57-03: Integration test asserting templated example produces equivalent resolved phases
 
 ## Notes
