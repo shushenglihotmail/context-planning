@@ -28,22 +28,24 @@ base-commit: 7e62b892a49c309de8439d3e65ea3ba0086f3273
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Ship documentation for the new v1.3 template grammar, write a migration
+guide for v1.2 → v1.3 (additive — no breaking changes), and tag v1.3.0.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. README.md has a Reusable Phase Templates section covering `phase:` / `template:` wrappers, both template directories, and the new `cp phase-template` + `cp workflow-template` commands.
+2. `MIGRATION-v1.3.md` exists, marks v1.3 as a strictly additive release, and points users at the new commands.
+3. `package.json` version bumps to `1.3.0` and `CHANGELOG.md` has a `## v1.3.0` entry summarising the milestone.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 58-01: {brief description}
-- [ ] 58-02: {brief description}
-- [ ] 58-03: {brief description}
+- [ ] 58-01: Add README v1.3 section (template grammar + CLI commands)
+- [ ] 58-02: Write MIGRATION-v1.3.md
+- [ ] 58-03: Bump package.json to 1.3.0 + CHANGELOG entry
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+v1.3 is strictly additive: no v1.2 workflow needs changes. The new
+grammar is opt-in via the `phase:` / `template:` wrappers. Bare phase
+entries continue to work unchanged.
+

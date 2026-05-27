@@ -525,6 +525,68 @@ travel with the template, so a `debug.yaml` can encode "Reproduce before
 diagnosing" while `quick.yaml` encodes "Discuss before acting" — each
 workflow brings its own discipline without polluting the global config.
 
+### Reusable phase templates (v1.3)
+
+Workflows can include reusable phases via two new wrapper grammars:
+
+```yaml
+phases:
+  # Bare phase (v1.2 form — still works unchanged):
+  - id: plan
+    role: planner
+    prompt: "Plan the work."
+
+  # Phase-template inclusion: substitute a parameterized phase body.
+  - phase:
+      id: review-auth
+      template:
+        name: reviewer       # resolves to .planning/phase-templates/ or builtin
+        args:
+          scope: auth
+      after: [plan]
+
+  # Workflow-template inclusion: splice a multi-phase group inline.
+  - template:
+      id: review              # group handle (virtual)
+      name: review-and-address
+      args:
+        scope: auth
+      after: [plan]           # group entry phases depend on `plan`
+
+  - id: execute
+    after: [review]           # rewritten to depend on group's exit phase(s)
+```
+
+Templates live in two places:
+
+| Kind              | Built-in (ships with cp)            | Project-local override                 |
+|-------------------|-------------------------------------|----------------------------------------|
+| Phase template    | `templates/phase-templates/`        | `.planning/phase-templates/`           |
+| Workflow template | `templates/workflow-templates/`     | `.planning/workflow-templates/`        |
+
+Project-local files shadow built-in ones by name.
+
+Workflow-template expansion prefixes the inner phase ids with the group
+handle: `review-and-address` exposes phases `review-auth` and
+`address-auth` → after inclusion under group id `review` they become
+`review--review-auth` and `review--address-auth`. Outside refs that say
+`after: [review]` get rewritten to point at the group's exit phases.
+
+The CLI surfaces these:
+
+```bash
+cp phase-template ls                       # list reusable phase templates
+cp phase-template show reviewer            # print body
+cp phase-template new my-reviewer --from reviewer
+cp workflow-template ls
+cp workflow-template show review-and-address
+cp workflow-template new my-flow
+cp workflow inspect my-flow.yaml --json    # shows post-expansion phases + templates_referenced
+```
+
+See `templates/workflows/_examples/dev-templated.yaml` for an
+end-to-end example, and `MIGRATION-v1.3.md` for upgrade notes.
+
 ## State layer
 
 ```

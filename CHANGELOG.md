@@ -6,6 +6,47 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-05-27 — Reusable phase templates
+
+Strictly additive release: every v1.2 workflow loads and runs unchanged.
+See [`MIGRATION-v1.3.md`](MIGRATION-v1.3.md).
+
+### Added
+
+- **Phase templates** — parameterized phase bodies you can include from
+  any workflow via `- phase: { id, template: { name, args } }`. Ship
+  under `templates/phase-templates/` (built-in) and
+  `.planning/phase-templates/` (project). Three built-in templates:
+  `reviewer`, `feature-plan`, `feature-execute`. Chain depth capped at 3.
+- **Workflow templates** — reusable multi-phase groups you can splice
+  inline via `- template: { id, name, args }`. Inner phase ids are
+  namespaced with the group handle (`<group-id>--<inner-id>`). Outside
+  refs to the group handle are rewritten to depend on the group's exit
+  phases. One built-in template: `review-and-address`. Chain depth
+  capped at 3.
+- **CLI command families** for both kinds:
+  - `cp phase-template ls | show | new`
+  - `cp workflow-template ls | show | new`
+- **`cp workflow inspect`** now surfaces `templates_referenced` and
+  `resolver_warnings` (both human and `--json` form).
+- **Example workflow** `templates/workflows/_examples/dev-templated.yaml`
+  reproduces `dev.yaml`'s fan-out using `feature-plan` and
+  `feature-execute` phase-templates; integration test verifies
+  field-for-field equivalence.
+
+### Internal
+
+- `lib/phase-template-loader.js` and `lib/phase-template-resolver.js`
+  implement loading, param merging, `{{token}}` substitution, and the
+  resolver pass.
+- `lib/workflow-template-loader.js` and `lib/workflow-template-expand.js`
+  implement workflow-template loading and the expansion engine
+  (namespace prefixing, internal edge rewriting, recursive nested
+  expansion).
+- `lib/workflow.loadTemplate` runs a three-pass pipeline: phase-template
+  resolution → workflow-template expansion → external `after:` group
+  reference rewriting.
+
 ## [1.2.0] - 2026-05-26 — Unified phase model (DESIGN.md + STATE.md), fan-out, `/cp-quick` rewrite
 
 ### Added
