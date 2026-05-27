@@ -40,7 +40,7 @@ guide for v1.2 → v1.3 (additive — no breaking changes), and tag v1.3.0.
 ## Plans
 
 - [x] 58-01: Add README v1.3 section (template grammar + CLI commands)
-- [ ] 58-02: Write MIGRATION-v1.3.md
+- [x] 58-02: Write MIGRATION-v1.3.md
 - [ ] 58-03: Bump package.json to 1.3.0 + CHANGELOG entry
 
 ## Notes

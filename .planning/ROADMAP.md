@@ -456,7 +456,7 @@ Plans:
 
 Plans:
 - [x] 58-01: TBD
-- [ ] 58-02: TBD
+- [x] 58-02: TBD
 - [ ] 58-03: TBD
 ## Progress
 
