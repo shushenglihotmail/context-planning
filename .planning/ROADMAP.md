@@ -427,6 +427,14 @@ Plans:
 - [ ] 54-02: TBD
 - [ ] 54-03: TBD
 - [ ] 54-04: TBD
+
+### Phase 55: Workflow-template expansion and dependency rewriting
+
+Plans:
+- [ ] 55-01: TBD
+- [ ] 55-02: TBD
+- [ ] 55-03: TBD
+- [ ] 55-04: TBD
 ## Progress
 
 **Execution Order:**
