@@ -74,7 +74,7 @@ groups) remains guarded — Phase 55 handles that.
   `test/unit-phase-template-loader.js` with happy-path + shadowing +
   not-found + invalid-shape cases.
 
-- [ ] 54-02: `{{name}}` substitution engine.
+- [x] 54-02: `{{name}}` substitution engine.
   Implement `substituteArgs(value, args, opts)` in a new module
   `lib/template-substitute.js`. Recursively walks any JSON-like value;
   in strings, replaces `{{name}}` tokens (whitespace-tolerant inside
