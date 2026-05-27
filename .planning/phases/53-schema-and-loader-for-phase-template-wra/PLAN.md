@@ -72,7 +72,7 @@ expansion).
   Existing v1.2 fixtures continue passing. Add tests for the v1.3
   `phase:` wrapped form matching v1.2 outcomes.
 
-- [ ] 53-03: Field-rules enforcement (DESIGN.md Q3/Q4 table).
+- [x] 53-03: Field-rules enforcement (DESIGN.md Q3/Q4 table).
   - `template:` entry: only `id` (required), `name` (required), `args`
     (optional), `after` (optional). Any other key → error citing
     `phases[i].<field>`.
