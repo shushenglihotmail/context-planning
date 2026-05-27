@@ -86,7 +86,7 @@ group's exit phases. After this phase, the Phase 55 guard error from
   happy-path, shadowing-with-warning, not-found, invalid-shape,
   reserved-`--`-id, and duplicate-internal-id cases.
 
-- [ ] 55-02: Expansion engine + dependency rewriting.
+- [x] 55-02: Expansion engine + dependency rewriting.
   Create `lib/workflow-template-expand.js` exporting
   `expandWorkflowTemplate(wrapperEntry, opts)` returning `{ phases,
   warnings }`. Algorithm:
