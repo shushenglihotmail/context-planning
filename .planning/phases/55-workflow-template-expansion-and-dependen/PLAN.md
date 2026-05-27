@@ -131,7 +131,7 @@ group's exit phases. After this phase, the Phase 55 guard error from
   template-entry tests to assert the guard is gone for well-formed
   refs and that field-rules still fire for malformed wrappers.
 
-- [ ] 55-04: Fixtures + e2e integration.
+- [x] 55-04: Fixtures + e2e integration.
   Create `templates/workflow-templates/review-and-address.yaml` (the
   worked example from DESIGN.md §"Worked example", with `scope`
   param). Add `_fixtures-v13/` subdir with `chain-1.yaml` /
