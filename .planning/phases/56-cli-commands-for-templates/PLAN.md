@@ -28,24 +28,31 @@ base-commit: 11bc766895f060a3e948aff58560a66705fcf53e
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Add `cp phase-template` and `cp workflow-template` command groups that mirror
+the existing `cp workflow` UX (`ls`, `show`, `new`) so users can discover,
+inspect, and scaffold phase-templates and workflow-templates. Extend
+`cp workflow inspect` to surface the post-expansion resolved phase list
+so users can preview the result of template inclusion before running.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `cp phase-template ls [--json]` lists built-in + project phase-templates.
+2. `cp phase-template show <name>` prints a phase-template's YAML.
+3. `cp workflow-template ls [--json]` and `cp workflow-template show <name>` mirror the above for workflow-templates.
+4. `cp phase-template new <name> [--from <built-in>] [--force]` and `cp workflow-template new <name> [--from <built-in>] [--force]` scaffold starter files into the project's `.planning/phase-templates/` or `.planning/workflow-templates/` directory.
+5. `cp workflow inspect <name> [--json]` shows the resolved (post-expansion) phase list, including prefixed template ids and rewritten `after:` edges, when the workflow uses templates.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 56-01: {brief description}
-- [ ] 56-02: {brief description}
-- [ ] 56-03: {brief description}
-- [ ] 56-04: {brief description}
-- [ ] 56-05: {brief description}
+- [ ] 56-01: `cp phase-template ls` + `show` commands (lib/commands/phase-template.js)
+- [ ] 56-02: `cp workflow-template ls` + `show` commands (lib/commands/workflow-template.js)
+- [ ] 56-03: `cp phase-template new` + `cp workflow-template new` scaffolders
+- [ ] 56-04: Extend `cp workflow inspect` to print post-expansion resolved phases
+- [ ] 56-05: Integration tests + help-text wiring (bin/commands/_usage.js, index.js)
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- Lookup precedence per DESIGN.md Q2: project (`.planning/...`) shadows builtin (`templates/...`); a `(builtin)` / `(project)` tag should appear in `ls` output.
+- Mirror existing `cp workflow ls/show/new` patterns from `bin/commands/workflow.js` rather than inventing new conventions.
+- `inspect`'s post-expansion section should be additive — don't break the existing pre-expansion wave display, which is still useful for v1.2 workflows.
+
