@@ -104,7 +104,7 @@ groups) remains guarded — Phase 55 handles that.
   to assert the guard error is gone after resolution. Add
   `test/unit-phase-template-resolver.js` for the merge/cast logic.
 
-- [ ] 54-04: Integration fixtures + end-to-end coverage.
+- [x] 54-04: Integration fixtures + end-to-end coverage.
   Create `templates/phase-templates/` with one shipping template
   (`reviewer.yaml` — a parameterized code-review phase) plus a
   `_fixtures-v13/` subdir containing

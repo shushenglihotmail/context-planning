@@ -426,7 +426,7 @@ Plans:
 - [x] 54-01: TBD
 - [x] 54-02: TBD
 - [x] 54-03: TBD
-- [ ] 54-04: TBD
+- [x] 54-04: TBD
 
 ### Phase 55: Workflow-template expansion and dependency rewriting
 

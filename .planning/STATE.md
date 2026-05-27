@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 54 (v1.3 Reusable Phase Templates)
-Plan: 54-04
+Phase: 55 (v1.3 Reusable Phase Templates)
+Plan: 55-01
 Status: Ready to execute
-Current focus: Template resolution and args substitution
-Last activity: tick plan 54-02
+Current focus: Workflow-template expansion and dependency rewriting
+Last activity: tick plan 54-03
 
-Progress: [███░░░░░░░] 30%
+Progress: [████░░░░░░] 35%
 
 ## Performance Metrics
 
