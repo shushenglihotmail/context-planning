@@ -1,0 +1,8 @@
+workflow: chain-exceeded
+version: 1
+binds_to: quick
+phases:
+  - phase:
+      id: leaf
+      template:
+        name: chain-deep-1

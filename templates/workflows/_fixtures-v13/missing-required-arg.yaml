@@ -1,0 +1,9 @@
+workflow: missing-required
+version: 1
+binds_to: quick
+phases:
+  - phase:
+      id: r
+      template:
+        name: reviewer
+        # missing required `scope` arg

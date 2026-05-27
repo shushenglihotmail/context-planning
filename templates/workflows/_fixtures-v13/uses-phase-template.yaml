@@ -1,0 +1,26 @@
+workflow: uses-phase-template
+version: 1
+binds_to: quick
+principles: []
+defaults: {}
+phases:
+  - id: plan
+    role: planner
+    prompt: Plan the change.
+
+  - phase:
+      id: review-auth
+      template:
+        name: reviewer
+        args:
+          scope: auth
+          min_findings: 1
+      after: [plan]
+
+  - phase:
+      id: review-billing
+      template:
+        name: reviewer
+        args:
+          scope: billing
+      after: [plan]

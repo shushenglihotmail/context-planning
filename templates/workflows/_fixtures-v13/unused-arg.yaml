@@ -1,0 +1,11 @@
+workflow: unused-arg
+version: 1
+binds_to: quick
+phases:
+  - phase:
+      id: r
+      template:
+        name: reviewer
+        args:
+          scope: auth
+          extra_unused: ignored

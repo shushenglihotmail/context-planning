@@ -1,0 +1,7 @@
+name: chain-a
+template:
+  name: chain-b
+  args:
+    label: "{{label}}"
+params:
+  - name: label

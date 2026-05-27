@@ -1,0 +1,10 @@
+workflow: chain-ok
+version: 1
+binds_to: quick
+phases:
+  - phase:
+      id: leaf
+      template:
+        name: chain-a
+        args:
+          label: hello

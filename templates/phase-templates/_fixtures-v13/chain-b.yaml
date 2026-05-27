@@ -1,0 +1,5 @@
+name: chain-b
+params:
+  - name: label
+role: leaf
+prompt: "Resolved via chain-a -> chain-b, label={{label}}"

@@ -1,0 +1,21 @@
+# Reusable "reviewer" phase template (v1.3).
+#
+# Parameterized code-review phase: caller supplies a `scope` (e.g. "auth",
+# "billing") to focus the review. Optional `min_findings` defaults to 0 so
+# the phase exits cleanly when there's nothing to report.
+#
+# Usage in a workflow:
+#   - phase:
+#       id: review-auth
+#       template:
+#         name: reviewer
+#         args:
+#           scope: auth
+#       after: [plan]
+name: reviewer
+params:
+  - name: scope
+  - name: min_findings
+    default: 0
+role: reviewer
+prompt: "Review the {{scope}} changes against the project's quality bar. Report at least {{min_findings}} concrete findings (or explicitly state that none apply)."
