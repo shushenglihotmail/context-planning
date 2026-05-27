@@ -464,6 +464,11 @@ Plans:
 
 ### 🚧 v1.4 Workflow-driven quick and milestone (In Progress)
 
+### Phase 59: Rename legacy skills
+
+Plans:
+- [ ] 59-01: TBD
+- [ ] 59-02: TBD
 ## Progress
 
 **Execution Order:**
