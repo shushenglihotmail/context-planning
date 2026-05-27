@@ -87,7 +87,7 @@ groups) remains guarded — Phase 55 handles that.
   covering string/array/object walks, missing-arg error, multiple
   refs in one string, escape edge-cases.
 
-- [ ] 54-03: Resolver integration into `loadTemplate()`.
+- [x] 54-03: Resolver integration into `loadTemplate()`.
   Add `lib/phase-template-resolver.js` exporting
   `resolvePhaseTemplate(phaseEntry, opts)` which: loads the named
   phase template, merges declared params (`default:` values) with
