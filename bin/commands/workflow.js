@@ -419,6 +419,25 @@ function workflowDiagram(args, cwd) {
  * `cp run`. Human-readable by default; --json emits a structured form
  * suitable for tooling.
  */
+function _collectTemplatesReferenced(rawPhases) {
+  var out = [];
+  for (var ti = 0; ti < rawPhases.length; ti++) {
+    var entry = rawPhases[ti];
+    if (!entry || typeof entry !== 'object') continue;
+    if (Object.prototype.hasOwnProperty.call(entry, 'template')) {
+      var t = entry.template;
+      if (typeof t === 'string') out.push({ kind: 'workflow-template', name: t });
+      else if (t && typeof t === 'object' && typeof t.name === 'string') {
+        out.push({ kind: 'workflow-template', name: t.name });
+      }
+    }
+    if (entry.phase && typeof entry.phase === 'object' && typeof entry.phase.template === 'string') {
+      out.push({ kind: 'phase-template', name: entry.phase.template });
+    }
+  }
+  return out;
+}
+
 function workflowInspect(args, cwd) {
   var nameOrPath = null;
   var json = false;
@@ -482,12 +501,22 @@ function workflowInspect(args, cwd) {
   var bindsTo = (tpl.meta && tpl.meta.binds_to) || 'quick';
 
   if (json) {
+    var templatesUsedJson = [];
+    try {
+      var yamlJ = require('yaml');
+      var bodyJ = fs.readFileSync(filePath, 'utf8');
+      var rawJ = yamlJ.parse(bodyJ) || {};
+      var rpJ = Array.isArray(rawJ.phases) ? rawJ.phases : [];
+      templatesUsedJson = _collectTemplatesReferenced(rpJ);
+    } catch (_) { /* ignore */ }
     var out = {
       workflow: name,
       binds_to: bindsTo,
       source: filePath,
       total_phases: (tpl.phases || []).length,
       total_waves: waves.length,
+      templates_referenced: templatesUsedJson,
+      resolver_warnings: Array.isArray(result.warnings) ? result.warnings : [],
       waves: waves.map(function (wave, idx) {
         return {
           wave: idx + 1,
@@ -514,6 +543,30 @@ function workflowInspect(args, cwd) {
     process.stdout.write('\n');
   }
   process.stdout.write('\n');
+
+  // v1.3: surface templates referenced + resolver warnings/errors.
+  var templatesUsed = [];
+  try {
+    var yaml = require('yaml');
+    var raw = yaml.parse(body) || {};
+    var rawPhases = Array.isArray(raw.phases) ? raw.phases : [];
+    templatesUsed = _collectTemplatesReferenced(rawPhases);
+  } catch (_) { /* ignore */ }
+  if (templatesUsed.length > 0) {
+    process.stdout.write('=== Templates referenced ===\n');
+    for (var ui = 0; ui < templatesUsed.length; ui++) {
+      process.stdout.write('  - ' + templatesUsed[ui].kind + ': ' + templatesUsed[ui].name + '\n');
+    }
+    process.stdout.write('\n');
+  }
+  if (Array.isArray(result.warnings) && result.warnings.length > 0) {
+    process.stdout.write('=== Resolver warnings ===\n');
+    for (var wi = 0; wi < result.warnings.length; wi++) {
+      process.stdout.write('  - ' + result.warnings[wi] + '\n');
+    }
+    process.stdout.write('\n');
+  }
+
   process.stdout.write('=== Deduced execution sequence ===\n');
   process.stdout.write('workflow: ' + name + '  binds_to: ' + bindsTo + '\n');
   process.stdout.write((tpl.phases || []).length + ' phase(s) across ' + waves.length + ' wave(s)\n');

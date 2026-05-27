@@ -146,6 +146,16 @@ Usage:
                                   Delegates to the configured provider skill or prints a
                                   guided prompt (manual fallback). Exit 0.
                                   See \`cp workflow --help\` for full sub-command details.
+  cp phase-template ls [--json]   List phase templates (built-in + project).
+  cp phase-template show <name>   Print a phase template's YAML to stdout.
+  cp phase-template new <name> [--from <built-in>] [--force]
+                                  Scaffold a new phase template file.
+  cp workflow-template ls [--json]
+                                  List workflow templates (built-in + project).
+  cp workflow-template show <name>
+                                  Print a workflow template's YAML to stdout.
+  cp workflow-template new <name> [--from <built-in>] [--force]
+                                  Scaffold a new workflow template file.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

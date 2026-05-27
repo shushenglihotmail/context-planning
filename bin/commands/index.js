@@ -39,4 +39,6 @@ module.exports = {
   autonomous: require('./autonomous'),
   run: require('./run'),
   workflow: require('./workflow'),
+  'phase-template': require('./phase-template'),
+  'workflow-template': require('./workflow-template'),
 };
