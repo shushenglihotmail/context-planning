@@ -1,0 +1,14 @@
+workflow: bare-v12
+version: 1
+binds_to: quick
+principles: []
+defaults: {}
+phases:
+  - id: plan
+    role: planner
+    prompt: Plan the change.
+
+  - id: execute
+    depends_on: [plan]
+    role: implementer
+    prompt: Implement it.

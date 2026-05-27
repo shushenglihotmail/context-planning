@@ -1,0 +1,20 @@
+workflow: error-phase-template-override
+version: 1
+binds_to: quick
+principles: []
+defaults: {}
+phases:
+  - phase:
+      id: plan
+      role: planner
+      prompt: Plan the change.
+
+  - phase:
+      id: execute
+      template:
+        name: docker-build
+        args:
+          image: api
+      role: implementer
+      prompt: this override should be rejected
+      after: [plan]

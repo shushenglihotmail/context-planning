@@ -1,0 +1,17 @@
+workflow: template-include-stub
+version: 1
+binds_to: quick
+principles: []
+defaults: {}
+phases:
+  - phase:
+      id: plan
+      role: planner
+      prompt: Plan the change.
+
+  - template:
+      id: review
+      name: review-and-address
+      args:
+        scope: auth
+      after: [plan]

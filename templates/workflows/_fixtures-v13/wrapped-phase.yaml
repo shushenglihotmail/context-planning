@@ -1,0 +1,16 @@
+workflow: wrapped-phase
+version: 1
+binds_to: quick
+principles: []
+defaults: {}
+phases:
+  - phase:
+      id: plan
+      role: planner
+      prompt: Plan the change.
+
+  - phase:
+      id: execute
+      depends_on: [plan]
+      role: implementer
+      prompt: Implement it.

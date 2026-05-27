@@ -1,0 +1,16 @@
+workflow: error-template-with-prompt
+version: 1
+binds_to: quick
+principles: []
+defaults: {}
+phases:
+  - phase:
+      id: plan
+      role: planner
+      prompt: Plan the change.
+
+  - template:
+      id: review
+      name: review-and-address
+      prompt: this should be rejected
+      after: [plan]
