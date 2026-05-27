@@ -448,7 +448,7 @@ Plans:
 ### Phase 57: Dogfood dev.yaml with templates
 
 Plans:
-- [ ] 57-01: TBD
+- [x] 57-01: TBD
 - [ ] 57-02: TBD
 - [ ] 57-03: TBD
 
