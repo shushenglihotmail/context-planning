@@ -69,7 +69,7 @@ group's exit phases. After this phase, the Phase 55 guard error from
 
 ## Plans
 
-- [ ] 55-01: Workflow-template loader.
+- [x] 55-01: Workflow-template loader.
   Create `lib/workflow-template-loader.js` exporting
   `loadWorkflowTemplate(name, opts)` + `resolveWorkflowTemplate(name,
   opts)`. Lookup order per DESIGN.md Q2: project
