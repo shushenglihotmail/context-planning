@@ -433,7 +433,7 @@ Plans:
 Plans:
 - [x] 55-01: TBD
 - [x] 55-02: TBD
-- [ ] 55-03: TBD
+- [x] 55-03: TBD
 - [ ] 55-04: TBD
 
 ### Phase 56: CLI commands for templates

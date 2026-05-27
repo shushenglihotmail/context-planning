@@ -113,7 +113,7 @@ group's exit phases. After this phase, the Phase 55 guard error from
   empty-group error, chain-depth, and dup-prefixed-id detection
   (when caller passes a group-id that already exists as a phase id).
 
-- [ ] 55-03: loadTemplate() wiring + external `after: <group-id>` rewriting.
+- [x] 55-03: loadTemplate() wiring + external `after: <group-id>` rewriting.
   Wire `expandWorkflowTemplate()` into `lib/workflow.js`'s
   `loadTemplate()` AFTER phase-template resolution and BEFORE
   validate(). For each phase entry where `_wrapperKind === 'template'`:
