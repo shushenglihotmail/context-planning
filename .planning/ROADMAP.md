@@ -439,7 +439,7 @@ Plans:
 ### Phase 56: CLI commands for templates
 
 Plans:
-- [ ] 56-01: TBD
+- [x] 56-01: TBD
 - [ ] 56-02: TBD
 - [ ] 56-03: TBD
 - [ ] 56-04: TBD
