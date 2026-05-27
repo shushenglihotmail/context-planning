@@ -469,6 +469,13 @@ Plans:
 Plans:
 - [ ] 59-01: TBD
 - [ ] 59-02: TBD
+
+### Phase 60: Add kind=scaffold phase-type
+
+Plans:
+- [ ] 60-01: TBD
+- [ ] 60-02: TBD
+- [ ] 60-03: TBD
 ## Progress
 
 **Execution Order:**
