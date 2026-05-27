@@ -467,7 +467,7 @@ Plans:
 ### Phase 59: YAML grammar overhaul: phase/template wrappers + description
 
 Plans:
-- [ ] 59-01: TBD
+- [x] 59-01: TBD
 - [ ] 59-02: TBD
 - [ ] 59-03: TBD
 
