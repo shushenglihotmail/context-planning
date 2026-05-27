@@ -412,6 +412,13 @@ Plans:
 
 ### 🚧 v1.3 Reusable Phase Templates (In Progress)
 
+### Phase 53: Schema and loader for phase/template wrappers
+
+Plans:
+- [ ] 53-01: TBD
+- [ ] 53-02: TBD
+- [ ] 53-03: TBD
+- [ ] 53-04: TBD
 ## Progress
 
 **Execution Order:**
