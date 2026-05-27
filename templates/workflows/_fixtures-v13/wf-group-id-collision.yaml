@@ -1,0 +1,13 @@
+workflow: wf-group-id-collision
+version: 1
+binds_to: quick
+phases:
+  - phase:
+      id: review
+      role: planner
+      prompt: "p"
+  - template:
+      id: review
+      name: review-and-address
+      args:
+        scope: auth

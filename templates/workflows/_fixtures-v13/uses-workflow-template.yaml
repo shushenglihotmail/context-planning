@@ -1,0 +1,19 @@
+workflow: uses-workflow-template
+version: 1
+binds_to: quick
+phases:
+  - phase:
+      id: plan
+      role: planner
+      prompt: "plan"
+  - template:
+      id: review
+      name: review-and-address
+      args:
+        scope: auth
+      after: [plan]
+  - phase:
+      id: execute
+      role: implementer
+      after: [review]
+      prompt: "execute"

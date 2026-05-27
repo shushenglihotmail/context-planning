@@ -66,7 +66,7 @@ check('template-include-stub.yaml: parses and surfaces expansion error for missi
   const t = loadTemplate(fx('template-include-stub.yaml'));
   assert.equal(t.phases.length, 2);
   assert.equal(t.phases[1]._wrapperKind, 'template');
-  assert.equal(t.phases[1].name, 'review-and-address');
+  assert.equal(t.phases[1].name, 'nonexistent-stub-template');
   assert.deepEqual(t.phases[1].args, { scope: 'auth' });
   const r = validate(t);
   assert.equal(r.ok, false);

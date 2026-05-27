@@ -1,0 +1,7 @@
+workflow: wf-chain-depth-exceeded
+version: 1
+binds_to: quick
+phases:
+  - template:
+      id: g
+      name: chain-4

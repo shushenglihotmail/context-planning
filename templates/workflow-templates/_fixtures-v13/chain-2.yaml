@@ -1,0 +1,5 @@
+name: chain-2
+phases:
+  - template:
+      id: n
+      name: chain-3

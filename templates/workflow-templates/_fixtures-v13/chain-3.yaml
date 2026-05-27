@@ -1,0 +1,6 @@
+name: chain-3
+phases:
+  - phase:
+      id: leaf
+      role: r
+      prompt: "leaf"

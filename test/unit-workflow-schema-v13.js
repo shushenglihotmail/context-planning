@@ -137,7 +137,7 @@ phases:
       role: planner
   - template:
       id: review
-      name: review-and-address
+      name: nonexistent-template-for-test
       args:
         scope: auth
       after: [plan]
