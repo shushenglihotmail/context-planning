@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 115 of 115
-Status: Idle
-Current focus: -
-Last activity: 52-03 summary (release 1.2.0)
+Phase: 53 (v1.3 Reusable Phase Templates)
+Plan: 53-02
+Status: Ready to execute
+Current focus: Schema and loader for phase/template wrappers
+Last activity: scaffold-phase 58 (Docs and v1.3.0 release)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [░░░░░░░░░░] 4%
 
 ## Performance Metrics
 

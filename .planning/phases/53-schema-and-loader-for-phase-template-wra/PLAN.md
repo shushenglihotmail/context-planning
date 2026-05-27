@@ -56,7 +56,7 @@ expansion).
 
 <!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
 
-- [ ] 53-01: Add wrapper-recognition + auto-wrap helper.
+- [x] 53-01: Add wrapper-recognition + auto-wrap helper.
   Introduce `unwrapPhaseEntry(entry, index)` that returns
   `{ kind: 'phase'|'template', body, sourcePath }`. Update
   `loadTemplate()` / `normalisePhase()` to route through it. Bare
