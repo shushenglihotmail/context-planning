@@ -59,7 +59,10 @@ check('wrapped-phase.yaml: phase: wrappers normalise identically to bare', () =>
   assert.equal(r.ok, true);
 });
 
-check('template-include-stub.yaml: parses and emits Phase 55 guard error', () => {
+check('template-include-stub.yaml: parses and surfaces expansion error for missing template', () => {
+  // The fixture references a workflow-template that isn't shipped in the
+  // legacy test fixtures dir, so 55-03 expansion fails and the wrapper
+  // is left in place. The root-cause error is surfaced via validate().
   const t = loadTemplate(fx('template-include-stub.yaml'));
   assert.equal(t.phases.length, 2);
   assert.equal(t.phases[1]._wrapperKind, 'template');
@@ -68,8 +71,8 @@ check('template-include-stub.yaml: parses and emits Phase 55 guard error', () =>
   const r = validate(t);
   assert.equal(r.ok, false);
   assert.ok(
-    r.errors.some((e) => e.includes('Phase 55')),
-    `expected Phase 55 guard, got: ${r.errors.join(' | ')}`
+    r.errors.some((e) => e.includes('workflow-template expansion failed') && e.includes('not found')),
+    `expected expansion-failed error, got: ${r.errors.join(' | ')}`
   );
   // No field-rules violations for this well-formed inclusion.
   const fieldErrs = r.errors.filter((e) =>

@@ -188,15 +188,19 @@ check('phase entries with `_wrapperKind: phase` validate identically to bare', (
   assert.deepEqual(r.errors, []);
 });
 
-check('template entry surfaces guard error citing Phase 55', () => {
+check('template entry that bypasses loadTemplate expansion validates field-rules only', () => {
+  // validate() is normally fed AFTER loadTemplate's expansion pass. When
+  // called directly on a tmpl() containing a `template:` wrapper (as in
+  // these unit tests), expansion did NOT run, so the field-rules branch
+  // is the only thing that fires. A well-formed wrapper should validate
+  // cleanly (no guard error from v1.2/53-x).
   const r = validate(tmpl([
     { id: 'plan', depends_on: [] },
     mark({ id: 'review', name: 'review-and-address', args: { scope: 'auth' }, after: ['plan'] }, 'template'),
   ]));
-  assert.equal(r.ok, false);
   assert.ok(
-    r.errors.some((e) => e.includes('template entry resolution not yet implemented') && e.includes('Phase 55')),
-    `expected guard error, got: ${r.errors.join(' | ')}`
+    !r.errors.some((e) => /not yet implemented/i.test(e)),
+    `no obsolete guard error expected, got: ${r.errors.join(' | ')}`
   );
 });
 
@@ -213,16 +217,13 @@ check('template entry still validates id uniqueness against sibling phases', () 
 
 check('template entry skips depends_on validation (uses after)', () => {
   // A template entry without depends_on must NOT fire the v1.2
-  // "depends_on must be an array" path. The only error should be the guard.
+  // "depends_on must be an array" path. After Phase 55 the wrapper itself
+  // is no longer flagged as "not yet implemented" — a well-formed wrapper
+  // should produce zero errors when validate() is called in isolation.
   const r = validate(tmpl([
     mark({ id: 'review', name: 'wf-template' }, 'template'),
   ]));
-  // Errors should include only the guard. (Any others are regressions.)
-  assert.ok(
-    r.errors.length >= 1 &&
-      r.errors.every((e) => e.includes('template entry resolution not yet implemented')),
-    `expected only guard error(s), got: ${r.errors.join(' | ')}`
-  );
+  assert.deepEqual(r.errors, [], `expected no errors, got: ${r.errors.join(' | ')}`);
 });
 
 check('DAG analysis is skipped when any template entry is present', () => {
@@ -306,13 +307,13 @@ check('template inclusion rejects user-set non-empty depends_on', () => {
 
 // --- phase-template reference (phase wrapper with inner template:) field rules ---
 
-check('phase with inner template surfaces Phase 54 guard error', () => {
+check('phase with inner template (well-formed) produces no obsolete guard error', () => {
   const r = validate(tmpl([
     mark({ id: 'execute', template: { name: 'docker-build', args: { image: 'api' } } }, 'phase'),
   ]));
   assert.ok(
-    r.errors.some((e) => e.includes('phase-template reference resolution not yet implemented') && e.includes('Phase 54')),
-    `expected Phase 54 guard, got: ${r.errors.join(' | ')}`
+    !r.errors.some((e) => /not yet implemented/i.test(e)),
+    `no obsolete guard error expected, got: ${r.errors.join(' | ')}`
   );
 });
 
