@@ -455,7 +455,7 @@ Plans:
 ### Phase 58: Docs and v1.3.0 release
 
 Plans:
-- [ ] 58-01: TBD
+- [x] 58-01: TBD
 - [ ] 58-02: TBD
 - [ ] 58-03: TBD
 ## Progress
