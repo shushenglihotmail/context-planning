@@ -476,6 +476,14 @@ Plans:
 - [ ] 60-01: TBD
 - [ ] 60-02: TBD
 - [ ] 60-03: TBD
+
+### Phase 61: Engine: config-aware defaults + STATE/PROJECT CLI helpers
+
+Plans:
+- [ ] 61-01: TBD
+- [ ] 61-02: TBD
+- [ ] 61-03: TBD
+- [ ] 61-04: TBD
 ## Progress
 
 **Execution Order:**
