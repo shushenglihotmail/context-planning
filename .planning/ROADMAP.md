@@ -491,6 +491,14 @@ Plans:
 - [ ] 62-01: TBD
 - [ ] 62-02: TBD
 - [ ] 62-03: TBD
+
+### Phase 63: Dynamic fan-out via materialize=true
+
+Plans:
+- [ ] 63-01: TBD
+- [ ] 63-02: TBD
+- [ ] 63-03: TBD
+- [ ] 63-04: TBD
 ## Progress
 
 **Execution Order:**
