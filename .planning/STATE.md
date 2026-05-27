@@ -9,11 +9,11 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 138 of 138
-Status: Idle
-Current focus: -
-Last activity: tick plan 58-03
+Phase: 59 (v1.4 Workflow-driven quick and milestone)
+Plan: 59-01
+Status: Ready to execute
+Current focus: YAML grammar overhaul: phase/template wrappers + description
+Last activity: scaffold-phase 66 (Docs + MIGRATION-v1.4.md + v1.4.0 release)
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -75,5 +75,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-27
-Stopped at: shipped v1.3 Reusable Phase Templates
+Stopped at: locked v1.4 design (11 decisions), ROADMAP re-scaffolded with 11 phases
 Resume file: None

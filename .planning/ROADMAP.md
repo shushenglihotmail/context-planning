@@ -464,62 +464,83 @@ Plans:
 
 ### 🚧 v1.4 Workflow-driven quick and milestone (In Progress)
 
-### Phase 59: Rename legacy skills
+### Phase 59: YAML grammar overhaul: phase/template wrappers + description
 
 Plans:
 - [ ] 59-01: TBD
 - [ ] 59-02: TBD
+- [ ] 59-03: TBD
 
-### Phase 60: Add kind=scaffold phase-type
+### Phase 60: Engine: kind=scaffold + materialize unification + defaults change
 
 Plans:
 - [ ] 60-01: TBD
 - [ ] 60-02: TBD
 - [ ] 60-03: TBD
 
-### Phase 61: Engine: config-aware defaults + STATE/PROJECT CLI helpers
+### Phase 61: Reserved CLI helpers set 1: cp project update + milestone-setup-check + milestone-finalize
 
 Plans:
 - [ ] 61-01: TBD
 - [ ] 61-02: TBD
 - [ ] 61-03: TBD
-- [ ] 61-04: TBD
 
-### Phase 62: quick.yaml workflow + thin cp-quick skill
+### Phase 62: Reserved CLI helpers set 2: cp quick-setup + quick-finalize + abandon + list + status
 
 Plans:
 - [ ] 62-01: TBD
 - [ ] 62-02: TBD
 - [ ] 62-03: TBD
+- [ ] 62-04: TBD
 
-### Phase 63: Dynamic fan-out via materialize=true
+### Phase 63: Supervisor runtime: persistent LLM session + sub-agent contract
 
 Plans:
 - [ ] 63-01: TBD
 - [ ] 63-02: TBD
 - [ ] 63-03: TBD
-- [ ] 63-04: TBD
 
-### Phase 64: milestone.yaml workflow + thin cp-new-milestone skill
+### Phase 64: Message broker + classifier with L1 L2 L3 confidence levels
 
 Plans:
 - [ ] 64-01: TBD
 - [ ] 64-02: TBD
 - [ ] 64-03: TBD
-- [ ] 64-04: TBD
 
-### Phase 65: Backwards-compat tests for legacy skills
+### Phase 65: Checkpoint protocol: runs state.json + restart_phase output reversion
 
 Plans:
 - [ ] 65-01: TBD
 - [ ] 65-02: TBD
+- [ ] 65-03: TBD
 
-### Phase 66: Docs + MIGRATION-v1.4.md + v1.4.0 release
+### Phase 66: quick.yaml workflow + cp-quick thin wrapper
 
 Plans:
 - [ ] 66-01: TBD
 - [ ] 66-02: TBD
 - [ ] 66-03: TBD
+
+### Phase 67: milestone.yaml workflow + cp-new-milestone thin wrapper
+
+Plans:
+- [ ] 67-01: TBD
+- [ ] 67-02: TBD
+- [ ] 67-03: TBD
+- [ ] 67-04: TBD
+
+### Phase 68: complete-milestone.yaml workflow + cp-complete-milestone thin wrapper
+
+Plans:
+- [ ] 68-01: TBD
+- [ ] 68-02: TBD
+
+### Phase 69: Docs + MIGRATION-v1.4.md + v1.4.0 release
+
+Plans:
+- [ ] 69-01: TBD
+- [ ] 69-02: TBD
+- [ ] 69-03: TBD
 ## Progress
 
 **Execution Order:**
