@@ -499,6 +499,14 @@ Plans:
 - [ ] 63-02: TBD
 - [ ] 63-03: TBD
 - [ ] 63-04: TBD
+
+### Phase 64: milestone.yaml workflow + thin cp-new-milestone skill
+
+Plans:
+- [ ] 64-01: TBD
+- [ ] 64-02: TBD
+- [ ] 64-03: TBD
+- [ ] 64-04: TBD
 ## Progress
 
 **Execution Order:**
