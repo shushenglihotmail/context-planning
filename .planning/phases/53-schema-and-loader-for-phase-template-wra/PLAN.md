@@ -65,7 +65,7 @@ expansion).
   `template:` wrapper) confirming identical internal representation
   for the phase-wrapped/bare pair.
 
-- [ ] 53-02: Wire `validate()` to the wrapper model.
+- [x] 53-02: Wire `validate()` to the wrapper model.
   `validate()` walks wrapped phases. For `kind: 'phase'`, behavior
   unchanged from v1.2. For `kind: 'template'`, validator emits guard
   error `"template entry resolution not yet implemented (Phase 55)"`.
