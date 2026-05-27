@@ -83,7 +83,7 @@ expansion).
   - `phase:` entry without inner `template:`: behaves as a v1.2 phase.
   Add error-path unit tests for each violation class.
 
-- [ ] 53-04: Integration fixtures + adapter coverage.
+- [x] 53-04: Integration fixtures + adapter coverage.
   Create `templates/workflows/_fixtures-v13/`:
   `bare-v12.yaml`, `wrapped-phase.yaml`,
   `template-include-stub.yaml`,
