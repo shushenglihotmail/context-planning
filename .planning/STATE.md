@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 56 (v1.3 Reusable Phase Templates)
-Plan: 56-05
+Phase: 57 (v1.3 Reusable Phase Templates)
+Plan: 57-01
 Status: Ready to execute
-Current focus: CLI commands for templates
-Last activity: tick plan 56-03
+Current focus: Dogfood dev.yaml with templates
+Last activity: tick plan 56-04
 
-Progress: [███████░░░] 70%
+Progress: [███████░░░] 74%
 
 ## Performance Metrics
 
