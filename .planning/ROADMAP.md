@@ -435,6 +435,15 @@ Plans:
 - [ ] 55-02: TBD
 - [ ] 55-03: TBD
 - [ ] 55-04: TBD
+
+### Phase 56: CLI commands for templates
+
+Plans:
+- [ ] 56-01: TBD
+- [ ] 56-02: TBD
+- [ ] 56-03: TBD
+- [ ] 56-04: TBD
+- [ ] 56-05: TBD
 ## Progress
 
 **Execution Order:**
