@@ -419,6 +419,14 @@ Plans:
 - [ ] 53-02: TBD
 - [ ] 53-03: TBD
 - [ ] 53-04: TBD
+
+### Phase 54: Template resolution and args substitution
+
+Plans:
+- [ ] 54-01: TBD
+- [ ] 54-02: TBD
+- [ ] 54-03: TBD
+- [ ] 54-04: TBD
 ## Progress
 
 **Execution Order:**
