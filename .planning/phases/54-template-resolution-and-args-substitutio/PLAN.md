@@ -61,7 +61,7 @@ groups) remains guarded — Phase 55 handles that.
 
 <!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
 
-- [ ] 54-01: Phase-template definition format + loader.
+- [x] 54-01: Phase-template definition format + loader.
   Define the YAML shape for a phase-template file (`name`, optional
   `params: [{name, default?}]`, plus a single phase body). Implement
   `loadPhaseTemplate(name, opts)` in a new module
