@@ -484,6 +484,13 @@ Plans:
 - [ ] 61-02: TBD
 - [ ] 61-03: TBD
 - [ ] 61-04: TBD
+
+### Phase 62: quick.yaml workflow + thin cp-quick skill
+
+Plans:
+- [ ] 62-01: TBD
+- [ ] 62-02: TBD
+- [ ] 62-03: TBD
 ## Progress
 
 **Execution Order:**
