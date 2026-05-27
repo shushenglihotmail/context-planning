@@ -724,3 +724,69 @@
 **Phase designs:**
 - Phase 49 — `.planning/phases/49-unified-phase-type-reader-abstractions/DESIGN.md`
 - Phase 50 — `.planning/phases/50-fan-out-runtime/DESIGN.md`
+
+## v1.3 Reusable Phase Templates  — shipped 2026-05-27
+
+**Phases:** 53-58    **Plans:** 23    **Duration:** —
+
+**Key decisions:**
+- _wrapperKind is non-enumerable so it never leaks into JSON.stringify but is readable for validate() in 53-02.  _(phase 53)_
+- Multi-key entries containing phase: are treated as bare (not wrapped) to avoid ambiguity; only single-key wrappers count.  _(phase 53)_
+- expected-vs-actual drift: 2 expected-but-untouched (lib/workflow.js, test/unit-workflow-schema-v13.js)  _(phase 53)_
+- Template entries share the same id-uniqueness map as phase entries so collisions surface as duplicate-id errors at validation time.  _(phase 53)_
+- validateV12Schema filters out template entries so v1.2 parent/persist/max_children rules do not fire against them.  _(phase 53)_
+- DAG analysis is fully disabled when any template entry is present; Phase 55 will re-enable it after expansion.  _(phase 53)_
+- expected-vs-actual drift: 2 expected-but-untouched (lib/workflow.js, test/unit-workflow-schema-v13.js)  _(phase 53)_
+- depends_on is auto-added by normalisePhase so it cannot be a forbidden key; instead it is flagged only when user-populated (length > 0).  _(phase 53)_
+- Phase-template references emit a Phase 54 guard error (separate from the Phase 55 guard for workflow-template inclusion) since the two resolve in different phases.  _(phase 53)_
+- Inner template: blocks accept only name + args; any other key (e.g., a misspelled override field) is rejected with a precise path.  _(phase 53)_
+- expected-vs-actual drift: 2 expected-but-untouched (lib/workflow.js, test/unit-workflow-schema-v13.js)  _(phase 53)_
+- Fixtures live under templates/workflows/_fixtures-v13/ so they share the resolution path with shipping workflows but are namespaced for test-only use.  _(phase 53)_
+- Integration tests assert ONLY the absence of field-rules violations on the well-formed template-include-stub.yaml fixture, so future Phase 55 work can flip the guard off without forcing test rewrites.  _(phase 53)_
+- The error fixtures pin the exact violation classes (forbidden prompt: on template inclusion; phase-level role/prompt overrides on a phase-template reference) to lock down DESIGN.md Q3/Q4 semantics.  _(phase 53)_
+- expected-vs-actual drift: 3 expected-but-untouched (test/integration-workflow-v13.js, lib/workflow.js, test/unit-workflow-schema-v13.js)  _(phase 53)_
+- Loader returns {name,params,body,sourcePath}; body excludes template meta keys.  _(phase 54)_
+- Inner template: in body is permitted at loader level — chain semantics handled by 54-03 resolver.  _(phase 54)_
+- expected-vs-actual drift: 2 expected-but-untouched (lib/phase-template-loader.js, test/unit-phase-template-loader.js)  _(phase 54)_
+- TOKEN_RE requires JS-identifier characters; {{a-b}} treated as literal.  _(phase 54)_
+- Whole-string preservation is critical for numeric fields like max_children — resolver casts at field boundary.  _(phase 54)_
+- expected-vs-actual drift: 4 expected-but-untouched (lib/template-substitute.js, test/unit-template-substitute.js, lib/phase-template-loader.js, test/unit-phase-template-loader.js)  _(phase 54)_
+- Try/catch around resolver call so missing-template errors do not block field-rules validation of the same wrapper.  _(phase 54)_
+- Resolved phase preserves wrapper id (caller wins) and after[] array; template body cannot override.  _(phase 54)_
+- _resolverErrors and _resolverWarnings stashed on template object for validate() to surface.  _(phase 54)_
+- expected-vs-actual drift: 7 expected-but-untouched (lib/workflow.js, lib/phase-template-resolver.js, test/unit-phase-template-resolver.js, lib/phase-template-loader.js, test/unit-phase-template-loader.js, lib/template-substitute.js, test/unit-template-substitute.js)  _(phase 54)_
+- Chain fixtures live under templates/phase-templates/_fixtures-v13/ to avoid polluting top-level user-facing dir; tests copy into temp project dir.  _(phase 54)_
+- reviewer.yaml is real shipping content, not a fixture — Phase 57 will adopt in dev.yaml.  _(phase 54)_
+- expected-vs-actual drift: 9 expected-but-untouched (templates/phase-templates/_fixtures-v13/, test/integration-phase-templates-v13.js, lib/phase-template-loader.js, test/unit-phase-template-loader.js, lib/template-substitute.js, test/unit-template-substitute.js, lib/workflow.js, lib/phase-template-resolver.js, test/unit-phase-template-resolver.js)  _(phase 54)_
+- Separate namespace for workflow-templates (vs phase-templates)  _(phase 55)_
+- Reserve -- as namespace separator; reject internal ids containing --  _(phase 55)_
+- Accept bare, phase: and template: wrapped entries; loader extracts canonical internal id  _(phase 55)_
+- Prefix every materialized id with <groupId>--  _(phase 55)_
+- Rewrite internal after/depends_on edges with prefix; leave external refs alone  _(phase 55)_
+- Wrapper after: prepended to entry phases; exit-phase ids returned for outer rewriter  _(phase 55)_
+- MAX_DEPTH=3 chain cap; empty group is an error  _(phase 55)_
+- Run expansion as a second pass after phase-template resolver; splice phases in place  _(phase 55)_
+- Pass 3: rewrite after: <groupId> on outside phases to the exit-phase id list  _(phase 55)_
+- Drop obsolete Phase 54/55 not-yet-implemented guards; keep field-rules enforcement  _(phase 55)_
+- Ship review-and-address.yaml as the canonical workflow template  _(phase 55)_
+- Quote {{token}} inside YAML flow-sequence values to avoid parser errors  _(phase 55)_
+- Chain fixtures stage into project dir to exercise project-shadows-builtin lookup  _(phase 55)_
+- [object Object]  _(phase 56)_
+- [object Object]  _(phase 56)_
+- [object Object]  _(phase 56)_
+- [object Object]  _(phase 56)_
+- [object Object]  _(phase 56)_
+- [object Object]  _(phase 57)_
+- [object Object]  _(phase 57)_
+- [object Object]  _(phase 57)_
+- [object Object]  _(phase 58)_
+- [object Object]  _(phase 58)_
+- [object Object]  _(phase 58)_
+
+**Phase summaries:**
+- Phase 53: Schema and loader for phase/template wrappers — see `.planning/phases/53-schema-and-loader-for-phase-template-wra/`
+- Phase 54: Template resolution and args substitution — see `.planning/phases/54-template-resolution-and-args-substitutio/`
+- Phase 55: Workflow-template expansion and dependency rewriting — see `.planning/phases/55-workflow-template-expansion-and-dependen/`
+- Phase 56: CLI commands for templates — see `.planning/phases/56-cli-commands-for-templates/`
+- Phase 57: Dogfood dev.yaml with templates — see `.planning/phases/57-dogfood-dev-yaml-with-templates/`
+- Phase 58: Docs and v1.3.0 release — see `.planning/phases/58-docs-and-v1-3-0-release/`

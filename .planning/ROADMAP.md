@@ -410,7 +410,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.3 Reusable Phase Templates (In Progress)
+<details>
+<summary>✅ v1.3 Reusable Phase Templates (Phases 53-58) — SHIPPED 2026-05-27</summary>
 
 ### Phase 53: Schema and loader for phase/template wrappers
 
@@ -458,6 +459,8 @@ Plans:
 - [x] 58-01: TBD
 - [x] 58-02: TBD
 - [x] 58-03: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**
