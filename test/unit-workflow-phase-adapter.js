@@ -123,12 +123,12 @@ check('parent explicit max_children is preserved', () => {
   assert.strictEqual(out.max_children, 5);
 });
 
-check('parent without max_children defaults to 20', () => {
+check('parent without max_children defaults to 10', () => {
   const out = phasesFromTemplate(template([
     phase({ id: 'root' }),
     phase({ id: 'child', parent: 'root' }),
   ]))[0];
-  assert.strictEqual(out.max_children, 20);
+  assert.strictEqual(out.max_children, 10);
 });
 
 check('parent without min_children defaults to 1', () => {
@@ -150,7 +150,7 @@ check('phase declared as parent by child reference gets child limit defaults', (
     phase({ id: 'parent' }),
     phase({ id: 'child', parent: 'parent' }),
   ]))[0];
-  assert.deepStrictEqual({ max: out.max_children, min: out.min_children }, { max: 20, min: 1 });
+  assert.deepStrictEqual({ max: out.max_children, min: out.min_children }, { max: 10, min: 1 });
 });
 
 // persist_output back-compat

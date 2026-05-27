@@ -55,9 +55,9 @@ check('buildParentPrompt defaults min=1 when phase.min_children is missing', () 
   assert.ok(prompt.includes('Produce between 1 and 7 items.'));
 });
 
-check('buildParentPrompt defaults max=20 when phase.max_children is missing', () => {
+check('buildParentPrompt defaults max=10 when phase.max_children is missing', () => {
   const prompt = buildParentPrompt(phase({ min_children: 3 }), 'Base');
-  assert.ok(prompt.includes('Produce between 3 and 20 items.'));
+  assert.ok(prompt.includes('Produce between 3 and 10 items.'));
 });
 
 check('buildParentPrompt includes the fenced json template literal', () => {
@@ -187,8 +187,8 @@ check('enforceChildCount defaults min=1 when missing', () => {
   assert.throws(() => enforceChildCount(phase({ max_children: 2 }), []), /below min_children \(1\)/);
 });
 
-check('enforceChildCount defaults max=20 when missing', () => {
-  assert.throws(() => enforceChildCount(phase({ min_children: 1 }), items(21)), /above max_children \(20\)/);
+check('enforceChildCount defaults max=10 when missing', () => {
+  assert.throws(() => enforceChildCount(phase({ min_children: 1 }), items(11)), /above max_children \(10\)/);
 });
 
 check('enforceChildCount accepts the {optimizable, items} object shape too', () => {

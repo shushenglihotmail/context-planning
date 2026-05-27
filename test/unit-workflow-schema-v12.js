@@ -86,9 +86,9 @@ check('valid parent max-only uses default min_children=1', () => {
   ]));
 });
 
-check('valid parent min-only uses default max_children=20', () => {
+check('valid parent min-only uses default max_children=10', () => {
   assertNoErrors(run([
-    phase('parent', { min_children: 20 }),
+    phase('parent', { min_children: 10 }),
     phase('child', { parent: 'parent' }),
   ]));
 });
@@ -153,10 +153,10 @@ check('parent max_children less than min_children reports error', () => {
 
 check('parent min-only above default max_children reports error', () => {
   const result = run([
-    phase('parent', { min_children: 21 }),
+    phase('parent', { min_children: 11 }),
     phase('child', { parent: 'parent' }),
   ]);
-  assertErrorIncludes(result, "phase 'parent' has max_children (20) < min_children (21)");
+  assertErrorIncludes(result, "phase 'parent' has max_children (10) < min_children (11)");
 });
 
 check('non-integer max_children reports positive integer error', () => {
