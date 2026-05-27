@@ -46,7 +46,7 @@ so users can preview the result of template inclusion before running.
 
 - [x] 56-01: `cp phase-template ls` + `show` commands (lib/commands/phase-template.js)
 - [x] 56-02: `cp workflow-template ls` + `show` commands (lib/commands/workflow-template.js)
-- [ ] 56-03: `cp phase-template new` + `cp workflow-template new` scaffolders
+- [x] 56-03: `cp phase-template new` + `cp workflow-template new` scaffolders
 - [ ] 56-04: Extend `cp workflow inspect` to print post-expansion resolved phases
 - [ ] 56-05: Integration tests + help-text wiring (bin/commands/_usage.js, index.js)
 
