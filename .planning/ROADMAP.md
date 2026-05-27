@@ -507,6 +507,12 @@ Plans:
 - [ ] 64-02: TBD
 - [ ] 64-03: TBD
 - [ ] 64-04: TBD
+
+### Phase 65: Backwards-compat tests for legacy skills
+
+Plans:
+- [ ] 65-01: TBD
+- [ ] 65-02: TBD
 ## Progress
 
 **Execution Order:**
