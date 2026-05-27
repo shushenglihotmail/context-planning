@@ -1,0 +1,56 @@
+# Templated equivalent of templates/workflows/dev.yaml (v1.3 example).
+#
+# Demonstrates how the reusable phase-templates `feature-plan` and
+# `feature-execute` reproduce the dev.yaml fan-out without duplicating
+# role/skill/prompt fields. The resolved phase list is field-for-field
+# equivalent to dev.yaml's resolved list (verified by
+# test/integration-dev-templated-equivalence.js).
+#
+# This is an example file, not used by `cp run dev`. See dev.yaml for
+# the production workflow.
+workflow: dev-templated
+version: 1
+binds_to: milestone
+principles:
+  - Decompose before designing — plan phase enumerates sub-features the agent must implement.
+  - Per-feature plan→execute pairs run as a fan-out of the plan phase.
+  - "Cross-feature ordering is opt-in via per-item depends_on, gated by an explicit `optimizable: true` flag."
+defaults:
+  model: default
+phases:
+  - id: plan
+    role: planner
+    skill: writing-plans
+    max_children: 10
+    min_children: 1
+    prompt: |
+      Decompose this milestone into 1-10 sub-features. Each sub-feature must
+      have a unique slug-safe id, a short title, and an optional summary.
+
+      By default, the runtime executes items sequentially in the order you
+      list them. To opt into parallel/DAG execution, set the top-level
+      `optimizable: true` flag AND declare `depends_on` on every item
+      (use `[]` for items with no deps; omitted is also treated as `[]`).
+
+      Only set `optimizable: true` if you are confident about ALL inter-item
+      dependencies. If you are unsure about any item, set `optimizable: false`
+      (or omit the flag) and the runtime will fall back to safe sequential
+      execution — any `depends_on` you wrote will be ignored.
+
+      Return JSON shaped like:
+        { "optimizable": false, "items": [ { "id": "...", "title": "..." }, ... ] }
+
+  - phase:
+      id: child-plan
+      template:
+        name: feature-plan
+        args:
+          parent: plan
+
+  - phase:
+      id: child-execute
+      template:
+        name: feature-execute
+        args:
+          parent: plan
+      after: [child-plan]

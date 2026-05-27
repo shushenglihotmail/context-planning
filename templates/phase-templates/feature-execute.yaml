@@ -1,0 +1,23 @@
+# Reusable "feature-execute" phase template (v1.3).
+#
+# Captures the per-feature execution phase used by dev.yaml's fan-out:
+# given a parent fan-out phase id, this phase implements one sub-feature.
+# The caller supplies `after:` on the wrapper to chain it after its
+# sibling plan phase.
+#
+# Usage:
+#   - phase:
+#       id: child-execute
+#       template:
+#         name: feature-execute
+#         args:
+#           parent: plan
+#       after: [child-plan]
+name: feature-execute
+params:
+  - name: parent
+parent: "{{parent}}"
+role: implementer
+skill: subagent-driven-development
+prompt: |
+  Execute the sub-feature plan; commit atomically per task.

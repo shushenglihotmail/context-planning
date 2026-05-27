@@ -1,0 +1,20 @@
+# Reusable "feature-plan" phase template (v1.3).
+#
+# Captures the per-feature planning phase used by dev.yaml's fan-out:
+# given a parent fan-out phase id, this phase plans one sub-feature.
+#
+# Usage:
+#   - phase:
+#       id: child-plan
+#       template:
+#         name: feature-plan
+#         args:
+#           parent: plan
+name: feature-plan
+params:
+  - name: parent
+parent: "{{parent}}"
+role: planner
+skill: writing-plans
+prompt: |
+  Produce a detailed implementation plan for this sub-feature.

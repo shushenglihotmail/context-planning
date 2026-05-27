@@ -431,8 +431,13 @@ function _collectTemplatesReferenced(rawPhases) {
         out.push({ kind: 'workflow-template', name: t.name });
       }
     }
-    if (entry.phase && typeof entry.phase === 'object' && typeof entry.phase.template === 'string') {
-      out.push({ kind: 'phase-template', name: entry.phase.template });
+    if (entry.phase && typeof entry.phase === 'object' && entry.phase.template != null) {
+      const pt = entry.phase.template;
+      if (typeof pt === 'string') {
+        out.push({ kind: 'phase-template', name: pt });
+      } else if (typeof pt === 'object' && typeof pt.name === 'string') {
+        out.push({ kind: 'phase-template', name: pt.name });
+      }
     }
   }
   return out;

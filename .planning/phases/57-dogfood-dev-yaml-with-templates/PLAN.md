@@ -28,22 +28,29 @@ base-commit: 2fee5902b42511c5d3ce55b5b7aa231171528853
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Ship reusable phase-templates that capture the `child-plan` / `child-execute`
+fan-out pair from `dev.yaml`, and demonstrate them in an `examples/`
+workflow that produces an equivalent resolved phase list. Leave the
+production `dev.yaml` unchanged to avoid destabilising the bootstrap
+workflow during the v1.3 cycle.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. Built-in phase-templates `feature-plan` and `feature-execute` ship under `templates/phase-templates/`.
+2. An example workflow `templates/workflows/_examples/dev-templated.yaml` uses both templates and loads cleanly via `loadTemplate()`.
+3. The resolved phase list from the templated example matches `dev.yaml`'s resolved phase list field-for-field (other than ids, by design).
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 57-01: {brief description}
-- [ ] 57-02: {brief description}
-- [ ] 57-03: {brief description}
+- [ ] 57-01: Ship `feature-plan` + `feature-execute` phase-templates
+- [ ] 57-02: Ship `_examples/dev-templated.yaml` workflow using the templates
+- [ ] 57-03: Integration test asserting templated example produces equivalent resolved phases
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+We chose NOT to rewrite the production `dev.yaml` because it is the
+canonical bootstrap workflow that drives cp's own milestones; breaking
+it would block every cp user. The example file demonstrates the value
+without risk. A follow-up milestone can migrate `dev.yaml` once the
+templates have soaked in field use.
+
