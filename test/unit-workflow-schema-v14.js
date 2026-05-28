@@ -131,6 +131,72 @@ check('parent default max_children is now 10 (was 20)', () => {
   assertErrorIncludes(result, 'max_children (10)');
 });
 
+// kind: skill | scaffold (60-01)
+function assertWarningIncludes(result, text) {
+  assert.ok(
+    result.warnings.some((w) => w.includes(text)),
+    'warnings: ' + result.warnings.join('; ')
+  );
+}
+
+check('kind: skill is accepted', () => {
+  assertNoErrors(run([phase('one', { kind: 'skill' })]));
+});
+
+check('kind: scaffold with command is accepted', () => {
+  assertNoErrors(run([phase('one', { kind: 'scaffold', command: 'cp init' })]));
+});
+
+check('kind: scaffold without command errors', () => {
+  const result = run([phase('one', { kind: 'scaffold' })]);
+  assertErrorIncludes(result, "kind=scaffold requires a non-empty command:");
+});
+
+check('kind: scaffold with empty command errors', () => {
+  const result = run([phase('one', { kind: 'scaffold', command: '   ' })]);
+  assertErrorIncludes(result, "kind=scaffold requires a non-empty command:");
+});
+
+check('kind: scaffold with non-string command errors', () => {
+  const result = run([phase('one', { kind: 'scaffold', command: 42 })]);
+  assertErrorIncludes(result, "kind=scaffold requires a non-empty command:");
+});
+
+check('invalid kind value errors', () => {
+  const result = run([phase('one', { kind: 'magic' })]);
+  assertErrorIncludes(result, "kind must be 'skill' or 'scaffold'");
+});
+
+check('kind: scaffold + skill: warns', () => {
+  const result = run([phase('one', { kind: 'scaffold', command: 'cp init', skill: 'brainstorm' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, 'skill is ignored when kind=scaffold');
+});
+
+check('kind: scaffold + role: warns', () => {
+  const result = run([phase('one', { kind: 'scaffold', command: 'cp init', role: 'engineer' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, 'role is ignored when kind=scaffold');
+});
+
+check('kind: skill + command: warns', () => {
+  const result = run([phase('one', { kind: 'skill', command: 'cp init' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, 'command is ignored unless kind=scaffold');
+});
+
+check('command without kind warns (no error)', () => {
+  const result = run([phase('one', { command: 'cp init' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, 'set kind: scaffold to use it');
+});
+
+check('no kind, no command → fully accepted (legacy default skill)', () => {
+  const result = run([phase('one')]);
+  assertNoErrors(result);
+  assert.deepStrictEqual(result.warnings, []);
+});
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   for (const f of failures) console.error('  ✗', f);
