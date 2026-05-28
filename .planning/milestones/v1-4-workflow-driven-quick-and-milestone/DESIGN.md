@@ -16,6 +16,15 @@ superseded_by: null
 Accepted on 2026-05-27. Supersedes the pre-discussion draft of the same
 date.
 
+**Clarification 2026-05-27 (Option A lockdown):** Decision #6's
+"persistent supervisor (LLM-driven)" wording was ambiguous. Locked
+interpretation: the supervisor is the **harness LLM session itself**
+playing a richer role driven by a `cp-run-supervised` skill — same
+single-thread, stateless-CLI architecture as v0.10–v1.3. `cp` never
+holds LLM credentials, never spawns a daemon, never embeds an LLM
+client. The architecture diagram and Decision #6 row have been
+updated; Phase 60 plans 02–05 inherit this constraint.
+
 ## Context
 
 In v1.3 the workflow engine became the canonical execution surface for
@@ -53,7 +62,7 @@ Eleven design decisions, locked in order during the v1.4 brainstorm:
 | 3 | Unified `materialize: inline \| roadmap-phases` directive on parent phases (replaces the earlier "dynamic fan-out" + "scaffold-fanout CLI" split). |
 | 4 | `min_children` default = 1, `max_children` default = 10 (was 20). `min_children: 0` retained as an opt-in escape valve. |
 | ~~5~~ | ~~Legacy skill rename.~~ Superseded by #10. |
-| 6 | Workflow-level `supervised: true \| false` field opts into the two-thread agentic architecture: a persistent supervisor (LLM-driven) coordinates phase sub-agents, mediates user I/O, handles interrupts with L1/L2/L3 confidence levels, and persists checkpoint state. Default false. |
+| 6 | Workflow-level `supervised: true \| false` field opts into the **skill-driven supervisor pattern** (clarified 2026-05-27, Option A): the harness LLM session itself plays the supervisor role by following a richer `cp-run-supervised` skill. It reads phase `description:` fields, classifies user messages with L1/L2/L3 confidence, spawns ephemeral sub-agents (e.g. via the harness's `task` tool) for declared-output work, persists state to `runs/<id>/state.json` between turns, and owns git commits at phase boundaries via `cp` engine helpers. **No persistent Node daemon, no embedded LLM client.** Cross-session continuity is rebuilt from state.json + SUMMARYs on resume — identical to how v0.10–v1.3 already work. Default false. |
 | 7 | Milestone workflow decomposes the legacy "step 3+4+5" brainstorm into **three** phases: `brainstorm`, `propose-project-updates`, `propose-phases`. Each carries a `description:` calling out its re-run scenario. MILESTONE-CONTEXT → DESIGN promotion stays in the existing `cp complete-milestone` CLI. |
 | 8 | Under `supervised: true`: one commit per phase, engine is the sole git author, local commits only (never `git push` without explicit user request), phases declare output paths and engine reverts uncommitted writes in those paths on `restart_phase`. Run state persisted at `.planning/runs/<run-id>/state.json`. Coarse-grained restart (full phase only); intra-phase resume deferred to v1.5+. Unsupervised workflows keep their existing v1.3 commit behavior. |
 | 9 | `cp abandon <run-id>` is **soft only**: marks the run abandoned, moves state to `.planning/runs/_abandoned/<run-id>/`, leaves all artifacts and commits in place. Always prompts the user with a summary of phases done + commits made before acting. No git operations of any kind — code/commit rollback is the user's manual decision. |
@@ -84,41 +93,58 @@ Eleven design decisions, locked in order during the v1.4 brainstorm:
 
 ## Architecture
 
+> Clarified 2026-05-27 — Decision #6 lockdown (Option A): the
+> supervisor is the harness LLM playing a richer role, NOT a separate
+> persistent process. `cp` stays a stateless Node CLI.
+
 ```
-              user
-                │
-        cp run <workflow>
-                │
-                ▼
-   ┌────────────────────────────────────────────────────┐
-   │      cp workflow engine (extended in v1.4)         │
-   │                                                    │
-   │   if workflow.supervised:                          │
-   │   ┌────────────────────────────────────────────┐   │
-   │   │  Supervisor thread (persistent LLM)        │   │
-   │   │   - reads phase descriptions               │   │
-   │   │   - classifies user messages (L1/L2/L3)    │   │
-   │   │   - persists state to runs/<id>/state.json │   │
-   │   │   - owns git commits at phase end          │   │
-   │   └─────────────┬──────────────────────────────┘   │
-   │                 │ spawn / message                  │
-   │                 ▼                                  │
-   │   ┌────────────────────────────────────────────┐   │
-   │   │  Phase sub-agent (ephemeral, per phase)    │   │
-   │   │   - declared output paths only             │   │
-   │   │   - no git, no network outside provider    │   │
-   │   │   - emits structured events                │   │
-   │   └────────────────────────────────────────────┘   │
-   │                                                    │
-   │   else (supervised: false):                        │
-   │   ┌────────────────────────────────────────────┐   │
-   │   │  v1.3 deterministic phase dispatcher       │   │
-   │   └────────────────────────────────────────────┘   │
-   └────────────────────────────────────────────────────┘
-                │
-                ▼
-   .planning/{runs,phases,quick,milestones,ROADMAP.md,STATE.md,...}
+   ┌──────────────────────────────────────────────────────────┐
+   │  Harness LLM session (Copilot CLI / Claude Code / …)     │
+   │  ← this IS the main thread; no separate process          │
+   │                                                          │
+   │  user message                                            │
+   │       │                                                  │
+   │       ▼                                                  │
+   │  invokes /cp-run-supervised <workflow>                   │
+   │  (skill prompt: classify, route, spawn, commit)          │
+   │       │                                                  │
+   │       ▼                                                  │
+   │  ┌────────────────────────────────────────────────┐      │
+   │  │ Supervisor role (same LLM, richer skill)       │      │
+   │  │  - reads phase description: to pick targets    │      │
+   │  │  - classifies messages L1/L2/L3                │      │
+   │  │  - reads/writes runs/<id>/state.json           │      │
+   │  │  - calls cp engine helpers for commits         │      │
+   │  └──────────────────┬─────────────────────────────┘      │
+   │                     │ harness `task` tool (or             │
+   │                     │ inline) per declared output         │
+   │                     ▼                                    │
+   │  ┌────────────────────────────────────────────────┐      │
+   │  │ Phase sub-agent (ephemeral, per phase)         │      │
+   │  │  - declared output paths only                  │      │
+   │  │  - no git, no network outside provider         │      │
+   │  │  - returns structured result to supervisor     │      │
+   │  └────────────────────────────────────────────────┘      │
+   │                                                          │
+   │  (supervised: false → harness drives the v1.3            │
+   │   deterministic phase dispatcher unchanged)              │
+   └──────────────────────────────────────────────────────────┘
+              │                            ▲
+              ▼                            │
+   ┌────────────────────────┐   stateless CLI calls
+   │ cp engine (Node CLI)   │ ◄─ cp status, cp run resume,
+   │  - no LLM client       │    cp run mark-complete,
+   │  - no daemon           │    cp audit, cp checkpoint,
+   │  - state on disk only  │    cp abandon
+   └───────────┬────────────┘
+               ▼
+   .planning/{runs/<id>/state.json, phases/, quick/,
+              milestones/, ROADMAP.md, STATE.md, ...}
 ```
+
+Cross-session continuity works exactly like v0.10–v1.3: a fresh harness
+session rehydrates the supervisor role by reading state.json + recent
+SUMMARY.md + `.continue-here.md` and resumes.
 
 ## YAML grammar (Decision #1)
 
@@ -412,48 +438,63 @@ Existing reserved verbs (unchanged): `cp init`, `cp status`,
 
 ## Supervisor architecture (Decision #6, #8)
 
+The "supervisor" is **the harness LLM session itself** following a
+richer skill prompt (`cp-run-supervised.md`). It is not a separate
+process, daemon, or embedded LLM client. The same session that
+read the user's `/cp-run …` slash command keeps running and adopts
+the supervisor role for the duration of the workflow.
+
 ```
-            user messages
+            user messages (same harness session)
                   │
                   ▼
-   ┌─────────────────────────────┐
-   │   Supervisor (LLM thread)   │
-   │                             │
-   │  classify message:          │
-   │    in-flow conversation  ──► forward to sub-agent
+   ┌─────────────────────────────────────┐
+   │  Supervisor role (harness LLM,      │
+   │  driven by cp-run-supervised skill) │
+   │                                     │
+   │  classify message:                  │
+   │    in-flow conversation  ──► route to sub-agent
    │    side comment          ──► inject as note
    │    control signal        ──► reason about action
-   │                                │
-   │   confidence:                  │
-   │     L1 — execute autonomously  │
-   │     L2 — suggest, await Y/n    │
-   │     L3 — ask user (menu)       │
-   └──────────────┬──────────────────┘
-                  │ spawn / message
+   │                                     │
+   │   confidence:                       │
+   │     L1 — execute autonomously       │
+   │     L2 — suggest, await Y/n         │
+   │     L3 — ask user (menu)            │
+   └──────────────┬──────────────────────┘
+                  │ harness `task` tool spawn
                   ▼
-   ┌─────────────────────────────┐
-   │  Phase sub-agent            │
-   │  events: awaiting_input,    │
-   │          phase_complete,    │
-   │          phase_failed,      │
-   │          escalating         │
-   └─────────────────────────────┘
+   ┌─────────────────────────────────────┐
+   │  Phase sub-agent                    │
+   │  (one-shot harness subagent call;   │
+   │   no LLM lifetime of its own)       │
+   │                                     │
+   │  returns one of:                    │
+   │    awaiting_input | phase_complete  │
+   │    phase_failed   | escalating      │
+   └─────────────────────────────────────┘
 ```
 
-State persisted at `.planning/runs/<run-id>/state.json` (between phases
-AND on every supervisor decision).
+State persisted at `.planning/runs/<run-id>/state.json` between phases
+AND on every supervisor decision so a crashed/closed harness can be
+fully rehydrated by a fresh session via `cp resume <run-id>`.
+
+`cp` provides the helpers — read/write state.json, classify-message
+rubric, output-reversion, commit-with-engine-trailer — but never holds
+LLM credentials or runs a long-lived process.
 
 Sub-agents:
 - Have access only to declared output paths (Decision #8)
 - No git commands, no network calls outside provider
-- Always escalate to supervisor; never read stdin directly
+- Always return structured results to supervisor; never read stdin directly
 
-Engine ↔ git contract:
-- Engine snapshots HEAD before phase
-- On `phase_complete` → stage + commit declared outputs with
-  engine-controlled message: `cp run <workflow>: <phase-id> ({{run-id}})`
-- On `phase_failed` or interrupt → revert uncommitted changes in declared
-  output paths only
+Engine ↔ git contract (`cp` Node helpers, called by the supervisor):
+- `cp checkpoint snapshot <run-id> <phase-id>` — record HEAD before phase
+- `cp checkpoint commit <run-id> <phase-id>` — stage + commit declared
+  outputs with engine-controlled message:
+  `cp run <workflow>: <phase-id> ({{run-id}})`
+- `cp checkpoint revert <run-id> <phase-id>` — revert uncommitted writes
+  in declared output paths only
 - Never `git push`
 
 ## Interrupt handling (Decision #2, #6)
@@ -515,7 +556,7 @@ supervisor reasoning carry the load.
    `cp milestone-setup-check`, `cp milestone-finalize`.
 4. **Reserved CLI helpers — set 2** — `cp quick-setup`, `cp quick-finalize`,
    `cp abandon`, `cp list`, `cp status <run-id>`.
-5. **Supervisor runtime** — persistent LLM session, sub-agent contract
+5. **Supervisor runtime** — `cp-run-supervised` skill + sub-agent contract + state.json helpers (no daemon, no embedded LLM — Option A clarification)
    (event protocol), output-path enforcement.
 6. **Message broker + classifier** — L1/L2/L3 confidence levels, in-flow
    vs side-comment vs control-signal classification, interrupt menu.
