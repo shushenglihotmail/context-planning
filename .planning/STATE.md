@@ -13,7 +13,7 @@ Phase: 60 (v1.4 Workflow-driven quick and milestone)
 Plan: 60-04
 Status: Ready to execute
 Current focus: Engine + supervisor + broker + checkpoint (unified runtime)
-Last activity: 60-03 message-broker classifier + cp classify CLI
+Last activity: tick plan 60-03
 
 Progress: [████░░░░░░] 38%
 
