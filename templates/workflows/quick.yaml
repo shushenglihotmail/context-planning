@@ -42,6 +42,19 @@ phases:
       skill: "{{design_skill}}"
       outputs:
         - ".planning/quick/{{slug_with_date}}/DESIGN.md"
+      prompt: |
+        Open the task's DESIGN.md (at
+        .planning/quick/{{slug_with_date}}/DESIGN.md) and work with the
+        user to fill in: Approach (what will change and how) and
+        Done-When (observable criteria that say it's finished).
+
+        STOP. Do NOT start implementation. The user's task description
+        is a starting point, NOT a green light. Ask focused follow-up
+        questions until both Approach and Done-When are unambiguous,
+        write them into DESIGN.md, then wait for the user to explicitly
+        confirm DESIGN.md before marking this phase complete.
+
+        Mark status=ready in DESIGN.md only AFTER user confirmation.
   - phase:
       id: execute
       description: |
@@ -52,6 +65,11 @@ phases:
       skill: "{{execute_skill}}"
       outputs:
         - "**/*"
+      prompt: |
+        Implement the change agreed in DESIGN.md (at
+        .planning/quick/{{slug_with_date}}/DESIGN.md). Commit atomically
+        per task; append progress notes to STATE.md as you go. Do not
+        proceed past Done-When without verifying each criterion.
   - phase:
       id: finalize
       description: |

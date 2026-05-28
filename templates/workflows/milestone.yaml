@@ -36,6 +36,14 @@ phases:
       outputs:
         - ".planning/milestones/{{milestone_slug}}/DESIGN.md"
         - ".planning/MILESTONE-CONTEXT.md"
+      prompt: |
+        Brainstorm the milestone scope with the user. Probe goals,
+        non-goals, and constraints; surface trade-offs. Write the
+        results into
+        .planning/milestones/{{milestone_slug}}/DESIGN.md and into
+        .planning/MILESTONE-CONTEXT.md.
+
+        Do not lock scope without the user's explicit agreement.
   - phase:
       id: propose-project-updates
       description: |
@@ -46,6 +54,11 @@ phases:
       skill: "{{plan_skill}}"
       outputs:
         - ".planning/milestones/{{milestone_slug}}/project-update.json"
+      prompt: |
+        Read the brainstorm output and propose a JSON patch for
+        PROJECT.md: which requirements move to validated, which become
+        active, which are deferred. Write
+        .planning/milestones/{{milestone_slug}}/project-update.json.
   - phase:
       id: apply-project-updates
       description: |
@@ -62,6 +75,11 @@ phases:
       skill: "{{plan_skill}}"
       materialize: roadmap-phases
       max_children: 10
+      prompt: |
+        Decompose this milestone into 2-10 phases for ROADMAP.md. Each
+        phase must have a unique slug-safe id, a short title, an
+        optional summary, and a depends_on list (may be empty). Aim for
+        phases that are independently shippable.
   - phase:
       id: finalize
       description: |
