@@ -41,4 +41,5 @@ module.exports = {
   workflow: require('./workflow'),
   'phase-template': require('./phase-template'),
   'workflow-template': require('./workflow-template'),
+  classify: require('./classify'),
 };
