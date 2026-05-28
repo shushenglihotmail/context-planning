@@ -1,0 +1,1 @@
+Proposed minimal PROJECT.md update: add v1.5 entry to Active section describing role/skill semantics fix + zero-config workflow defaults. No requirement changes; pure internal refactor of workflow runtime + template defaults.

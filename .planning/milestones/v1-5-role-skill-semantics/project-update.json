@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "milestone": "v1.5",
+  "ops": [
+    {
+      "op": "add-active",
+      "text": "- **Role/skill semantics + zero-config workflow defaults**: fix the cp-quick gate-skip bug by separating `role` (persona — developer, tech-writer, …) from `skill` (routing key by default, or pinned literal). Add `${config.<dot.path>}` interpolation in workflow expansion so defaults like `${config.provider.brainstorm_skill}` resolve via `provider.resolveSkill()` against the always-present routing-key map. Rewrite `quick.yaml` and `milestone.yaml` to use the new shape with strong design-gate prose. Pre-customer, breaking workflow-YAML schema changes acceptable. — v1.5",
+      "version": "v1.5"
+    }
+  ]
+}

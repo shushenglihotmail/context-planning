@@ -1,0 +1,1 @@
+Drafted milestone DESIGN.md and MILESTONE-CONTEXT.md per user-confirmed scope: role = persona, skill = routing key (default) or pinned literal; add config-token interpolation in workflow expansion; make workflow defaults work with zero user config; rewrite quick.yaml + milestone.yaml; pre-customer, breaking schema changes acceptable.

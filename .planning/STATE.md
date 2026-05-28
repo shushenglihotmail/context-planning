@@ -1,3 +1,10 @@
+<!-- cp:current-focus -->
+- **Current milestone:** v1-5-role-skill-semantics
+- **Slug:** v1-5-role-skill-semantics
+- **Status:** in-progress
+- **Updated:** 2026-05-28
+<!-- cp:current-focus -->
+
 # Project State
 
 ## Project Reference
@@ -9,11 +16,11 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 154 of 154
-Status: Idle
-Current focus: -
-Last activity: /cp-complete-milestone v1.4 Workflow-driven quick and milestone
+Phase: 75 (v1.5 Role/skill semantics)
+Plan: -
+Status: Phase complete
+Current focus: Docs + CHANGELOG + v1.5.0 release
+Last activity: scaffold-phase 74 (Migrate workflow test fixtures and tests)
 
 Progress: [░░░░░░░░░░] 0%
 

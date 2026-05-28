@@ -51,6 +51,7 @@ pick up exactly where work left off without re-reading the whole repo.**
 
 ### Active
 - **Unified Phase Model**: collapse cp-autonomous + cp-quick onto the v1.0 workflow engine via a unified `Phase` data type used by both the milestone layer (ROADMAP/STATE — owns plan + state) and the workflow layer (templates — owns execution recipe). CLI surfaces (`cp autonomous`, `cp quick`, `cp run`) stay frozen; refactor is internal. Unifies transcript state under `.planning/runs/<slug>/`. Resolves the v1.1 Phase 45 deferral. — v1.2
+- **- **Role/skill semantics + zero-config workflow defaults**: fix the cp-quick gate-skip bug by separating `role` (persona — developer, tech-writer, …) from `skill` (routing key by default, or pinned literal). Add `${config.<dot.path>}` interpolation in workflow expansion so defaults like `${config.provider.brainstorm_skill}` resolve via `provider.resolveSkill()` against the always-present routing-key map. Rewrite `quick.yaml` and `milestone.yaml` to use the new shape with strong design-gate prose. Pre-customer, breaking workflow-YAML schema changes acceptable. — v1.5** — v1.5
 
 ### Out of Scope
 - **No knowledge-graph layer** — gsd-graphify-style indexing is heavy and
