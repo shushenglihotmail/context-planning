@@ -502,6 +502,23 @@ Plans:
 - [x] 63-03: v1.4.0 changelog + release
 
 </details>
+
+### 🚧 v1.5 Role/skill semantics (In Progress)
+
+
+### Phase 64: setup
+
+### Phase 65: brainstorm
+
+### Phase 66: propose-project-updates
+
+### Phase 67: apply-project-updates
+
+### Phase 68: propose-phases
+
+### Phase 69: finalize
+
+### Phase 70: Config token interpolation in workflow expansion
 ## Progress
 
 **Execution Order:**
