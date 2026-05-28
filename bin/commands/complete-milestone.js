@@ -84,6 +84,11 @@ function run(args = []) {
     }
   }
 
+  if (r.alreadyShipped) {
+    console.log(r.message || `Milestone "${r.milestone}" already shipped. No-op.`);
+    return;
+  }
+
   console.log(`Milestone:   ${r.milestone}`);
   console.log(`Phases:      ${r.phases.join(', ')}`);
   console.log(`Subsystems:  ${r.agg.subsystems.join(', ') || '—'}`);
