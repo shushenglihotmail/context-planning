@@ -49,7 +49,7 @@ workflows. No daemon, no embedded LLM (Option A — DESIGN.md Decision #6).
 - [x] 60-01: kind=scaffold + materialize unification + defaults
 - [x] 60-02: Supervisor skill + state.json helpers + sub-agent contract
 - [x] 60-03: Message broker + L1/L2/L3 classifier rubric + `cp classify`
-- [ ] 60-04: Checkpoint protocol — snapshot/commit/revert + restart_phase
+- [x] 60-04: Checkpoint protocol — snapshot/commit/revert + restart_phase
 - [ ] 60-05: Integration tests across the unified supervised runtime
 
 ## Notes

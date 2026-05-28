@@ -477,7 +477,7 @@ Plans:
 - [x] 60-01: kind=scaffold + materialize unification + defaults
 - [x] 60-02: Supervisor runtime — persistent LLM session + sub-agent contract
 - [x] 60-03: Message broker + classifier (L1/L2/L3 confidence)
-- [ ] 60-04: Checkpoint protocol — runs/state.json + restart_phase output reversion
+- [x] 60-04: Checkpoint protocol — runs/state.json + restart_phase output reversion
 - [ ] 60-05: Integration tests across the unified runtime
 
 ### Phase 61: Reserved CLI verbs (project + milestone + quick helpers)
