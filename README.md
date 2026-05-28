@@ -247,14 +247,14 @@ verb when a finding appears.
 | Command | Stateful work cp does | Workflow handoff |
 |---|---|---|
 | `/cp-new-project`        | Scaffold `.planning/`, seed PROJECT.md/ROADMAP.md/STATE.md | `brainstorm` → fill in vision/constraints |
-| `/cp-new-milestone <name>` | Append milestone shell to ROADMAP, write MILESTONE-CONTEXT.md | `brainstorm` → spec the milestone → break into phases |
+| `/cp-new-milestone <name>` | **Rewritten in v1.4.** Thin wrapper that delegates to `cp run milestone "<name>"` — a 6-phase supervised workflow (setup → brainstorm → propose-project-updates → apply-project-updates → propose-phases → finalize). | `brainstorm` per phase |
 | `/cp-plan-phase <N>`     | **Deprecated in v1.2 — removed in v1.3.** Stub that redirects to `/cp-autonomous` (which delegates per-phase plan generation to the role skill resolved by `cp doctor`). | — |
 | `/cp-execute-phase <N>`  | For each plan: hand off, on success tick ROADMAP, write SUMMARY.md, update STATE.md | `execute` → write & verify code |
 | `/cp-autonomous [START] [--scope=…] [--workflow=<dev\|quick>]` | Drive all pending phases of the active milestone without per-phase approval. Per-phase delegation to the role skill from `cp doctor`. `--workflow=quick` drives a non-roadmapped quick run. Smart-gated on test fail / audit HIGH / executor deviation; stops cleanly to `.planning/.continue-here.md` and prompts inline. | Delegates per phase to the role skill |
-| `/cp-quick <task>`       | **Rewritten in v1.2.** Create `quick/{YYYYMMDD-slug}/DESIGN.md` + `STATE.md`, collaborative goal/approach/done-when fill-in, atomic-commit on done. `--full` retains v1.1 heavyweight `PLAN.md` behavior. | `execute_simple` → quick fix |
+| `/cp-quick <task>`       | **Rewritten in v1.4.** Thin wrapper that delegates to `cp run quick "<task>"` — a 4-phase supervised workflow (setup → design → execute → finalize). `--full` swaps the design phase's skill for the full plan skill. | Quick workflow phases |
 | `/cp-progress`           | Read STATE + ROADMAP → "you are here, next is X" | — |
 | `/cp-resume`             | Restore from `.continue-here.md` + STATE | `execute` or whatever role was paused |
-| `/cp-complete-milestone` | Verify all phases done, aggregate SUMMARY frontmatter, append digest to MILESTONES.md, collapse milestone in ROADMAP, clear MILESTONE-CONTEXT.md, reset STATE | — |
+| `/cp-complete-milestone` | **Rewritten in v1.4.** Thin wrapper that delegates to `cp run complete-milestone "<name>"` — a 2-phase deterministic workflow (verify → complete) wrapping `cp complete-milestone`. | — |
 | `/cp-map-codebase`       | Scaffold `.planning/codebase/` (7 GSD-compatible docs: STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS); dispatch 4 parallel sub-agents to fill them. **cp-native** — no provider required. | Harness sub-agent dispatch (Copilot CLI `task` / Claude `Task` tool) |
 | `/cp-capture`            | Walk `.planning/INBOX.md` open items and route each to a quick task / phase note / seed / discard. cp tracks state; harness performs the routing edits. **cp-native** — no provider required for capture/list/tick. | Harness-driven routing; optional provider for `quick:*` items |
 
@@ -372,6 +372,29 @@ cp autonomous [START] [--scope=phase|N|N-M|milestone] [--check] [--json] [--quie
                                 # would run. The bare CLI is most useful
                                 # for --check; the full agent-driven loop is
                                 # `/cp-autonomous` (slash skill).
+cp abandon <slug> [--yes] [--reason <text>]
+                                # v1.4: soft-abandon a workflow run (state
+                                # only; never reverts code). Interactive
+                                # confirm by default; --yes for scripts.
+cp list [--workflow <name>] [--status <status>] [--json]
+                                # v1.4: list workflow runs under
+                                # .planning/runs/, with optional filters.
+cp status <run-id> [--json]     # v1.4: with a positional run id, prints
+                                # that run's state. Without args, behaves
+                                # as before (project status).
+cp quick-setup <task> [--slug <s>]
+                                # v1.4: internal verb used by the `quick`
+                                # workflow's setup phase. Scaffolds
+                                # .planning/quick/<UTC-date>-<slug>/{DESIGN,STATE}.md.
+cp quick-finalize <slug> [--summary <md>]
+                                # v1.4: internal verb used by the `quick`
+                                # workflow's finalize phase. Writes
+                                # SUMMARY.md and flips STATE status.
+cp milestone-setup <name>       # v1.4: internal verb used by the
+                                # `milestone` workflow's setup phase.
+                                # Pre-flight + scaffold milestone shell.
+cp milestone-finalize <name>    # v1.4: internal verb used by the
+                                # `milestone` workflow's finalize phase.
 cp config get [<key>]           # Print a cp config value (or the whole cp block)
 cp config set <key> <value>     # Update cp.<key>
 cp version                      # Print version
@@ -394,6 +417,15 @@ they hide.
 > CLI verb) and the new `cp workflow export` + `cp workflow inspect`
 > subcommands.
 
+> **New in v1.4** — see [MIGRATION-v1.4.md](MIGRATION-v1.4.md). The
+> three workhorse slash commands (`/cp-quick`, `/cp-new-milestone`,
+> `/cp-complete-milestone`) are now thin wrappers over workflow YAMLs
+> (`quick`, `milestone`, `complete-milestone`). A new `supervised: true`
+> flag on a workflow means a single harness LLM session drives every
+> phase (Option A — supervisor = harness). New CLI verbs: `cp abandon`,
+> `cp list`, `cp status <run-id>`, and internal `*-setup` / `*-finalize`
+> helpers used by the workflow phases.
+
 cp ships a reusable YAML workflow format that lets you define phase DAGs once
 and run them via `cp run`. Each workflow declares phases, dependencies (for
 parallel waves), roles, and global principles. The engine supports three state
@@ -406,11 +438,12 @@ quick tasks, and one-off investigations.
 
 ```bash
 cp workflow ls                          # list available templates
-cp run quick "fix login typo"          # start a 3-phase custom run
+cp run quick "fix login typo"          # start a 4-phase supervised run
 # → prints slug + Wave 1 instruction for the agent to execute
-echo "Aligned on scope" | cp run mark-complete <slug> discuss
-echo "Fixed typo, tests pass" | cp run mark-complete <slug> execute
-echo "Verified correct" | cp run mark-complete <slug> verify
+echo "Scope captured"  | cp run mark-complete <slug> setup
+echo "Design noted"    | cp run mark-complete <slug> design
+echo "Implemented + tests green" | cp run mark-complete <slug> execute
+echo "Finalized"       | cp run mark-complete <slug> finalize
 cp run status <slug>                    # status: done
 ```
 

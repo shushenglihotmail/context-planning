@@ -28,21 +28,25 @@ base-commit: 3ef63f6ed953fa2bb0a8f4bd4a2855e9390ec860
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Ship v1.4 to users: refreshed docs that describe supervised workflows
+and the new CLI verbs, a MIGRATION-v1.4.md guide for v1.3 users, and
+the v1.4.0 release bump.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. README documents `/cp-quick`, `/cp-new-milestone`,
+   `/cp-complete-milestone` as workflow-driven; `cp run`, `cp abandon`,
+   `cp list`, `cp status <run-id>` verbs are documented.
+2. `MIGRATION-v1.4.md` exists at repo root and explains the v1.3 → v1.4
+   upgrade path for workflow YAMLs (`after:` → `depends_on:`,
+   `supervised:` flag) and any deprecated CLI shapes.
+3. `package.json` version is `1.4.0`; `cp --version` prints `1.4.0`.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 63-01: {brief description}
-- [ ] 63-02: {brief description}
-- [ ] 63-03: {brief description}
+- [ ] 63-01: README + CLI help refresh for v1.4 supervised workflows
+- [ ] 63-02: Author MIGRATION-v1.4.md (v1.3 → v1.4 upgrade guide)
+- [ ] 63-03: Bump package.json to 1.4.0; verify `cp --version`; release notes
 
 ## Notes
 
