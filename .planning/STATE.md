@@ -13,7 +13,7 @@ Phase: 60 (v1.4 Workflow-driven quick and milestone)
 Plan: 60-01
 Status: Ready to execute
 Current focus: Engine: kind=scaffold + materialize unification + defaults change
-Last activity: 59-03 flip grammar break — require phase: wrappers + description:
+Last activity: tick plan 59-03
 
 Progress: [█░░░░░░░░░] 9%
 
