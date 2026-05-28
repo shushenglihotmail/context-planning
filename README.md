@@ -67,7 +67,7 @@ Once you've started, every path converges on the same `/cp-plan-phase N`
 ```bash
 npm install -g context-planning
 # exposes BOTH `cplan` and `cp` on PATH
-cp --version    # should print 1.4.x
+cp --version    # should print 1.5.x
 ```
 
 ### Node CLI (from source — for development)
@@ -489,6 +489,29 @@ cp run status <slug>                    # status: done
 Define your own with `cp workflow new <name> --from quick` and validate with
 `cp workflow validate <name>` before running. Project-local templates in
 `.planning/workflows/` override built-ins of the same name.
+
+### Role vs. skill (v1.5)
+
+`role:` and `skill:` are orthogonal:
+
+- **`role:` is a persona** — free-form, used in the supervisor prompt to
+  say "act as a ___". Examples: `developer`, `tech-writer`, `planner`,
+  `product-thinker`. Treat it like a job title.
+- **`skill:` is a routing key** — a name the active provider knows how
+  to resolve (e.g. `plan`, `execute`, `brainstorm`, `tdd`, `debug`,
+  `review`). With superpowers installed, routing keys map to
+  superpowers skills; without a provider, they fall back to
+  `cp:manual/<name>` so workflows still run zero-config. To pin a
+  specific provider literal, write the full path:
+  `skill: cp:manual/plan` or `skill: superpowers:executing-plans`.
+
+The schema validator warns when `role:` carries a routing key, and
+errors when both `role:` and `skill:` are routing keys that disagree.
+
+Top-level `params:` with `default:` values are interpolated against the
+active config at template-load time, so you can write
+`default: "${config.cp.behavior.default_workflow}"` and have it resolved
+before any phase runs.
 
 ### Fan-out (v1.2)
 

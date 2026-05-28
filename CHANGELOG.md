@@ -6,6 +6,76 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-06 — Role/skill semantics + zero-config workflow defaults
+
+Fixes a v1.4 regression where `/cp-quick` would jump straight into
+implementation on a terse task description. The root cause turned out
+to be three independent bugs in the workflow runtime and built-in
+templates; v1.5 closes all of them and adds regression coverage.
+
+### Fixed
+
+- **`${config.provider.…}` tokens are now interpolated.** Top-level
+  `params:` defaults containing `${config.…}` are resolved at template
+  load time against the active config. Previously they were copied
+  through verbatim and reached the supervisor as literal text, which
+  meant a phase asking for `skill: ${config.provider.execute_skill}`
+  got the literal string instead of the configured skill name.
+- **Skill values now route through the provider.** A bare skill name
+  on a phase (e.g. `skill: plan`) is resolved through
+  `provider.resolveSkill(name)`, which checks the active provider's
+  skills directory and falls back to `cp:manual/<name>` when no
+  provider is installed. This is what makes the built-in templates
+  work zero-config, with or without superpowers.
+- **`quick.yaml` and `milestone.yaml` now declare `prompt:` blocks.**
+  Both templates previously set only `description:`, but
+  `formatInstruction` emits `prompt:` (not `description:`) to the
+  supervisor. The design phase's STOP / wait-for-user-confirmation
+  gate is now in the prompt where it is actually visible — this is
+  the end-to-end fix for the original symptom.
+
+### Added
+
+- **Role/skill orthogonality** in the v1.2+ schema validator:
+  - `role:` is treated as a persona (free-form, e.g. `developer`,
+    `tech-writer`, `planner`).
+  - `skill:` is either a routing key (resolved via the provider) or a
+    pinned literal (e.g. `cp:manual/plan`).
+  - Putting a routing key (`plan`, `execute`, `brainstorm`, …) in
+    `role:` now produces a validator warning.
+  - Setting BOTH `role:` and `skill:` to routing keys that disagree
+    is a validator error.
+- **Persona role params** on the built-in templates:
+  - `quick.yaml`: `design_role` (default `tech-writer`),
+    `execute_role` (default `developer`).
+  - `milestone.yaml`: `brainstorm_role` (default `product-thinker`),
+    `plan_role` (default `developer`).
+- **`test/integration-v15-builtin-templates.js`** — 7 cases that load
+  every shipped v1.5 template through
+  `loadTemplate → computeWaves → formatInstruction` and assert no
+  leaked `${config.…}` / unresolved `{{…}}` tokens on role/skill
+  lines, and that the STOP gate reaches the supervisor instruction.
+
+### Changed
+
+- The built-in `quick` and `milestone` workflow YAMLs no longer carry
+  `${config.provider.…_skill}` defaults. Their `skill:` params now
+  default to literal routing keys (`plan`, `execute`, `brainstorm`),
+  which providers can intercept; pin-overrides via `cp:manual/<name>`
+  still work.
+
+### Migration
+
+For users who authored custom workflow YAMLs against v1.4:
+- If you wrote `role: plan` (or any routing key) expecting that to be
+  routed, change it to `skill: plan` and add a persona `role:` like
+  `developer` or `tech-writer`. Routing-key roles will start warning
+  in v1.5 and may become an error in a future release.
+- If you wrote `skill: ${config.provider.execute_skill}` expecting
+  that to be substituted, replace it with `skill: execute` (or
+  whatever routing key you meant). The literal `${config.…}` form
+  still works as a `default:` on a top-level `params:` entry.
+
 ## [1.4.0] - 2026-05-28 — Workflow-driven quick and milestone
 
 The three workhorse slash commands (`/cp-quick`, `/cp-new-milestone`,
