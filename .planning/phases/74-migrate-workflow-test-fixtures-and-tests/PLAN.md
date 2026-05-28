@@ -28,20 +28,58 @@ base-commit: 0e745ab6b21bd229e38b97ca23b8cb96bc43d01d
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Add end-to-end test coverage proving the v1.5 stack delivers what the
+milestone promised: when the supervisor opens a phase from the new
+`quick.yaml` / `milestone.yaml`, the instruction contains a real skill
+name (no `${config.…}`, no unresolved `{{...}}`), an explicit STOP/wait
+gate on the design phase, and persona role. Also audit test fixtures.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. New `test/integration-v15-builtin-templates.js` loads each shipped
+   v1.5 template, expands params, formats a per-phase supervisor
+   instruction, and asserts:
+   - No `${config.` substring anywhere in the instruction.
+   - No unresolved `{{…}}` token in skill/role lines.
+   - `quick.yaml` design phase instruction contains the STOP gate text.
+   - role is the persona literal (`tech-writer`, `developer`,
+     `product-thinker`); skill is either the routing-key result
+     (`writing-plans`/`subagent-driven-development`/`brainstorming`) or
+     manual provider fallback.
+2. Fixtures audit confirms no `test/fixtures/workflows/*.yaml` uses a
+   routing-key value (`plan`, `execute`, `brainstorm`, ...) as `role:`;
+   any that did are migrated.
+3. `npm test` chain wires the new file and the full suite stays green.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
+### 74-01 — Audit + migrate test fixtures
 
-<!-- No plans yet. Add via `cp scaffold-plan` (coming in v0.4) or edit by hand. -->
+- Grep `test/fixtures/workflows/` for `role: <routing-key>`. Phase 73
+  audit showed fixtures use `-er`-suffix personas (`planner`,
+  `implementer`, `brainstormer`) which are NOT routing keys, so likely
+  no migration. Re-confirm and document.
+
+### 74-02 — End-to-end built-in template integration test
+
+- Create `test/integration-v15-builtin-templates.js`.
+- For each of `quick.yaml`, `milestone.yaml`:
+  - Build a tmpdir project with default config (superpowers provider).
+  - `loadTemplate` → `computeWaves` → for each phase, call the same
+    `formatInstruction` codepath used in production (or directly verify
+    rendered skill/role values).
+  - Assert no `${config.` substring.
+  - Assert no unresolved `{{...}}` in role/skill.
+  - Assert `quick.yaml` `design` description retains the STOP gate.
+
+### 74-03 — Wire test into npm test and run full suite
+
+### 74-04 — SUMMARY
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- `${config.provider.*}` literals in `test/unit-workflow-toplevel-params.js`
+  and `test/unit-workflow-template-expand.js` are intentional regression
+  protection for Phase 70's interpolation feature; leave them alone.
+- `roundtrip-gsd.js` round-trip mentioned in DESIGN is a v1.6 concern
+  (depends on gsd-import behavior unchanged in v1.5).
