@@ -521,6 +521,8 @@ Plans:
 ### Phase 70: Config token interpolation in workflow expansion
 
 ### Phase 71: Skill routing via provider.resolveSkill in runtime
+
+### Phase 72: Schema validator role/skill orthogonality
 ## Progress
 
 **Execution Order:**
