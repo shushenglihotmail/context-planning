@@ -519,6 +519,8 @@ Plans:
 ### Phase 69: finalize
 
 ### Phase 70: Config token interpolation in workflow expansion
+
+### Phase 71: Skill routing via provider.resolveSkill in runtime
 ## Progress
 
 **Execution Order:**
