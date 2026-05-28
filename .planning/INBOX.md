@@ -6,11 +6,9 @@ interactively (route each to a quick task, phase, seed, or discard).
 
 ## Open
 
-(none — all v0.9 items routed to phases 32-35; see Triaged below)
+- [ ] [2026-05-28T07:28] BUG/cp: complete-milestone --dry-run fails on milestones whose phases use the legacy pass-through model (PLAN.md+SUMMARY.md per phase dir, 0 plan checkboxes in ROADMAP). cp status reports 'All plans done' (0/0) but milestone.verifyMilestoneComplete requires plansTotal>0, so verify exits non-zero. Workaround: --force. Fix idea: treat plansTotal===0 + per-phase SUMMARY.md present as a valid completion shape, OR have cp new-milestone always scaffold at least one plan checkbox per phase. Surfaced while closing v1.5.
 
 ## Triaged
-
-<!-- triaged items move here as: `- [x] [YYYY-MM-DDTHH:mm] → <destination>: <text>` -->
 
 - [x] [2026-05-20T12:59] → phase 35: per-phase DESIGN.md template — first-class home for SP brainstorm/discuss output (v0.9 Onboarding milestone)
 - [x] [2026-05-21T11:17] → phase 32: /cp-map-codebase auto-init when .planning/ missing (v0.9 Onboarding)
