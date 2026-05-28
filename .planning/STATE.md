@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 62 (v1.4 Workflow-driven quick and milestone)
-Plan: 62-03
+Phase: 63 (v1.4 Workflow-driven quick and milestone)
+Plan: 63-01
 Status: Ready to execute
-Current focus: Workflow YAMLs + slash wrappers (quick / milestone / complete-milestone)
+Current focus: Docs + MIGRATION-v1.4.md + v1.4.0 release
 Last activity: tick plan 62-02
 
-Progress: [████████░░] 75%
+Progress: [████████░░] 81%
 
 ## Performance Metrics
 
