@@ -527,6 +527,8 @@ Plans:
 ### Phase 73: Rewrite built-in workflow YAMLs
 
 ### Phase 74: Migrate workflow test fixtures and tests
+
+### Phase 75: Docs + CHANGELOG + v1.5.0 release
 ## Progress
 
 **Execution Order:**
