@@ -523,6 +523,8 @@ Plans:
 ### Phase 71: Skill routing via provider.resolveSkill in runtime
 
 ### Phase 72: Schema validator role/skill orthogonality
+
+### Phase 73: Rewrite built-in workflow YAMLs
 ## Progress
 
 **Execution Order:**
