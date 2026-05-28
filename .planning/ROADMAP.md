@@ -503,8 +503,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.5 Role/skill semantics (In Progress)
-
+<details>
+<summary>✅ v1.5 Role/skill semantics (Phases 64-75) — SHIPPED 2026-05-28</summary>
 
 ### Phase 64: setup
 
@@ -529,6 +529,8 @@ Plans:
 ### Phase 74: Migrate workflow test fixtures and tests
 
 ### Phase 75: Docs + CHANGELOG + v1.5.0 release
+
+</details>
 ## Progress
 
 **Execution Order:**

@@ -850,3 +850,21 @@
 - Phase 61: Reserved CLI verbs (project + milestone + quick helpers) — see `.planning/phases/61-reserved-cli-verbs-project-milestone-qui/`
 - Phase 62: Workflow YAMLs + slash wrappers (quick / milestone / complete-milestone) — see `.planning/phases/62-workflow-yamls-slash-wrappers-quick-mile/`
 - Phase 63: Docs + MIGRATION-v1.4.md + v1.4.0 release — see `.planning/phases/63-docs-migration-v1-4-md-v1-4-0-release/`
+
+## v1.5 Role/skill semantics  — shipped 2026-05-28
+
+**Phases:** 64-75    **Plans:** 0    **Duration:** —
+
+**Phase summaries:**
+- Phase 64: setup — see `.planning/phases/64-setup/`
+- Phase 65: brainstorm — see `.planning/phases/65-brainstorm/`
+- Phase 66: propose-project-updates — see `.planning/phases/66-propose-project-updates/`
+- Phase 67: apply-project-updates — see `.planning/phases/67-apply-project-updates/`
+- Phase 68: propose-phases — see `.planning/phases/68-propose-phases/`
+- Phase 69: finalize — see `.planning/phases/69-finalize/`
+- Phase 70: Config token interpolation in workflow expansion — see `.planning/phases/70-config-token-interpolation-in-workflow-e/`
+- Phase 71: Skill routing via provider.resolveSkill in runtime — see `.planning/phases/71-skill-routing-via-provider-resolveskill-/`
+- Phase 72: Schema validator role/skill orthogonality — see `.planning/phases/72-schema-validator-role-skill-orthogonalit/`
+- Phase 73: Rewrite built-in workflow YAMLs — see `.planning/phases/73-rewrite-built-in-workflow-yamls/`
+- Phase 74: Migrate workflow test fixtures and tests — see `.planning/phases/74-migrate-workflow-test-fixtures-and-tests/`
+- Phase 75: Docs + CHANGELOG + v1.5.0 release — see `.planning/phases/75-docs-changelog-v1-5-0-release/`

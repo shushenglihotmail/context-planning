@@ -16,11 +16,11 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 75 (v1.5 Role/skill semantics)
-Plan: -
-Status: Phase complete
-Current focus: Docs + CHANGELOG + v1.5.0 release
-Last activity: scaffold-phase 74 (Migrate workflow test fixtures and tests)
+Phase: -
+Plan: 154 of 154
+Status: Idle
+Current focus: -
+Last activity: capture inbox item #1
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -82,5 +82,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-28
-Stopped at: shipped v1.4 Workflow-driven quick and milestone
+Stopped at: shipped v1.5 Role/skill semantics
 Resume file: None
