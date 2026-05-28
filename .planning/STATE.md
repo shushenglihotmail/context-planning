@@ -13,7 +13,7 @@ Phase: 61 (v1.4 Workflow-driven quick and milestone)
 Plan: 61-02
 Status: Ready to execute
 Current focus: Reserved CLI verbs (project + milestone + quick helpers)
-Last activity: tick plan 60-05
+Last activity: tick plan 61-01
 
 Progress: [██████░░░░] 56%
 
