@@ -4,23 +4,27 @@ binds_to: quick
 principles: []
 defaults: {}
 phases:
-  - id: plan
-    role: planner
-    prompt: Plan the change.
+  - phase:
+      id: plan
+      description: plan
+      role: planner
+      prompt: Plan the change.
 
   - phase:
       id: review-auth
+      description: review-auth
       template:
         name: reviewer
         args:
           scope: auth
           min_findings: 1
-      after: [plan]
+      after: [ plan ]
 
   - phase:
       id: review-billing
+      description: review-billing
       template:
         name: reviewer
         args:
           scope: billing
-      after: [plan]
+      after: [ plan ]

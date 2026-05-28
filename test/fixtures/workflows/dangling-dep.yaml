@@ -1,6 +1,10 @@
 workflow: dangling-test
 version: 1
 phases:
-  - id: first
-  - id: second
-    depends_on: [nonexistent]
+  - phase:
+      id: first
+      description: first
+  - phase:
+      id: second
+      description: second
+      depends_on: [ nonexistent ]

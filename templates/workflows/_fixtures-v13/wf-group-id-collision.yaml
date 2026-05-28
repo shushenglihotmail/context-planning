@@ -4,6 +4,7 @@ binds_to: quick
 phases:
   - phase:
       id: review
+      description: review
       role: planner
       prompt: "p"
   - template:

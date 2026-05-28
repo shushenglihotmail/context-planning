@@ -4,11 +4,15 @@ binds_to: quick
 principles: []
 defaults: {}
 phases:
-  - id: plan
-    role: planner
-    prompt: Plan the change.
+  - phase:
+      id: plan
+      description: plan
+      role: planner
+      prompt: Plan the change.
+  - phase:
 
-  - id: execute
-    depends_on: [plan]
-    role: implementer
-    prompt: Implement it.
+      id: execute
+      description: execute
+      depends_on: [ plan ]
+      role: implementer
+      prompt: Implement it.

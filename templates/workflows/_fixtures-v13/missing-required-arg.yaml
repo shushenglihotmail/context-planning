@@ -4,6 +4,7 @@ binds_to: quick
 phases:
   - phase:
       id: r
+      description: r
       template:
         name: reviewer
         # missing required `scope` arg

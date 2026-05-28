@@ -4,6 +4,7 @@ binds_to: quick
 phases:
   - phase:
       id: leaf
+      description: leaf
       template:
         name: chain-a
         args:

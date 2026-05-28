@@ -2,14 +2,20 @@ workflow: quick-mini
 version: 1
 binds_to: quick
 phases:
-  - id: discuss
-    prompt: |
-      Discuss the change.
-  - id: execute
-    depends_on: [discuss]
-    prompt: |
-      Make the change.
-  - id: verify
-    depends_on: [execute]
-    prompt: |
-      Verify.
+  - phase:
+      id: discuss
+      description: discuss
+      prompt: |
+        Discuss the change.
+  - phase:
+      id: execute
+      description: execute
+      depends_on: [ discuss ]
+      prompt: |
+        Make the change.
+  - phase:
+      id: verify
+      description: verify
+      depends_on: [ execute ]
+      prompt: |
+        Verify.

@@ -84,7 +84,7 @@ check('single-phase group: entry == exit', () => {
   const dir = makeProject({
     solo: yaml.stringify({
       name: 'solo',
-      phases: [{ id: 'only', role: 'r', prompt: 'p' }],
+      phases: [{ phase: { id: 'only', description: 'only', role: 'r', prompt: 'p' } }],
     }),
   });
   const r = expandWorkflowTemplate({ id: 'g', name: 'solo', after: ['x'] }, { projectDir: dir });
@@ -99,8 +99,8 @@ check('external after refs left untouched (not internal)', () => {
     t: yaml.stringify({
       name: 't',
       phases: [
-        { id: 'a', role: 'r', prompt: 'p' },
-        { id: 'b', role: 'r', prompt: 'p', after: ['a', 'external-phase'] },
+        { phase: { id: 'a', description: 'a', role: 'r', prompt: 'p' } },
+        { phase: { id: 'b', description: 'b', role: 'r', prompt: 'p', after: ['a', 'external-phase'] } },
       ],
     }),
   });
@@ -113,8 +113,8 @@ check('depends_on rewritten same as after', () => {
     t: yaml.stringify({
       name: 't',
       phases: [
-        { id: 'a', role: 'r', prompt: 'p' },
-        { id: 'b', role: 'r', prompt: 'p', depends_on: ['a'] },
+        { phase: { id: 'a', description: 'a', role: 'r', prompt: 'p' } },
+        { phase: { id: 'b', description: 'b', role: 'r', prompt: 'p', depends_on: ['a'] } },
       ],
     }),
   });
@@ -141,7 +141,7 @@ check('missing required arg → error', () => {
     t: yaml.stringify({
       name: 't',
       params: [{ name: 'scope' }],
-      phases: [{ id: 'a', role: 'r', prompt: '{{scope}}' }],
+      phases: [{ phase: { id: 'a', description: 'a', role: 'r', prompt: '{{scope}}' } }],
     }),
   });
   assert.throws(
@@ -155,7 +155,7 @@ check('unused arg → warning', () => {
     t: yaml.stringify({
       name: 't',
       params: [{ name: 'scope' }],
-      phases: [{ id: 'a', role: 'r', prompt: '{{scope}}' }],
+      phases: [{ phase: { id: 'a', description: 'a', role: 'r', prompt: '{{scope}}' } }],
     }),
   });
   const r = expandWorkflowTemplate(
@@ -186,8 +186,8 @@ check('wrapper.after with multiple entries dedups + preserves order', () => {
     t: yaml.stringify({
       name: 't',
       phases: [
-        { id: 'a', role: 'r', prompt: 'p' },
-        { id: 'b', role: 'r', prompt: 'p', after: ['a'] },
+        { phase: { id: 'a', description: 'a', role: 'r', prompt: 'p' } },
+        { phase: { id: 'b', description: 'b', role: 'r', prompt: 'p', after: ['a'] } },
       ],
     }),
   });
@@ -207,9 +207,9 @@ check('parallel group: no internal edges → all are entry AND exit', () => {
     par: yaml.stringify({
       name: 'par',
       phases: [
-        { id: 'a', role: 'r', prompt: 'p' },
-        { id: 'b', role: 'r', prompt: 'p' },
-        { id: 'c', role: 'r', prompt: 'p' },
+        { phase: { id: 'a', description: 'a', role: 'r', prompt: 'p' } },
+        { phase: { id: 'b', description: 'b', role: 'r', prompt: 'p' } },
+        { phase: { id: 'c', description: 'c', role: 'r', prompt: 'p' } },
       ],
     }),
   });
@@ -234,7 +234,7 @@ check('chain depth 3 OK', () => {
     }),
     d3: yaml.stringify({
       name: 'd3',
-      phases: [{ id: 'leaf', role: 'r', prompt: 'p' }],
+      phases: [{ phase: { id: 'leaf', description: 'leaf', role: 'r', prompt: 'p' } }],
     }),
   });
   const r = expandWorkflowTemplate({ id: 'g', name: 'd1' }, { projectDir: dir });
@@ -247,7 +247,7 @@ check('chain depth >3 errors', () => {
     d1: yaml.stringify({ name: 'd1', phases: [{ template: { id: 'm', name: 'd2' } }] }),
     d2: yaml.stringify({ name: 'd2', phases: [{ template: { id: 'n', name: 'd3' } }] }),
     d3: yaml.stringify({ name: 'd3', phases: [{ template: { id: 'o', name: 'd4' } }] }),
-    d4: yaml.stringify({ name: 'd4', phases: [{ id: 'leaf', role: 'r', prompt: 'p' }] }),
+    d4: yaml.stringify({ name: 'd4', phases: [{ phase: { id: 'leaf', description: 'leaf', role: 'r', prompt: 'p' } }] }),
   });
   assert.throws(
     () => expandWorkflowTemplate({ id: 'g', name: 'd1' }, { projectDir: dir }),
@@ -260,7 +260,7 @@ check('numeric token preservation via substitution (whole-string)', () => {
     t: yaml.stringify({
       name: 't',
       params: [{ name: 'count' }],
-      phases: [{ id: 'a', role: 'planner', prompt: 'p', max_children: '{{count}}' }],
+      phases: [{ phase: { id: 'a', description: 'a', role: 'planner', prompt: 'p', max_children: '{{count}}' } }],
     }),
   });
   const r = expandWorkflowTemplate(

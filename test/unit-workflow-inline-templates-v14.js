@@ -60,10 +60,11 @@ check('inline phase_templates: resolves a phase: ref to inline body', () => {
       },
     ],
     phases: [
-      { id: 'plan', role: 'planner', prompt: 'Plan it.' },
+      { phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'Plan it.' } },
       {
         phase: {
           id: 'review-auth',
+          description: 'review auth',
           template: { name: 'inline-reviewer', args: { scope: 'auth' } },
           after: ['plan'],
         },
@@ -100,6 +101,7 @@ check('inline phase_templates: shadows on-disk template of same name', () => {
       {
         phase: {
           id: 'r',
+          description: 'r',
           template: { name: 'reviewer', args: { scope: 'auth' } },
         },
       },
@@ -122,7 +124,7 @@ check('inline phase_templates: duplicate name → error', () => {
       { name: 'twice', role: 'r1', prompt: 'p1' },
       { name: 'twice', role: 'r2', prompt: 'p2' },
     ],
-    phases: [{ id: 'plan', role: 'planner', prompt: 'p' }],
+    phases: [{ phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'p' } }],
   });
   const t = loadTemplate(file);
   const r = validate(t);
@@ -139,7 +141,7 @@ check('inline phase_templates: body with id: → error', () => {
     phase_templates: [
       { name: 'bad', id: 'nope', role: 'r', prompt: 'p' },
     ],
-    phases: [{ id: 'plan', role: 'planner', prompt: 'p' }],
+    phases: [{ phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'p' } }],
   });
   const t = loadTemplate(file);
   const r = validate(t);
@@ -154,7 +156,7 @@ check('inline phase_templates: non-array → error', () => {
     version: 1,
     binds_to: 'quick',
     phase_templates: { name: 'wrong' },
-    phases: [{ id: 'plan', role: 'planner', prompt: 'p' }],
+    phases: [{ phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'p' } }],
   });
   const t = loadTemplate(file);
   const r = validate(t);
@@ -169,7 +171,7 @@ check('inline workflow_templates: parsed; non-array → error', () => {
     version: 1,
     binds_to: 'quick',
     workflow_templates: 'not-an-array',
-    phases: [{ id: 'plan', role: 'planner', prompt: 'p' }],
+    phases: [{ phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'p' } }],
   });
   const t = loadTemplate(file);
   const r = validate(t);
@@ -186,7 +188,7 @@ check('inline workflow_templates: empty phases → error', () => {
     workflow_templates: [
       { name: 'empty-group', phases: [] },
     ],
-    phases: [{ id: 'plan', role: 'planner', prompt: 'p' }],
+    phases: [{ phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'p' } }],
   });
   const t = loadTemplate(file);
   const r = validate(t);
@@ -209,7 +211,7 @@ check('inline workflow_templates: well-formed entry passes validation', () => {
         ],
       },
     ],
-    phases: [{ id: 'plan', role: 'planner', prompt: 'p' }],
+    phases: [{ phase: { id: 'plan', description: 'plan', role: 'planner', prompt: 'p' } }],
   });
   const t = loadTemplate(file);
   const r = validate(t);

@@ -2,18 +2,26 @@ workflow: parallel
 version: 1
 binds_to: phase
 phases:
-  - id: discuss
-    role: facilitator
-    prompt: Discuss requirements
-  - id: research-a
-    depends_on: [discuss]
-    role: researcher
-    prompt: Research track A
-  - id: research-b
-    depends_on: [discuss]
-    role: researcher
-    prompt: Research track B
-  - id: execute
-    depends_on: [research-a, research-b]
-    role: executor
-    prompt: Execute
+  - phase:
+      id: discuss
+      description: discuss
+      role: facilitator
+      prompt: Discuss requirements
+  - phase:
+      id: research-a
+      description: research-a
+      depends_on: [ discuss ]
+      role: researcher
+      prompt: Research track A
+  - phase:
+      id: research-b
+      description: research-b
+      depends_on: [ discuss ]
+      role: researcher
+      prompt: Research track B
+  - phase:
+      id: execute
+      description: execute
+      depends_on: [ research-a, research-b ]
+      role: executor
+      prompt: Execute

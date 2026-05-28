@@ -6,6 +6,7 @@ defaults: {}
 phases:
   - phase:
       id: plan
+      description: plan
       role: planner
       prompt: Plan the change.
 
@@ -13,4 +14,4 @@ phases:
       id: review
       name: review-and-address
       prompt: this should be rejected
-      after: [plan]
+      after: [ plan ]

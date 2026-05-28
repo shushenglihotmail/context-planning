@@ -6,15 +6,17 @@ defaults: {}
 phases:
   - phase:
       id: plan
+      description: plan
       role: planner
       prompt: Plan the change.
 
   - phase:
       id: execute
+      description: execute
       template:
         name: docker-build
         args:
           image: api
       role: implementer
       prompt: this override should be rejected
-      after: [plan]
+      after: [ plan ]

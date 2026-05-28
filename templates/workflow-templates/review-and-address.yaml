@@ -4,11 +4,13 @@ params:
 phases:
   - phase:
       id: review-{{scope}}
+      description: review-{{scope}}
       role: reviewer
       skill: code-review
       prompt: "Review {{scope}} against the milestone goal."
   - phase:
       id: address-{{scope}}
+      description: address-{{scope}}
       role: implementer
-      after: ["review-{{scope}}"]
+      after: [ "review-{{scope}}" ]
       prompt: "Address review comments on {{scope}}."

@@ -18,30 +18,33 @@ principles:
 defaults:
   model: default
 phases:
-  - id: plan
-    role: planner
-    skill: writing-plans
-    max_children: 10
-    min_children: 1
-    prompt: |
-      Decompose this milestone into 1-10 sub-features. Each sub-feature must
-      have a unique slug-safe id, a short title, and an optional summary.
+  - phase:
+      id: plan
+      description: plan
+      role: planner
+      skill: writing-plans
+      max_children: 10
+      min_children: 1
+      prompt: |
+        Decompose this milestone into 1-10 sub-features. Each sub-feature must
+        have a unique slug-safe id, a short title, and an optional summary.
 
-      By default, the runtime executes items sequentially in the order you
-      list them. To opt into parallel/DAG execution, set the top-level
-      `optimizable: true` flag AND declare `depends_on` on every item
-      (use `[]` for items with no deps; omitted is also treated as `[]`).
+        By default, the runtime executes items sequentially in the order you
+        list them. To opt into parallel/DAG execution, set the top-level
+        `optimizable: true` flag AND declare `depends_on` on every item
+        (use `[]` for items with no deps; omitted is also treated as `[]`).
 
-      Only set `optimizable: true` if you are confident about ALL inter-item
-      dependencies. If you are unsure about any item, set `optimizable: false`
-      (or omit the flag) and the runtime will fall back to safe sequential
-      execution — any `depends_on` you wrote will be ignored.
+        Only set `optimizable: true` if you are confident about ALL inter-item
+        dependencies. If you are unsure about any item, set `optimizable: false`
+        (or omit the flag) and the runtime will fall back to safe sequential
+        execution — any `depends_on` you wrote will be ignored.
 
-      Return JSON shaped like:
-        { "optimizable": false, "items": [ { "id": "...", "title": "..." }, ... ] }
+        Return JSON shaped like:
+          { "optimizable": false, "items": [ { "id": "...", "title": "..." }, ... ] }
 
   - phase:
       id: child-plan
+      description: child-plan
       template:
         name: feature-plan
         args:
@@ -49,8 +52,9 @@ phases:
 
   - phase:
       id: child-execute
+      description: child-execute
       template:
         name: feature-execute
         args:
           parent: plan
-      after: [child-plan]
+      after: [ child-plan ]

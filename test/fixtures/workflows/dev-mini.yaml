@@ -7,32 +7,42 @@ principles:
 defaults:
   model: middle
 phases:
-  - id: brainstorm
-    role: brainstormer
-    model: high
-    skill: brainstorming
-    persist_output: true
-    prompt: |
-      Brainstorm the problem space.
-  - id: research-a
-    depends_on: [brainstorm]
-    role: researcher
-    prompt: |
-      Research angle A.
-  - id: research-b
-    depends_on: [brainstorm]
-    role: researcher
-    prompt: |
-      Research angle B.
-  - id: plan
-    depends_on: [research-a, research-b]
-    role: planner
-    skill: writing-plans
-    prompt: |
-      Synthesize a plan.
-  - id: execute
-    depends_on: [plan]
-    role: implementer
-    skill: executing-plans
-    prompt: |
-      Execute the plan.
+  - phase:
+      id: brainstorm
+      description: brainstorm
+      role: brainstormer
+      model: high
+      skill: brainstorming
+      persist_output: true
+      prompt: |
+        Brainstorm the problem space.
+  - phase:
+      id: research-a
+      description: research-a
+      depends_on: [ brainstorm ]
+      role: researcher
+      prompt: |
+        Research angle A.
+  - phase:
+      id: research-b
+      description: research-b
+      depends_on: [ brainstorm ]
+      role: researcher
+      prompt: |
+        Research angle B.
+  - phase:
+      id: plan
+      description: plan
+      depends_on: [ research-a, research-b ]
+      role: planner
+      skill: writing-plans
+      prompt: |
+        Synthesize a plan.
+  - phase:
+      id: execute
+      description: execute
+      depends_on: [ plan ]
+      role: implementer
+      skill: executing-plans
+      prompt: |
+        Execute the plan.

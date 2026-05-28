@@ -30,10 +30,10 @@ function check(name, fn) {
 
 console.log('\n=== 53-01: unwrapPhaseEntry helper ===');
 
-check('bare v1.2 phase entry is treated as kind=phase', () => {
+check('bare v1.2 phase entry returns kind=bare (rejected by validator in v1.4)', () => {
   const entry = { id: 'plan', role: 'planner' };
   const { kind, body } = unwrapPhaseEntry(entry);
-  assert.equal(kind, 'phase');
+  assert.equal(kind, 'bare');
   assert.equal(body, entry);
 });
 
@@ -53,36 +53,36 @@ check('`template:` wrapper returns kind=template + inner body', () => {
   assert.equal(body, inner);
 });
 
-check('multi-key entry with `phase` key is treated as bare (not wrapped)', () => {
+check('multi-key entry with `phase` key is classified as bare (not wrapped)', () => {
   // A bare v1.2 entry that happens to have a `phase:` field but is not a
   // wrapper (multiple top-level keys) must NOT be misclassified.
   const entry = { id: 'x', phase: 'something', role: 'planner' };
   const { kind, body } = unwrapPhaseEntry(entry);
-  assert.equal(kind, 'phase');
+  assert.equal(kind, 'bare');
   assert.equal(body, entry);
 });
 
-check('non-object entry returns kind=phase with body=entry', () => {
+check('non-object entry returns kind=bare with body=entry', () => {
   const { kind, body } = unwrapPhaseEntry(null);
-  assert.equal(kind, 'phase');
+  assert.equal(kind, 'bare');
   assert.equal(body, null);
 
   const r2 = unwrapPhaseEntry('oops');
-  assert.equal(r2.kind, 'phase');
+  assert.equal(r2.kind, 'bare');
   assert.equal(r2.body, 'oops');
 });
 
-check('array entry returns kind=phase with body=entry (not a wrapper)', () => {
+check('array entry returns kind=bare with body=entry (not a wrapper)', () => {
   const arr = [1, 2, 3];
   const { kind, body } = unwrapPhaseEntry(arr);
-  assert.equal(kind, 'phase');
+  assert.equal(kind, 'bare');
   assert.equal(body, arr);
 });
 
-check('empty object returns kind=phase, body is the empty object', () => {
+check('empty object returns kind=bare, body is the empty object', () => {
   const entry = {};
   const { kind, body } = unwrapPhaseEntry(entry);
-  assert.equal(kind, 'phase');
+  assert.equal(kind, 'bare');
   assert.equal(body, entry);
 });
 
@@ -100,6 +100,10 @@ function writeTmp(content) {
 }
 
 check('bare and `phase:`-wrapped YAML produce structurally identical normalised phases', () => {
+  // v1.4: bare-form is now rejected at validate(), but loadTemplate +
+  // normalisePhase still parses both shapes to a comparable structure.
+  // The only difference is `_wrapperKind` (non-enumerable, excluded from
+  // deepEqual). Both pick up `description:` only when supplied.
   const bareYaml = `workflow: w
 version: 1
 binds_to: quick
@@ -125,6 +129,9 @@ phases:
   const a = loadTemplate(writeTmp(bareYaml));
   const b = loadTemplate(writeTmp(wrappedYaml));
   assert.deepEqual(a.phases, b.phases);
+  // But the underlying wrapper kinds differ.
+  assert.equal(a.phases[0]._wrapperKind, 'bare');
+  assert.equal(b.phases[0]._wrapperKind, 'phase');
 });
 
 check('`template:`-wrapped YAML parses; body marked with non-enumerable _wrapperKind', () => {
@@ -149,8 +156,8 @@ phases:
   // _wrapperKind is non-enumerable: must be readable but not in JSON
   assert.equal(t.phases[1]._wrapperKind, 'template');
   assert.equal(JSON.stringify(t.phases[1]).includes('_wrapperKind'), false);
-  // Phase-wrapper entries should NOT carry _wrapperKind.
-  assert.equal(t.phases[0]._wrapperKind, undefined);
+  // v1.4: phase-wrapper entries DO carry _wrapperKind='phase'.
+  assert.equal(t.phases[0]._wrapperKind, 'phase');
 });
 
 console.log('\n=== 53-02: validate() routes template entries through guard ===');
@@ -180,10 +187,10 @@ check('v1.2 bare-equivalent phases still validate ok', () => {
   assert.equal(r.ok, true);
 });
 
-check('phase entries with `_wrapperKind: phase` validate identically to bare', () => {
+check('phase entries with `_wrapperKind: phase` validate identically to bare (when description present)', () => {
   const r = validate(tmpl([
-    mark({ id: 'plan', depends_on: [] }, 'phase'),
-    mark({ id: 'execute', depends_on: ['plan'] }, 'phase'),
+    mark({ id: 'plan', description: 'plan', depends_on: [] }, 'phase'),
+    mark({ id: 'execute', description: 'execute', depends_on: ['plan'] }, 'phase'),
   ]));
   assert.deepEqual(r.errors, []);
 });

@@ -6,11 +6,13 @@ defaults: {}
 phases:
   - phase:
       id: plan
+      description: plan
       role: planner
       prompt: Plan the change.
 
   - phase:
       id: execute
-      depends_on: [plan]
+      description: execute
+      depends_on: [ plan ]
       role: implementer
       prompt: Implement it.

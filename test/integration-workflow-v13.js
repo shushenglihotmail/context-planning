@@ -35,22 +35,25 @@ function fx(name) { return path.join(fixturesDir, name); }
 
 console.log('=== v1.3 integration: fixture roundtrips ===');
 
-check('bare-v12.yaml: loads and validates cleanly (no template flags)', () => {
+check('bare-v12.yaml (migrated to v1.4): loads and validates cleanly', () => {
+  // v1.4: the file formerly known as "bare v1.2" was migrated to `phase:`
+  // wrappers + description: by 59-03. It now serves as a sanity check
+  // that a previously-bare file still works after migration.
   const t = loadTemplate(fx('bare-v12.yaml'));
   assert.equal(t.phases.length, 2);
-  assert.equal(t.phases[0]._wrapperKind, undefined);
-  assert.equal(t.phases[1]._wrapperKind, undefined);
+  assert.equal(t.phases[0]._wrapperKind, 'phase');
+  assert.equal(t.phases[1]._wrapperKind, 'phase');
   const r = validate(t);
   assert.deepEqual(r.errors, []);
   assert.equal(r.ok, true);
 });
 
-check('wrapped-phase.yaml: phase: wrappers normalise identically to bare', () => {
+check('wrapped-phase.yaml: phase: wrappers carry _wrapperKind=phase', () => {
   const t = loadTemplate(fx('wrapped-phase.yaml'));
   assert.equal(t.phases.length, 2);
-  // phase: wrappers do NOT carry _wrapperKind (only template: does).
-  assert.equal(t.phases[0]._wrapperKind, undefined);
-  assert.equal(t.phases[1]._wrapperKind, undefined);
+  // v1.4: phase: wrappers carry _wrapperKind='phase' (non-enumerable).
+  assert.equal(t.phases[0]._wrapperKind, 'phase');
+  assert.equal(t.phases[1]._wrapperKind, 'phase');
   assert.equal(t.phases[0].id, 'plan');
   assert.equal(t.phases[1].id, 'execute');
   assert.deepEqual(t.phases[1].depends_on, ['plan']);

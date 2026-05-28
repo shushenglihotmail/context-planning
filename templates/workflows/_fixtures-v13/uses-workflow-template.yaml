@@ -4,6 +4,7 @@ binds_to: quick
 phases:
   - phase:
       id: plan
+      description: plan
       role: planner
       prompt: "plan"
   - template:
@@ -11,9 +12,10 @@ phases:
       name: review-and-address
       args:
         scope: auth
-      after: [plan]
+      after: [ plan ]
   - phase:
       id: execute
+      description: execute
       role: implementer
-      after: [review]
+      after: [ review ]
       prompt: "execute"

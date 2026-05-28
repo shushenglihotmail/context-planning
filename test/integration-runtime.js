@@ -231,7 +231,7 @@ section('startRun — phase tier');
   const phaseTplPath = path.join(dir, 'phase-test.yaml');
   fs.writeFileSync(phaseTplPath,
     'workflow: phase-test\nversion: 1\nbinds_to: phase\nphases:\n' +
-    '  - id: step1\n    prompt: |\n      Do step 1.\n');
+    '  - phase:\n      id: step1\n      description: step1\n      prompt: |\n        Do step 1.\n');
 
   // With no active milestone/phase -> should throw
   let threw = false, threwMsg = '';

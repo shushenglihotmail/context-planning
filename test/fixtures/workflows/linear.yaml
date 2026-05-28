@@ -7,14 +7,20 @@ principles:
 defaults:
   model: default
 phases:
-  - id: brainstorm
-    role: researcher
-    prompt: Brainstorm ideas
-  - id: plan
-    depends_on: [brainstorm]
-    role: planner
-    prompt: Create the plan
-  - id: execute
-    depends_on: [plan]
-    role: executor
-    prompt: Execute the plan
+  - phase:
+      id: brainstorm
+      description: brainstorm
+      role: researcher
+      prompt: Brainstorm ideas
+  - phase:
+      id: plan
+      description: plan
+      depends_on: [ brainstorm ]
+      role: planner
+      prompt: Create the plan
+  - phase:
+      id: execute
+      description: execute
+      depends_on: [ plan ]
+      role: executor
+      prompt: Execute the plan
