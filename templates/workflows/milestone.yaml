@@ -1,0 +1,68 @@
+workflow: milestone
+version: 1
+binds_to: milestone
+supervised: true
+principles:
+  - Brainstorm scope with the user before locking the milestone goal.
+  - Reflect requirement changes into PROJECT.md before phase breakdown.
+  - End with a clean STATE.md banner naming the active milestone.
+defaults:
+  model: default
+params:
+  - name: brainstorm_skill
+    default: "${config.provider.brainstorm_skill}"
+  - name: plan_skill
+    default: "${config.provider.plan_skill}"
+phases:
+  - phase:
+      id: setup
+      description: |
+        Validate prerequisites (PROJECT.md exists), resolve milestone
+        name, run cp doctor.
+      kind: scaffold
+      command: "cp milestone-setup-check {{milestone_slug}}"
+  - phase:
+      id: brainstorm
+      description: |
+        Brainstorm milestone scope conversationally with the user.
+        Produces DESIGN.md and MILESTONE-CONTEXT.md.
+      after: [ setup ]
+      role: brainstormer
+      skill: "{{brainstorm_skill}}"
+      outputs:
+        - ".planning/milestones/{{milestone_slug}}/DESIGN.md"
+        - ".planning/MILESTONE-CONTEXT.md"
+  - phase:
+      id: propose-project-updates
+      description: |
+        Propose updates to PROJECT.md from the brainstorm: which
+        requirements move to validated, which become active.
+      after: [ brainstorm ]
+      role: planner
+      skill: "{{plan_skill}}"
+      outputs:
+        - ".planning/milestones/{{milestone_slug}}/project-update.json"
+  - phase:
+      id: apply-project-updates
+      description: |
+        Apply the proposed PROJECT.md mutations (idempotent).
+      after: [ propose-project-updates ]
+      kind: scaffold
+      command: "cp project update --from .planning/milestones/{{milestone_slug}}/project-update.json"
+  - phase:
+      id: propose-phases
+      description: |
+        Decompose milestone into 2-10 phases for ROADMAP.md.
+      after: [ apply-project-updates ]
+      role: planner
+      skill: "{{plan_skill}}"
+      materialize: roadmap-phases
+      max_children: 10
+  - phase:
+      id: finalize
+      description: |
+        Update project STATE.md (current focus, phase counter), print
+        next-step banner.
+      after: [ propose-phases ]
+      kind: scaffold
+      command: "cp milestone-finalize {{milestone_slug}}"

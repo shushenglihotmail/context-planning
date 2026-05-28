@@ -28,21 +28,33 @@ base-commit: 7d5fe648c81230ca4e4cea0aa85549e3eb278651
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Author the three workflow YAML files defined in DESIGN.md
+(`milestone.yaml`, `quick.yaml`, `complete-milestone.yaml`) and rewrite
+the three slash-command SKILL.md wrappers to delegate to `cp run
+<workflow>` instead of carrying inline orchestration.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `templates/workflows/milestone.yaml` exists and validates against the
+   workflow grammar (`cp workflow validate templates/workflows/milestone.yaml`
+   returns ok).
+2. `templates/workflows/quick.yaml` exists and validates.
+3. `templates/workflows/complete-milestone.yaml` exists and validates.
+4. `commands/cp/new-milestone.md` is rewritten as a thin delegation to
+   `cp run milestone "$ARGUMENTS"`.
+5. `commands/cp/quick.md` is rewritten as a thin delegation to
+   `cp run quick "$ARGUMENTS"`.
+6. `commands/cp/complete-milestone.md` is rewritten as a thin delegation
+   to `cp run complete-milestone "$ARGUMENTS"`.
+7. `cp init` continues to copy commands/cp/* to .github/skills/cp-*/
+   without error.
+8. Full `npm test` green; audit HIGH=0.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 62-01: {brief description}
-- [ ] 62-02: {brief description}
-- [ ] 62-03: {brief description}
+- [ ] 62-01: Author templates/workflows/milestone.yaml
+- [ ] 62-02: Author templates/workflows/quick.yaml + complete-milestone.yaml
+- [ ] 62-03: Rewrite slash command wrappers (new-milestone, quick, complete-milestone)
 
 ## Notes
 
