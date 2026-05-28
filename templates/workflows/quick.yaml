@@ -10,9 +10,13 @@ defaults:
   model: default
 params:
   - name: design_skill
-    default: "${config.provider.quick_design_skill}"
+    default: "plan"
+  - name: design_role
+    default: "tech-writer"
   - name: execute_skill
-    default: "${config.provider.execute_skill}"
+    default: "execute"
+  - name: execute_role
+    default: "developer"
 phases:
   - phase:
       id: setup
@@ -27,8 +31,14 @@ phases:
       description: |
         Discuss the task with the user, agree on Approach + Done-When,
         write into DESIGN.md, set status=ready.
+
+        STOP. Do not start implementation. Wait for the user to
+        explicitly confirm DESIGN.md (Approach + Done-When) before
+        marking this phase complete. A brief task description from the
+        user is NOT confirmation — ask follow-up questions until the
+        scope is unambiguous, then have the user confirm.
       depends_on: [ setup ]
-      role: planner
+      role: "{{design_role}}"
       skill: "{{design_skill}}"
       outputs:
         - ".planning/quick/{{slug_with_date}}/DESIGN.md"
@@ -38,7 +48,7 @@ phases:
         Implement the agreed change. Commit atomically per task; append
         progress to STATE.md.
       depends_on: [ design ]
-      role: implementer
+      role: "{{execute_role}}"
       skill: "{{execute_skill}}"
       outputs:
         - "**/*"
@@ -50,3 +60,4 @@ phases:
       depends_on: [ execute ]
       kind: scaffold
       command: "cp quick-finalize {{slug_with_date}}"
+

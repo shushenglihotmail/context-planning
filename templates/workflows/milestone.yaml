@@ -10,9 +10,13 @@ defaults:
   model: default
 params:
   - name: brainstorm_skill
-    default: "${config.provider.brainstorm_skill}"
+    default: "brainstorm"
+  - name: brainstorm_role
+    default: "product-thinker"
   - name: plan_skill
-    default: "${config.provider.plan_skill}"
+    default: "plan"
+  - name: plan_role
+    default: "developer"
 phases:
   - phase:
       id: setup
@@ -27,7 +31,7 @@ phases:
         Brainstorm milestone scope conversationally with the user.
         Produces DESIGN.md and MILESTONE-CONTEXT.md.
       depends_on: [ setup ]
-      role: brainstormer
+      role: "{{brainstorm_role}}"
       skill: "{{brainstorm_skill}}"
       outputs:
         - ".planning/milestones/{{milestone_slug}}/DESIGN.md"
@@ -38,7 +42,7 @@ phases:
         Propose updates to PROJECT.md from the brainstorm: which
         requirements move to validated, which become active.
       depends_on: [ brainstorm ]
-      role: planner
+      role: "{{plan_role}}"
       skill: "{{plan_skill}}"
       outputs:
         - ".planning/milestones/{{milestone_slug}}/project-update.json"
@@ -54,7 +58,7 @@ phases:
       description: |
         Decompose milestone into 2-10 phases for ROADMAP.md.
       depends_on: [ apply-project-updates ]
-      role: planner
+      role: "{{plan_role}}"
       skill: "{{plan_skill}}"
       materialize: roadmap-phases
       max_children: 10
@@ -66,3 +70,4 @@ phases:
       depends_on: [ propose-phases ]
       kind: scaffold
       command: "cp milestone-finalize {{milestone_slug}}"
+
