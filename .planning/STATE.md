@@ -20,7 +20,7 @@ Phase: -
 Plan: 154 of 154
 Status: Idle
 Current focus: -
-Last activity: capture inbox item #1
+Last activity: /cp-complete-milestone v1.5 Role/skill semantics
 
 Progress: [░░░░░░░░░░] 0%
 
