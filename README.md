@@ -426,6 +426,17 @@ they hide.
 > `cp list`, `cp status <run-id>`, and internal `*-setup` / `*-finalize`
 > helpers used by the workflow phases.
 
+> **New in v1.5** — fixes a v1.4 regression where `/cp-quick` jumped
+> straight into implementation on a terse task description. Three root
+> causes are closed: `${config.…}` tokens are now interpolated at
+> template-load time; bare `skill:` names route through the active
+> provider with a `cp:manual/<name>` zero-config fallback; and the
+> built-in `quick`/`milestone` templates now declare `prompt:` (not
+> just `description:`) so the STOP / wait-for-user-confirmation gate
+> actually reaches the supervisor. v1.5 also formalises **role vs.
+> skill semantics** — see [Role vs. skill (v1.5)](#role-vs-skill-v15)
+> below — and the schema validator now warns/errors on conflation.
+
 cp ships a reusable YAML workflow format that lets you define phase DAGs once
 and run them via `cp run`. Each workflow declares phases, dependencies (for
 parallel waves), roles, and global principles. The engine supports three state
