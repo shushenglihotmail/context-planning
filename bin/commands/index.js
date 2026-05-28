@@ -46,4 +46,8 @@ module.exports = {
   project: require('./project'),
   'milestone-setup-check': require('./milestone-setup-check'),
   'milestone-finalize': require('./milestone-finalize'),
+  'quick-setup': require('./quick-setup'),
+  'quick-finalize': require('./quick-finalize'),
+  abandon: require('./abandon'),
+  list: require('./list'),
 };
