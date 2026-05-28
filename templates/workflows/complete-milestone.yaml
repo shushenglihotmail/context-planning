@@ -1,6 +1,6 @@
 workflow: complete-milestone
 version: 1
-binds_to: milestone
+binds_to: quick
 principles:
   - Verify before mutating — never close a milestone with unticked plans.
   - All mutations land in a single atomic commit.
@@ -14,7 +14,7 @@ phases:
         on disk. Prints action list. Exits non-zero with a clear
         explanation if anything is missing.
       kind: scaffold
-      command: "cp complete-milestone --dry-run {{milestone_name}}"
+      command: "cp complete-milestone --dry-run"
   - phase:
       id: complete
       description: |
@@ -23,4 +23,4 @@ phases:
         delete MILESTONE-CONTEXT.md, reset STATE.md, atomic commit.
       depends_on: [ verify ]
       kind: scaffold
-      command: "cp complete-milestone {{milestone_name}}"
+      command: "cp complete-milestone"
