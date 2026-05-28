@@ -20,7 +20,7 @@ Phase: -
 Plan: 154 of 154
 Status: Idle
 Current focus: -
-Last activity: /cp-complete-milestone v1.5 Role/skill semantics
+Last activity: v1.5.1 — verify v1.5 phase shape + complete-milestone no-op crash fix
 
 Progress: [░░░░░░░░░░] 0%
 
