@@ -500,35 +500,6 @@ Plans:
 - [ ] 63-02: MIGRATION-v1.4.md
 - [ ] 63-03: v1.4.0 changelog + release
 
-
-### Phase 60: Engine + supervisor + broker + checkpoint
-
-Plans:
-- [ ] 60-01: TBD
-- [ ] 60-02: TBD
-- [ ] 60-03: TBD
-- [ ] 60-04: TBD
-- [ ] 60-05: TBD
-
-### Phase 61: Reserved CLI verbs
-
-Plans:
-- [ ] 61-01: TBD
-- [ ] 61-02: TBD
-
-### Phase 62: Workflow YAMLs + slash wrappers
-
-Plans:
-- [ ] 62-01: TBD
-- [ ] 62-02: TBD
-- [ ] 62-03: TBD
-
-### Phase 63: Docs + MIGRATION-v1.4 + v1.4.0 release
-
-Plans:
-- [ ] 63-01: TBD
-- [ ] 63-02: TBD
-- [ ] 63-03: TBD
 ## Progress
 
 **Execution Order:**
