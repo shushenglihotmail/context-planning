@@ -6,9 +6,10 @@ interactively (route each to a quick task, phase, seed, or discard).
 
 ## Open
 
-- [ ] [2026-05-28T07:28] BUG/cp: complete-milestone --dry-run fails on milestones whose phases use the legacy pass-through model (PLAN.md+SUMMARY.md per phase dir, 0 plan checkboxes in ROADMAP). cp status reports 'All plans done' (0/0) but milestone.verifyMilestoneComplete requires plansTotal>0, so verify exits non-zero. Workaround: --force. Fix idea: treat plansTotal===0 + per-phase SUMMARY.md present as a valid completion shape, OR have cp new-milestone always scaffold at least one plan checkbox per phase. Surfaced while closing v1.5.
 
 ## Triaged
+
+- [x] [2026-05-28T07:28] BUG/cp: complete-milestone verify failed for v1.5 phase shape (`plansTotal===0` + phase-level SUMMARY.md). Fixed in `lib/milestone.js:verifyMilestoneComplete` by accepting two completion shapes (pre-v1.5 checklist + v1.5 pass-through). See `.planning/quick/2026-05-28-find-the-verify-warning-recorded-for-future-fix-from-last-milestone-v1-5-role-skill-semantics-complete-time-and-investigate-what-s-going-on/SUMMARY.md`.
 
 - [x] [2026-05-20T12:59] → phase 35: per-phase DESIGN.md template — first-class home for SP brainstorm/discuss output (v0.9 Onboarding milestone)
 - [x] [2026-05-21T11:17] → phase 32: /cp-map-codebase auto-init when .planning/ missing (v0.9 Onboarding)

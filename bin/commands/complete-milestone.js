@@ -47,9 +47,14 @@ function run(args = []) {
     if (r.reason === 'incomplete') {
       console.error(`\nMilestone "${r.milestone}" still has work to do:`);
       for (const rep of r.verify.reports.filter(x => !x.ok)) {
-        const missing = (rep.summariesMissing || []).join(', ') || '—';
         const extra = rep.error ? ` [${rep.error}]` : '';
-        console.error(`  Phase ${rep.phaseNum} ${rep.name || '(unknown)'}: plans ${rep.plansDone}/${rep.plansTotal} done; missing SUMMARY: ${missing}${extra}`);
+        if (rep.plansTotal === 0) {
+          // v1.5 phase shape: phase-level SUMMARY.md is the proof.
+          console.error(`  Phase ${rep.phaseNum} ${rep.name || '(unknown)'}: missing phase-level SUMMARY.md${extra}`);
+        } else {
+          const missing = (rep.summariesMissing || []).join(', ') || '—';
+          console.error(`  Phase ${rep.phaseNum} ${rep.name || '(unknown)'}: plans ${rep.plansDone}/${rep.plansTotal} done; missing SUMMARY: ${missing}${extra}`);
+        }
       }
       process.exit(1);
     } else if (r.reason === 'audit-failed') {

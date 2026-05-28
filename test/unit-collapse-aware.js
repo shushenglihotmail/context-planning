@@ -334,5 +334,56 @@ t('status renderer: shipped milestone suggests new-milestone not complete-milest
   } finally { rm(dir); }
 });
 
+// ---------- v1.5 hotfix: verify accepts phase-level SUMMARY.md (no plan checkboxes) ----------
+
+const V15_ROADMAP = `# Roadmap
+
+## Phases
+
+### 🚧 v1.5 X (In Progress)
+
+### Phase 70: Atomic phase one
+
+### Phase 71: Atomic phase two
+`;
+
+t('verifyMilestoneComplete: v1.5 shape (0 plans) passes with phase-level SUMMARY.md', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-v15-verify-ok-'));
+  try {
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '70-atomic-phase-one'), { recursive: true });
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '71-atomic-phase-two'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.planning', 'phases', '70-atomic-phase-one', 'SUMMARY.md'),
+      '---\nphase: 70\ntype: summary\n---\n# Phase 70 SUMMARY\n');
+    fs.writeFileSync(path.join(dir, '.planning', 'phases', '71-atomic-phase-two', 'SUMMARY.md'),
+      '---\nphase: 71\ntype: summary\n---\n# Phase 71 SUMMARY\n');
+    const rep = milestone.verifyMilestoneComplete(V15_ROADMAP, ['70', '71'], dir);
+    assert.equal(rep.ok, true, `expected ok=true, got ${JSON.stringify(rep)}`);
+    for (const r of rep.reports) {
+      assert.equal(r.plansTotal, 0);
+      assert.equal(r.plansDone, 0);
+      assert.equal(r.phaseSummaryPresent, true);
+      assert.equal(r.ok, true);
+    }
+  } finally { rm(dir); }
+});
+
+t('verifyMilestoneComplete: v1.5 shape (0 plans) fails when phase-level SUMMARY.md is missing', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-v15-verify-fail-'));
+  try {
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '70-atomic-phase-one'), { recursive: true });
+    fs.mkdirSync(path.join(dir, '.planning', 'phases', '71-atomic-phase-two'), { recursive: true });
+    fs.writeFileSync(path.join(dir, '.planning', 'phases', '70-atomic-phase-one', 'SUMMARY.md'),
+      '---\nphase: 70\ntype: summary\n---\n# Phase 70 SUMMARY\n');
+    const rep = milestone.verifyMilestoneComplete(V15_ROADMAP, ['70', '71'], dir);
+    assert.equal(rep.ok, false);
+    const r70 = rep.reports.find(r => r.phaseNum === '70');
+    const r71 = rep.reports.find(r => r.phaseNum === '71');
+    assert.equal(r70.ok, true);
+    assert.equal(r70.phaseSummaryPresent, true);
+    assert.equal(r71.ok, false);
+    assert.equal(r71.phaseSummaryPresent, false);
+  } finally { rm(dir); }
+});
+
 console.log(`unit-collapse-aware: ${passed} passed`);
 process.exit(0);
