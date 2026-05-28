@@ -67,7 +67,7 @@ Once you've started, every path converges on the same `/cp-plan-phase N`
 ```bash
 npm install -g context-planning
 # exposes BOTH `cplan` and `cp` on PATH
-cp --version    # should print 1.1.x
+cp --version    # should print 1.4.x
 ```
 
 ### Node CLI (from source — for development)

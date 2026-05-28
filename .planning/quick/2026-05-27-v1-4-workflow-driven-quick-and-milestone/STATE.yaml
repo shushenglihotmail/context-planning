@@ -1,0 +1,15 @@
+workflow: complete-milestone
+slug: 2026-05-27-v1-4-workflow-driven-quick-and-milestone
+status: done
+binding: quick
+started: 2026-05-28T04:12:22.559Z
+last_activity: 2026-05-28T04:13:01.751Z
+current_phase: null
+completed:
+  - verify
+  - complete
+artifacts:
+  verify: 01-verify.md
+  complete: 02-complete.md
+template_path: C:\src\github\context-planning\templates\workflows\complete-milestone.yaml
+current_wave: 2
