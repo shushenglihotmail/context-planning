@@ -184,12 +184,12 @@ section('cp run resume nonexistent-slug → exit 4, not found in stderr');
 // ============================================================
 // Section 10: cp run mark-complete <slug> discuss with stdin
 // ============================================================
-section('cp run mark-complete <slug> discuss → exit 0, stderr shows wave advance');
+section('cp run mark-complete <slug> setup → exit 0, stderr shows wave advance');
 {
   const r = cp(
-    ['run', 'mark-complete', liveSlug, 'discuss'],
+    ['run', 'mark-complete', liveSlug, 'setup'],
     liveDir,
-    { input: '# Summary\n\nDiscuss phase done.\n' }
+    { input: '# Summary\n\nSetup phase done.\n' }
   );
   ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
   // Stderr should mention slug and wave/advance (or "Run complete")

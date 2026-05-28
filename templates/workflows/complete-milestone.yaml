@@ -21,6 +21,6 @@ phases:
         Aggregate SUMMARY frontmatter, render digest, append to
         MILESTONES.md, collapse milestone in ROADMAP under <details>,
         delete MILESTONE-CONTEXT.md, reset STATE.md, atomic commit.
-      after: [ verify ]
+      depends_on: [ verify ]
       kind: scaffold
       command: "cp complete-milestone {{milestone_name}}"

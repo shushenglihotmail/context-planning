@@ -26,7 +26,7 @@ phases:
       description: |
         Brainstorm milestone scope conversationally with the user.
         Produces DESIGN.md and MILESTONE-CONTEXT.md.
-      after: [ setup ]
+      depends_on: [ setup ]
       role: brainstormer
       skill: "{{brainstorm_skill}}"
       outputs:
@@ -37,7 +37,7 @@ phases:
       description: |
         Propose updates to PROJECT.md from the brainstorm: which
         requirements move to validated, which become active.
-      after: [ brainstorm ]
+      depends_on: [ brainstorm ]
       role: planner
       skill: "{{plan_skill}}"
       outputs:
@@ -46,14 +46,14 @@ phases:
       id: apply-project-updates
       description: |
         Apply the proposed PROJECT.md mutations (idempotent).
-      after: [ propose-project-updates ]
+      depends_on: [ propose-project-updates ]
       kind: scaffold
       command: "cp project update --from .planning/milestones/{{milestone_slug}}/project-update.json"
   - phase:
       id: propose-phases
       description: |
         Decompose milestone into 2-10 phases for ROADMAP.md.
-      after: [ apply-project-updates ]
+      depends_on: [ apply-project-updates ]
       role: planner
       skill: "{{plan_skill}}"
       materialize: roadmap-phases
@@ -63,6 +63,6 @@ phases:
       description: |
         Update project STATE.md (current focus, phase counter), print
         next-step banner.
-      after: [ propose-phases ]
+      depends_on: [ propose-phases ]
       kind: scaffold
       command: "cp milestone-finalize {{milestone_slug}}"

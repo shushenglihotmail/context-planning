@@ -5,7 +5,7 @@
  *
  * Spawns the cp binary (NOT the lib directly) for each step and verifies that
  * the full start → mark-complete loop → done lifecycle works correctly using
- * the built-in `quick` workflow (3 phases: discuss → execute → verify).
+ * the built-in `quick` workflow (4 phases: setup → design → execute → finalize).
  *
  * ~10 assertions.
  */
@@ -102,14 +102,14 @@ section('cp run status --json → status in-progress, wave 1');
 }
 
 // ============================================================
-// Step 3: mark-complete discuss → wave advances
+// Step 3: mark-complete setup → wave advances
 // ============================================================
-section('cp run mark-complete <slug> discuss → exit 0, wave advances');
+section('cp run mark-complete <slug> setup → exit 0, wave advances');
 {
   const r = cp(
-    ['run', 'mark-complete', slug, 'discuss'],
+    ['run', 'mark-complete', slug, 'setup'],
     dir,
-    { input: '# Summary discuss\n\nDiscuss phase completed.\n' }
+    { input: '# Summary setup\n\nSetup phase completed.\n' }
   );
   ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
   // stderr should mention wave or slug
@@ -119,9 +119,9 @@ section('cp run mark-complete <slug> discuss → exit 0, wave advances');
 }
 
 // ============================================================
-// Step 4: status check after discuss complete
+// Step 4: status check after setup complete
 // ============================================================
-section('cp run status --json after discuss → wave advanced');
+section('cp run status --json after setup → wave advanced');
 {
   const r = cp(['run', 'status', '--json'], dir);
   let arr = null;
@@ -132,7 +132,20 @@ section('cp run status --json after discuss → wave advanced');
 }
 
 // ============================================================
-// Step 5: mark-complete execute
+// Step 5: mark-complete design
+// ============================================================
+section('cp run mark-complete <slug> design → exit 0');
+{
+  const r = cp(
+    ['run', 'mark-complete', slug, 'design'],
+    dir,
+    { input: '# Summary design\n\nDesign phase completed.\n' }
+  );
+  ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
+}
+
+// ============================================================
+// Step 5b: mark-complete execute
 // ============================================================
 section('cp run mark-complete <slug> execute → exit 0');
 {
@@ -145,14 +158,14 @@ section('cp run mark-complete <slug> execute → exit 0');
 }
 
 // ============================================================
-// Step 6: mark-complete verify (last phase) → done
+// Step 6: mark-complete finalize (last phase) → done
 // ============================================================
-section('cp run mark-complete <slug> verify → exit 0, done in stderr');
+section('cp run mark-complete <slug> finalize → exit 0, done in stderr');
 {
   const r = cp(
-    ['run', 'mark-complete', slug, 'verify'],
+    ['run', 'mark-complete', slug, 'finalize'],
     dir,
-    { input: '# Summary verify\n\nVerify phase completed.\n' }
+    { input: '# Summary finalize\n\nFinalize phase completed.\n' }
   );
   ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
   // After final phase: stderr says "Run complete"

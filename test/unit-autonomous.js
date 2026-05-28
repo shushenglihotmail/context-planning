@@ -599,14 +599,13 @@ t('resolvePhases: scope=range trims out-of-milestone "to" silently', () => {
       'templates/quick-PLAN.md should have been removed in 51-02');
   });
 
-  await ta('quick contract: cp-quick skill references DESIGN.md + STATE.md (not PLAN.md)', () => {
+  await ta('quick contract: cp-quick skill delegates to cp run quick (v1.4) and avoids quick-PLAN.md', () => {
     const skillPath = path.resolve(__dirname, '..', 'commands', 'cp', 'quick.md');
     assert.ok(fs.existsSync(skillPath));
     const body = fs.readFileSync(skillPath, 'utf8');
-    assert.match(body, /quick-DESIGN\.md/);
-    assert.match(body, /quick-STATE\.md/);
-    // The skill MAY still reference the *summary* template (quick-SUMMARY.md
-    // is unchanged) but should NOT reference quick-PLAN.md as a template.
+    // v1.4: thin wrapper delegates to the quick workflow; DESIGN/STATE
+    // scaffolding is the workflow's job, not the wrapper's.
+    assert.match(body, /cp run quick/);
     assert.equal(/templates\/quick-PLAN\.md/.test(body), false,
       'cp-quick skill still references quick-PLAN.md');
   });

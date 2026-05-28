@@ -150,9 +150,9 @@ section('cp workflow diagram quick → stdout begins with "flowchart TD", exit 0
   ok('exit 0', r.status === 0, 'status=' + r.status + ' stderr=' + r.stderr);
   ok('stdout begins with flowchart TD', r.stdout.startsWith('flowchart TD'),
     'stdout=' + r.stdout.slice(0, 100));
-  ok('stdout contains discuss', r.stdout.includes('discuss'), 'stdout=' + r.stdout.slice(0, 300));
+  ok('stdout contains setup', r.stdout.includes('setup'), 'stdout=' + r.stdout.slice(0, 300));
   ok('stdout contains execute', r.stdout.includes('execute'), 'stdout=' + r.stdout.slice(0, 300));
-  ok('stdout contains verify', r.stdout.includes('verify'), 'stdout=' + r.stdout.slice(0, 300));
+  ok('stdout contains finalize', r.stdout.includes('finalize'), 'stdout=' + r.stdout.slice(0, 300));
   ok('stdout contains arrow -->', r.stdout.includes('-->'), 'stdout=' + r.stdout.slice(0, 300));
 }
 
@@ -241,14 +241,14 @@ section('cp workflow inspect dev --json → structured JSON, exit 0');
   }
 }
 
-section('cp workflow inspect quick → 3 waves, exit 0');
+section('cp workflow inspect quick → 4 waves (v1.4 supervised), exit 0');
 {
   const r = cp(['workflow', 'inspect', 'quick', '--json'], repoRoot);
   ok('exit 0', r.status === 0, 'status=' + r.status);
   const parsed = JSON.parse(r.stdout);
-  ok('quick.total_waves=3', parsed.total_waves === 3,
+  ok('quick.total_waves=4', parsed.total_waves === 4,
     'total_waves=' + parsed.total_waves);
-  ok('quick.binds_to=quick (51-03)', parsed.binds_to === 'quick',
+  ok('quick.binds_to=quick', parsed.binds_to === 'quick',
     'binds_to=' + parsed.binds_to);
 }
 

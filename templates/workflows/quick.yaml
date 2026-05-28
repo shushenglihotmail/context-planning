@@ -27,7 +27,7 @@ phases:
       description: |
         Discuss the task with the user, agree on Approach + Done-When,
         write into DESIGN.md, set status=ready.
-      after: [ setup ]
+      depends_on: [ setup ]
       role: planner
       skill: "{{design_skill}}"
       outputs:
@@ -37,7 +37,7 @@ phases:
       description: |
         Implement the agreed change. Commit atomically per task; append
         progress to STATE.md.
-      after: [ design ]
+      depends_on: [ design ]
       role: implementer
       skill: "{{execute_skill}}"
       outputs:
@@ -47,6 +47,6 @@ phases:
       description: |
         Write SUMMARY.md, set status=complete, append row to project
         STATE.md Quick Tasks Completed table.
-      after: [ execute ]
+      depends_on: [ execute ]
       kind: scaffold
       command: "cp quick-finalize {{slug_with_date}}"
