@@ -6,6 +6,52 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-05-28 — Workflow-driven quick and milestone
+
+The three workhorse slash commands (`/cp-quick`, `/cp-new-milestone`,
+`/cp-complete-milestone`) are now thin wrappers over workflow YAMLs.
+A new `supervised: true` flag indicates the harness LLM session is
+the supervisor (Option A: no daemon, no embedded LLM). See
+[`MIGRATION-v1.4.md`](MIGRATION-v1.4.md).
+
+### Added
+
+- **`supervised:` top-level flag** on workflow YAMLs. When true, a
+  single harness LLM session drives every phase end-to-end. When
+  false (or absent), the workflow is deterministic — each phase is a
+  single `cp` CLI invocation.
+- **Built-in `quick` workflow** (supervised, 4 phases: setup → design
+  → execute → finalize) replacing the inline `/cp-quick` logic.
+- **Built-in `milestone` workflow** (supervised, 6 phases: setup →
+  brainstorm → propose-project-updates → apply-project-updates →
+  propose-phases → finalize) replacing the inline `/cp-new-milestone`
+  logic.
+- **Built-in `complete-milestone` workflow** (deterministic, 2 phases:
+  verify → complete) wrapping `cp complete-milestone`.
+- **`cp abandon <slug> [--yes] [--reason <text>]`** — soft-abandon a
+  workflow run (state only; never reverts code).
+- **`cp list [--workflow <name>] [--status <status>] [--json]`** —
+  list runs under `.planning/runs/`.
+- **`cp status <run-id>`** — with a positional id, prints that run's
+  state. Bare `cp status` is unchanged.
+- **Internal verbs** used by the new workflow phases:
+  `cp quick-setup`, `cp quick-finalize`, `cp milestone-setup`,
+  `cp milestone-finalize`.
+
+### Changed
+
+- **`/cp-quick`, `/cp-new-milestone`, `/cp-complete-milestone`** are
+  now ~30-line thin delegations to `cp run <workflow>`. They no
+  longer contain inline orchestration logic.
+- The built-in `quick` workflow's phase ids changed:
+  `discuss` → `setup`, `verify` → `finalize` (breaking for anyone
+  scripting against those ids).
+
+### Migration
+
+See [`MIGRATION-v1.4.md`](MIGRATION-v1.4.md). End users who only
+consume cp through the slash commands need no action.
+
 ## [1.3.0] - 2026-05-27 — Reusable phase templates
 
 Strictly additive release: every v1.2 workflow loads and runs unchanged.
