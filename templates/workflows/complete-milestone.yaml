@@ -1,0 +1,26 @@
+workflow: complete-milestone
+version: 1
+binds_to: milestone
+principles:
+  - Verify before mutating — never close a milestone with unticked plans.
+  - All mutations land in a single atomic commit.
+defaults:
+  model: default
+phases:
+  - phase:
+      id: verify
+      description: |
+        Dry-run: verify all phases have all plans ticked and a SUMMARY
+        on disk. Prints action list. Exits non-zero with a clear
+        explanation if anything is missing.
+      kind: scaffold
+      command: "cp complete-milestone --dry-run {{milestone_name}}"
+  - phase:
+      id: complete
+      description: |
+        Aggregate SUMMARY frontmatter, render digest, append to
+        MILESTONES.md, collapse milestone in ROADMAP under <details>,
+        delete MILESTONE-CONTEXT.md, reset STATE.md, atomic commit.
+      after: [ verify ]
+      kind: scaffold
+      command: "cp complete-milestone {{milestone_name}}"

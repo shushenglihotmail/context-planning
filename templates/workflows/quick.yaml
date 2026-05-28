@@ -1,0 +1,52 @@
+workflow: quick
+version: 1
+binds_to: quick
+supervised: true
+principles:
+  - Agree on Approach + Done-When before writing code.
+  - One atomic commit per task during execute.
+  - Always close with a SUMMARY.md so the task is auditable.
+defaults:
+  model: default
+params:
+  - name: design_skill
+    default: "${config.provider.quick_design_skill}"
+  - name: execute_skill
+    default: "${config.provider.execute_skill}"
+phases:
+  - phase:
+      id: setup
+      description: |
+        Generate slug from task description, create
+        .planning/quick/<date>-<slug>/ dir, scaffold DESIGN.md and
+        STATE.md.
+      kind: scaffold
+      command: "cp quick-setup --task '{{task_description}}'"
+  - phase:
+      id: design
+      description: |
+        Discuss the task with the user, agree on Approach + Done-When,
+        write into DESIGN.md, set status=ready.
+      after: [ setup ]
+      role: planner
+      skill: "{{design_skill}}"
+      outputs:
+        - ".planning/quick/{{slug_with_date}}/DESIGN.md"
+  - phase:
+      id: execute
+      description: |
+        Implement the agreed change. Commit atomically per task; append
+        progress to STATE.md.
+      after: [ design ]
+      role: implementer
+      skill: "{{execute_skill}}"
+      outputs:
+        - "**/*"
+  - phase:
+      id: finalize
+      description: |
+        Write SUMMARY.md, set status=complete, append row to project
+        STATE.md Quick Tasks Completed table.
+      after: [ execute ]
+      kind: scaffold
+      command: "cp quick-finalize {{slug_with_date}}"
