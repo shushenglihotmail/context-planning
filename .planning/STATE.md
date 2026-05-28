@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 ## Current Position
 
 Phase: 60 (v1.4 Workflow-driven quick and milestone)
-Plan: 60-01
+Plan: 60-02
 Status: Ready to execute
-Current focus: Engine: kind=scaffold + materialize unification + defaults change
-Last activity: tick plan 59-03
+Current focus: Engine + supervisor + broker + checkpoint (unified runtime)
+Last activity: 60-01 kind=scaffold + materialize unification + defaults
 
-Progress: [█░░░░░░░░░] 9%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 

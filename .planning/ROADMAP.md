@@ -474,7 +474,7 @@ Plans:
 ### Phase 60: Engine + supervisor + broker + checkpoint (unified runtime)
 
 Plans:
-- [ ] 60-01: kind=scaffold + materialize unification + defaults
+- [x] 60-01: kind=scaffold + materialize unification + defaults
 - [ ] 60-02: Supervisor runtime — persistent LLM session + sub-agent contract
 - [ ] 60-03: Message broker + classifier (L1/L2/L3 confidence)
 - [ ] 60-04: Checkpoint protocol — runs/state.json + restart_phase output reversion
