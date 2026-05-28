@@ -57,7 +57,7 @@ error that points at MIGRATION-v1.4.md (written later in phase 69).
       level), `materialize:` / `outputs:` (per-phase) without errors;
       change `max_children` default from 20 to 10. No grammar breaks
       yet; tests should still pass.
-- [ ] 59-02: Inline `phase_templates:` + `workflow_templates:` blocks
+- [x] 59-02: Inline `phase_templates:` + `workflow_templates:` blocks
       with lookup-order resolution (inline → project → builtin).
       Grammar slot only for workflow-templates (v1.5 fully expands).
 - [ ] 59-03: Flip the grammar break — require `phase:` / `template:`
