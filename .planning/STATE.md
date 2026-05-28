@@ -13,7 +13,7 @@ Phase: -
 Plan: 154 of 154
 Status: Idle
 Current focus: -
-Last activity: tick plan 63-03
+Last activity: /cp-complete-milestone v1.4 Workflow-driven quick and milestone
 
 Progress: [░░░░░░░░░░] 0%
 
