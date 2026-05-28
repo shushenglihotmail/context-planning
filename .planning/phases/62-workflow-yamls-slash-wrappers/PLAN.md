@@ -53,7 +53,7 @@ the three slash-command SKILL.md wrappers to delegate to `cp run
 ## Plans
 
 - [x] 62-01: Author templates/workflows/milestone.yaml
-- [ ] 62-02: Author templates/workflows/quick.yaml + complete-milestone.yaml
+- [x] 62-02: Author templates/workflows/quick.yaml + complete-milestone.yaml
 - [ ] 62-03: Rewrite slash command wrappers (new-milestone, quick, complete-milestone)
 
 ## Notes
