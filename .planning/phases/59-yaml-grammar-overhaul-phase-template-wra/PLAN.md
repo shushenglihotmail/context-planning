@@ -1,24 +1,5 @@
 ---
-phase: "59"
-name: YAML grammar overhaul: phase/template wrappers + description
-milestone: v1.4 Workflow-driven quick and milestone
-status: in-progress
-created: 2026-05-27
-base-commit: df72ae7240f60ee14cb099334d3ea957364436a2
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+base-commit: 9cda838d4772d1c0fa1bf0854069ec066996957c
 ---
 
 # Phase 59: YAML grammar overhaul: phase/template wrappers + description
