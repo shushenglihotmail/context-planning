@@ -28,20 +28,27 @@ base-commit: e5c03bc5d9c1e33983d87cfd650ef9f9f8d51c4a
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Add Set 1 of v1.4's reserved CLI helpers — declarative engine verbs
+that the new milestone workflow YAML calls via `kind: scaffold`:
+`cp project update`, `cp milestone-setup-check`, `cp milestone-finalize`.
+Then add Set 2 — quick-task + run-lifecycle verbs: `cp quick-setup`,
+`cp quick-finalize`, `cp abandon`, `cp list`, `cp status <run-id>`.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `cp project update --from <json>` applies declarative PROJECT.md mutations idempotently.
+2. `cp milestone-setup-check <slug>` validates prerequisites (PROJECT.md exists, doctor green) with a clear non-zero exit + actionable message on failure.
+3. `cp milestone-finalize <slug>` updates STATE.md and prints a deterministic next-step banner.
+4. `cp quick-setup --task <txt>` scaffolds `.planning/quick/<YYYY-MM-DD>-<slug>/` with DESIGN.md + STATE.md.
+5. `cp quick-finalize <slug>` writes SUMMARY.md, updates project STATE.md.
+6. `cp abandon <run-id>` soft-abandons a workflow run (state→abandoned, never touches git).
+7. `cp list` enumerates runs; `cp status <run-id>` reports a single run's state.
+8. All new verbs have unit tests, all wired into `npm test`, audit HIGH=0.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 61-01: {brief description}
-- [ ] 61-02: {brief description}
+- [ ] 61-01: cp project update + milestone-setup-check + milestone-finalize
+- [ ] 61-02: cp quick-setup + quick-finalize + abandon + list + status
 
 ## Notes
 
