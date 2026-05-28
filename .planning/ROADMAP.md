@@ -525,6 +525,8 @@ Plans:
 ### Phase 72: Schema validator role/skill orthogonality
 
 ### Phase 73: Rewrite built-in workflow YAMLs
+
+### Phase 74: Migrate workflow test fixtures and tests
 ## Progress
 
 **Execution Order:**
