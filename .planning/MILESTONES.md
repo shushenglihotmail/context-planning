@@ -790,3 +790,63 @@
 - Phase 56: CLI commands for templates — see `.planning/phases/56-cli-commands-for-templates/`
 - Phase 57: Dogfood dev.yaml with templates — see `.planning/phases/57-dogfood-dev-yaml-with-templates/`
 - Phase 58: Docs and v1.3.0 release — see `.planning/phases/58-docs-and-v1-3-0-release/`
+
+## v1.4 Workflow-driven quick and milestone  — shipped 2026-05-28
+
+**Phases:** 59-63    **Plans:** 16    **Duration:** —
+
+**Key decisions:**
+- [object Object]  _(phase 59)_
+- [object Object]  _(phase 59)_
+- [object Object]  _(phase 59)_
+- [object Object]  _(phase 59)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- [object Object]  _(phase 60)_
+- JSON not YAML for project-update payloads  _(phase 61)_
+- Idempotent ops via substring match on bullet text  _(phase 61)_
+- STATE.md marker block uses HTML comments  _(phase 61)_
+- Soft abandon only — code revert is the user's decision  _(phase 61)_
+- cp status dispatches on positional arg presence (no breaking change)  _(phase 61)_
+- Quick slugs prefixed with UTC date for natural sort  _(phase 61)_
+- Mark workflow as supervised: true (Option A)  _(phase 62)_
+- Use kind: scaffold for the four deterministic CLI steps  _(phase 62)_
+- Materialize phase breakdown to ROADMAP.md, not inline children  _(phase 62)_
+- quick.yaml is supervised (LLM in design+execute); complete-milestone is pure deterministic  _(phase 62)_
+- execute phase declares outputs: ['**/*'] since arbitrary code change is the point  _(phase 62)_
+- Slash wrappers contain zero orchestration logic — they sanitize args and shell out to `cp run`.  _(phase 62)_
+- Use `depends_on:` (not `after:`) for top-level sequencing because that is what the workflow engine reads for wave computation.  _(phase 62)_
+- Update v1.3 contract test (unit-autonomous.js quick-DESIGN.md check) to v1.4 reality: wrapper delegates, scaffolding is the workflow's job.  _(phase 62)_
+- Quick start example uses the real v1.4 quick.yaml shape (setup/design/execute/finalize) to keep docs in sync with code.  _(phase 63)_
+- Internal `*-setup` / `*-finalize` verbs are documented but flagged as 'internal verb used by the workflow phase' to discourage direct user invocation.  _(phase 63)_
+- Forward-reference MIGRATION-v1.4.md (authored in 63-02).  _(phase 63)_
+- Frame v1.4 as backwards-compatible for end users; only workflow customizers and CLI scripters need to act.  _(phase 63)_
+- Document the `after:` vs `depends_on:` distinction as a clarification (not a new rule) so users understand why v1.4 built-ins switched.  _(phase 63)_
+- Provide a concrete bash recipe for re-merging a project-local quick.yaml fork.  _(phase 63)_
+- Follow Keep a Changelog ordering: Added, Changed, then a Migration callout pointing at MIGRATION-v1.4.md.  _(phase 63)_
+- Explicitly flag the quick workflow phase-id rename as breaking, matching the migration guide.  _(phase 63)_
+
+**Files (created):** bin/commands/checkpoint.js, bin/commands/classify.js, commands/cp/classify.md, commands/cp/run-supervised.md, lib/checkpoint.js, lib/classify.js, lib/supervisor.js, test/unit-checkpoint.js, test/unit-classify.js, test/unit-supervisor-state.js, test/integration-supervisor-flow.js, bin/commands/milestone-finalize.js, bin/commands/milestone-setup-check.js, bin/commands/project.js, lib/milestone-helpers.js, lib/project-update.js, test/unit-milestone-helpers.js, test/unit-project-update.js, bin/commands/abandon.js, bin/commands/list.js, bin/commands/quick-finalize.js, bin/commands/quick-setup.js, lib/quick-helpers.js, lib/run-lifecycle.js, test/unit-run-lifecycle.js, templates/workflows/milestone.yaml, templates/workflows/complete-milestone.yaml, MIGRATION-v1.4.md
+**Files (modified):** bin/commands/index.js, bin/commands/run.js, lib/workflow.js, test/unit-workflow-schema-v14.js, package.json, bin/commands/status.js, templates/workflows/quick.yaml, commands/cp/complete-milestone.md, commands/cp/new-milestone.md, commands/cp/quick.md, test/dryrun-run-cli.js, test/dryrun-workflow-cli.js, test/integration-run-cli.js, test/unit-autonomous.js, README.md, CHANGELOG.md
+
+**Phase summaries:**
+- Phase 59: YAML grammar overhaul: phase/template wrappers + description — see `.planning/phases/59-yaml-grammar-overhaul-phase-template-wra/`
+- Phase 60: Engine + supervisor + broker + checkpoint (unified runtime) — see `.planning/phases/60-engine-supervisor-broker-checkpoint-unif/`
+- Phase 61: Reserved CLI verbs (project + milestone + quick helpers) — see `.planning/phases/61-reserved-cli-verbs-project-milestone-qui/`
+- Phase 62: Workflow YAMLs + slash wrappers (quick / milestone / complete-milestone) — see `.planning/phases/62-workflow-yamls-slash-wrappers-quick-mile/`
+- Phase 63: Docs + MIGRATION-v1.4.md + v1.4.0 release — see `.planning/phases/63-docs-migration-v1-4-md-v1-4-0-release/`

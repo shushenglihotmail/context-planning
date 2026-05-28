@@ -462,7 +462,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.4 Workflow-driven quick and milestone (In Progress)
+<details>
+<summary>✅ v1.4 Workflow-driven quick and milestone (Phases 59-63) — SHIPPED 2026-05-28</summary>
 
 ### Phase 59: YAML grammar overhaul: phase/template wrappers + description
 
@@ -500,6 +501,7 @@ Plans:
 - [x] 63-02: MIGRATION-v1.4.md
 - [x] 63-03: v1.4.0 changelog + release
 
+</details>
 ## Progress
 
 **Execution Order:**
