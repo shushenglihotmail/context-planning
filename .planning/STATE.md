@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 61 (v1.4 Workflow-driven quick and milestone)
-Plan: 61-02
+Phase: 62 (v1.4 Workflow-driven quick and milestone)
+Plan: 62-01
 Status: Ready to execute
-Current focus: Reserved CLI verbs (project + milestone + quick helpers)
+Current focus: Workflow YAMLs + slash wrappers (quick / milestone / complete-milestone)
 Last activity: tick plan 61-01
 
-Progress: [██████░░░░] 56%
+Progress: [██████░░░░] 63%
 
 ## Performance Metrics
 

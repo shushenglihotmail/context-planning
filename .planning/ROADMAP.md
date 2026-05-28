@@ -484,7 +484,7 @@ Plans:
 
 Plans:
 - [x] 61-01: cp project update + milestone-setup-check + milestone-finalize
-- [ ] 61-02: cp quick-setup + quick-finalize + abandon + list + status
+- [x] 61-02: cp quick-setup + quick-finalize + abandon + list + status
 
 ### Phase 62: Workflow YAMLs + slash wrappers (quick / milestone / complete-milestone)
 
