@@ -197,6 +197,56 @@ check('no kind, no command → fully accepted (legacy default skill)', () => {
   assert.deepStrictEqual(result.warnings, []);
 });
 
+// v1.5 role/skill orthogonality checks
+
+check('v1.5: role as routing key (e.g. "plan") warns', () => {
+  const result = run([phase('one', { role: 'plan' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, "role 'plan' looks like a routing key");
+});
+
+check('v1.5: role=plan + skill=writing-plans (pinned) still warns on role', () => {
+  const result = run([phase('one', { role: 'plan', skill: 'writing-plans' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, "role 'plan' looks like a routing key");
+});
+
+check('v1.5: role=plan + skill=execute (both routing keys, differ) errors', () => {
+  const result = run([phase('one', { role: 'plan', skill: 'execute' })]);
+  assert.strictEqual(result.ok, false);
+  const msg = result.errors.join('\n');
+  assert.ok(/both as routing keys/.test(msg), `expected error, got: ${msg}`);
+});
+
+check('v1.5: role=plan + skill=plan (both routing keys, same) only warns', () => {
+  const result = run([phase('one', { role: 'plan', skill: 'plan' })]);
+  assertNoErrors(result);
+  assertWarningIncludes(result, "role 'plan' looks like a routing key");
+});
+
+check('v1.5: persona role (developer) + routing-key skill is clean', () => {
+  const result = run([phase('one', { role: 'developer', skill: 'plan' })]);
+  assertNoErrors(result);
+  assert.deepStrictEqual(result.warnings, []);
+});
+
+check('v1.5: persona role + pinned skill is clean', () => {
+  const result = run([phase('one', { role: 'tech-writer', skill: 'writing-plans' })]);
+  assertNoErrors(result);
+  assert.deepStrictEqual(result.warnings, []);
+});
+
+check('v1.5: kind=scaffold skips role/skill orthogonality check', () => {
+  // role: plan would normally warn, but kind: scaffold means role is ignored.
+  const result = run([
+    phase('one', { kind: 'scaffold', command: 'cp init', role: 'plan' }),
+  ]);
+  assertNoErrors(result);
+  // Scaffold-related warning still present, but NOT the routing-key one.
+  const msg = result.warnings.join('\n');
+  assert.ok(!/looks like a routing key/.test(msg), `unexpected warning: ${msg}`);
+});
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   for (const f of failures) console.error('  ✗', f);
