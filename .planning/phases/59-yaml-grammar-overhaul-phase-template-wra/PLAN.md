@@ -60,7 +60,7 @@ error that points at MIGRATION-v1.4.md (written later in phase 69).
 - [x] 59-02: Inline `phase_templates:` + `workflow_templates:` blocks
       with lookup-order resolution (inline → project → builtin).
       Grammar slot only for workflow-templates (v1.5 fully expands).
-- [ ] 59-03: Flip the grammar break — require `phase:` / `template:`
+- [x] 59-03: Flip the grammar break — require `phase:` / `template:`
       wrappers, require `description:`; migrate `dev.yaml`,
       `_examples/dev-templated.yaml`, and every test fixture across
       `test/` and `lib/__tests__/`. Single commit goes red→green.

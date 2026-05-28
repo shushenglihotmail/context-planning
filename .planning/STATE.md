@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 59 (v1.4 Workflow-driven quick and milestone)
-Plan: 59-03
+Phase: 60 (v1.4 Workflow-driven quick and milestone)
+Plan: 60-01
 Status: Ready to execute
-Current focus: YAML grammar overhaul: phase/template wrappers + description
-Last activity: 59-02 inline phase_templates / workflow_templates blocks
+Current focus: Engine: kind=scaffold + materialize unification + defaults change
+Last activity: 59-03 flip grammar break — require phase: wrappers + description:
 
-Progress: [█░░░░░░░░░] 6%
+Progress: [█░░░░░░░░░] 9%
 
 ## Performance Metrics
 

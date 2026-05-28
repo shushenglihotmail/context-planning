@@ -469,7 +469,7 @@ Plans:
 Plans:
 - [x] 59-01: TBD
 - [x] 59-02: TBD
-- [ ] 59-03: TBD
+- [x] 59-03: TBD
 
 ### Phase 60: Engine: kind=scaffold + materialize unification + defaults change
 
