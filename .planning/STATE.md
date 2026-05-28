@@ -9,13 +9,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 60 (v1.4 Workflow-driven quick and milestone)
-Plan: 60-05
+Phase: 61 (v1.4 Workflow-driven quick and milestone)
+Plan: 61-01
 Status: Ready to execute
-Current focus: Engine + supervisor + broker + checkpoint (unified runtime)
+Current focus: Reserved CLI verbs (project + milestone + quick helpers)
 Last activity: tick plan 60-04
 
-Progress: [████░░░░░░] 44%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
