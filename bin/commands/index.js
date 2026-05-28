@@ -43,4 +43,7 @@ module.exports = {
   'workflow-template': require('./workflow-template'),
   classify: require('./classify'),
   checkpoint: require('./checkpoint'),
+  project: require('./project'),
+  'milestone-setup-check': require('./milestone-setup-check'),
+  'milestone-finalize': require('./milestone-finalize'),
 };
