@@ -9,7 +9,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const yaml = require('yaml');
-const { expandWorkflowTemplate, MAX_DEPTH } = require('../lib/workflow-template-expand');
+const { expandWorkflowTemplate, interpolateConfigTokens, CONFIG_FALLBACKS, MAX_DEPTH } = require('../lib/workflow-template-expand');
 
 let passed = 0;
 let failed = 0;
@@ -272,6 +272,78 @@ check('numeric token preservation via substitution (whole-string)', () => {
 
 check('MAX_DEPTH is 3 per DESIGN', () => {
   assert.strictEqual(MAX_DEPTH, 3);
+});
+
+// ---- Phase 70: interpolateConfigTokens primitive ----
+
+check('interpolateConfigTokens: resolves nested path from cfg', () => {
+  const cfg = { cp: { workflow_provider: 'superpowers' }, provider: { execute_skill: 'custom-exec' } };
+  assert.strictEqual(
+    interpolateConfigTokens('use ${config.provider.execute_skill}', cfg, { templateName: 't' }),
+    'use custom-exec'
+  );
+});
+
+check('interpolateConfigTokens: whole-string match preserves raw value type', () => {
+  const cfg = { provider: { execute_skill: 'subagent-driven-development' } };
+  const r = interpolateConfigTokens('${config.provider.execute_skill}', cfg, { templateName: 't' });
+  assert.strictEqual(r, 'subagent-driven-development');
+});
+
+check('interpolateConfigTokens: superpowers fallback fires when cfg missing the path', () => {
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.quick_design_skill}', {}, { templateName: 't' }),
+    'writing-plans'
+  );
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.execute_skill}', {}, { templateName: 't' }),
+    'subagent-driven-development'
+  );
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.brainstorm_skill}', {}, { templateName: 't' }),
+    'brainstorming'
+  );
+});
+
+check('interpolateConfigTokens: cfg value beats fallback', () => {
+  const cfg = { provider: { execute_skill: 'override-exec' } };
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.execute_skill}', cfg, { templateName: 't' }),
+    'override-exec'
+  );
+});
+
+check('interpolateConfigTokens: unknown path with no fallback throws with template name', () => {
+  let threw = false;
+  try {
+    interpolateConfigTokens('${config.does.not.exist}', {}, { templateName: 'my-template' });
+  } catch (err) {
+    threw = true;
+    assert.ok(/my-template/.test(err.message), 'error mentions template name');
+    assert.ok(/does\.not\.exist/.test(err.message), 'error mentions missing path');
+  }
+  assert.ok(threw, 'expected interpolateConfigTokens to throw');
+});
+
+check('interpolateConfigTokens: non-string values pass through unchanged', () => {
+  assert.strictEqual(interpolateConfigTokens(42, {}, { templateName: 't' }), 42);
+  assert.strictEqual(interpolateConfigTokens(null, {}, { templateName: 't' }), null);
+  assert.strictEqual(interpolateConfigTokens(true, {}, { templateName: 't' }), true);
+});
+
+check('interpolateConfigTokens: string without tokens passes through unchanged', () => {
+  assert.strictEqual(
+    interpolateConfigTokens('hello world', {}, { templateName: 't' }),
+    'hello world'
+  );
+});
+
+check('CONFIG_FALLBACKS lists the documented superpowers skill defaults', () => {
+  assert.strictEqual(CONFIG_FALLBACKS['provider.quick_design_skill'], 'writing-plans');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.plan_skill'], 'writing-plans');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.execute_skill'], 'subagent-driven-development');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.brainstorm_skill'], 'brainstorming');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.review_skill'], 'requesting-code-review');
 });
 
 console.log(
