@@ -38,6 +38,12 @@ var USAGE = [
   '                                          cp run mark-complete <slug> <phase> < summary.md',
   '  cp run status [slug]                  Show one run\'s state or list all active runs.',
   '                                        --json        Machine-readable output.',
+  '  cp run state <slug>                   Print supervised-run state.json (read-only).',
+  '                                        --json        Machine-readable output (default for state).',
+  '  cp run state get <slug> <path>        Get a value at a dot-path from state.json.',
+  '  cp run state set <slug> <path> <val>  Set a value at a dot-path (val parsed as JSON, fallback string).',
+  '  cp run state append <slug> <path> <val>',
+  '                                        Append a value to an array at a dot-path.',
   '',
   'Common flags:',
   '  --projectDir <path>                   Override cwd (rare).',
@@ -633,9 +639,92 @@ function runStatus(args) {
   }
 }
 
+// ---------- run state (v1.4 supervised runs) ----------
+
+function runState(args) {
+  var supervisor = require('../../lib/supervisor');
+  var pd = _extractProjectDir(args);
+  var jsonOut = _consumeFlag(args, '--json');
+  if (args.length === 0) {
+    process.stderr.write('Usage: cp run state <slug> [get|set|append] [path] [value]\n');
+    process.exit(2);
+  }
+  var sub = args[0];
+  var slug;
+  var dotPath;
+  var rawVal;
+
+  if (sub === 'get' || sub === 'set' || sub === 'append') {
+    slug = args[1];
+    dotPath = args[2];
+    rawVal = args[3];
+    if (!slug || !dotPath || (sub !== 'get' && rawVal === undefined)) {
+      process.stderr.write('Usage: cp run state ' + sub + ' <slug> <path>' + (sub === 'get' ? '' : ' <value>') + '\n');
+      process.exit(2);
+    }
+  } else {
+    slug = sub;
+    sub = 'show';
+  }
+
+  try {
+    if (sub === 'show') {
+      var st = supervisor.readState(slug, {projectDir: pd});
+      // Default to JSON output — state is structured.
+      console.log(JSON.stringify(st, null, 2));
+      return;
+    }
+    if (sub === 'get') {
+      var val = supervisor.getPath(slug, dotPath, {projectDir: pd});
+      if (val === undefined) {
+        process.exit(1);
+      }
+      if (typeof val === 'string' && !jsonOut) {
+        console.log(val);
+      } else {
+        console.log(JSON.stringify(val, null, 2));
+      }
+      return;
+    }
+    var parsed;
+    try { parsed = JSON.parse(rawVal); } catch (_) { parsed = rawVal; }
+    if (sub === 'set') {
+      supervisor.setPath(slug, dotPath, parsed, {projectDir: pd});
+    } else {
+      supervisor.appendPath(slug, dotPath, parsed, {projectDir: pd});
+    }
+    if (jsonOut) {
+      console.log(JSON.stringify(supervisor.readState(slug, {projectDir: pd}), null, 2));
+    } else {
+      process.stderr.write('ok\n');
+    }
+  } catch (e) {
+    process.stderr.write('cp run state: ' + e.message + '\n');
+    process.exit(1);
+  }
+}
+
+function _extractProjectDir(args) {
+  for (var i = 0; i < args.length; i++) {
+    if (args[i] === '--projectDir' && args[i + 1]) {
+      var v = args[i + 1];
+      args.splice(i, 2);
+      return v;
+    }
+  }
+  return process.cwd();
+}
+
+function _consumeFlag(args, flag) {
+  var idx = args.indexOf(flag);
+  if (idx === -1) return false;
+  args.splice(idx, 1);
+  return true;
+}
+
 // ---------- main dispatcher ----------
 
-var SUBCMDS = ['resume', 'retry', 'abandon', 'mark-complete', 'status'];
+var SUBCMDS = ['resume', 'retry', 'abandon', 'mark-complete', 'status', 'state'];
 
 function run(args) {
   if (!args || args.length === 0) { printHelp(); return; }
@@ -650,6 +739,7 @@ function run(args) {
       case 'abandon': return runAbandon(rest);
       case 'mark-complete': return runMarkComplete(rest);
       case 'status': return runStatus(rest);
+      case 'state': return runState(rest);
     }
   }
 
