@@ -47,7 +47,7 @@ Then add Set 2 — quick-task + run-lifecycle verbs: `cp quick-setup`,
 
 ## Plans
 
-- [ ] 61-01: cp project update + milestone-setup-check + milestone-finalize
+- [x] 61-01: cp project update + milestone-setup-check + milestone-finalize
 - [ ] 61-02: cp quick-setup + quick-finalize + abandon + list + status
 
 ## Notes
