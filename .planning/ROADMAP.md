@@ -489,7 +489,7 @@ Plans:
 ### Phase 62: Workflow YAMLs + slash wrappers (quick / milestone / complete-milestone)
 
 Plans:
-- [ ] 62-01: quick.yaml workflow + /cp-quick thin wrapper
+- [x] 62-01: quick.yaml workflow + /cp-quick thin wrapper
 - [ ] 62-02: milestone.yaml workflow + /cp-new-milestone thin wrapper
 - [ ] 62-03: complete-milestone.yaml workflow + /cp-complete-milestone thin wrapper
 
