@@ -509,6 +509,12 @@ Plans:
 - [ ] 60-03: TBD
 - [ ] 60-04: TBD
 - [ ] 60-05: TBD
+
+### Phase 61: Reserved CLI verbs
+
+Plans:
+- [ ] 61-01: TBD
+- [ ] 61-02: TBD
 ## Progress
 
 **Execution Order:**
