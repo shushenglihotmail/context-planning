@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 ## Current Position
 
 Phase: 60 (v1.4 Workflow-driven quick and milestone)
-Plan: 60-03
+Plan: 60-04
 Status: Ready to execute
 Current focus: Engine + supervisor + broker + checkpoint (unified runtime)
-Last activity: tick plan 60-02
+Last activity: 60-03 message-broker classifier + cp classify CLI
 
-Progress: [███░░░░░░░] 31%
+Progress: [████░░░░░░] 38%
 
 ## Performance Metrics
 
