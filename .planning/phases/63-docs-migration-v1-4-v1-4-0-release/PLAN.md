@@ -46,7 +46,7 @@ the v1.4.0 release bump.
 
 - [x] 63-01: README + CLI help refresh for v1.4 supervised workflows
 - [x] 63-02: Author MIGRATION-v1.4.md (v1.3 → v1.4 upgrade guide)
-- [ ] 63-03: Bump package.json to 1.4.0; verify `cp --version`; release notes
+- [x] 63-03: Bump package.json to 1.4.0; verify `cp --version`; release notes
 
 ## Notes
 

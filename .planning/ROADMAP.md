@@ -498,7 +498,7 @@ Plans:
 Plans:
 - [x] 63-01: Docs refresh (README, CLI help, workflow guide)
 - [x] 63-02: MIGRATION-v1.4.md
-- [ ] 63-03: v1.4.0 changelog + release
+- [x] 63-03: v1.4.0 changelog + release
 
 ## Progress
 
