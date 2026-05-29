@@ -417,6 +417,11 @@ they hide.
 
 ## Workflow Engine
 
+> **Authoring custom workflows?** See [`docs/workflow/`](docs/workflow/) —
+> [quickstart](docs/workflow/quickstart.md), full
+> [schema and CLI reference](docs/workflow/reference.md), and
+> [8 worked recipes](docs/workflow/recipes.md).
+
 > **New in v1.0** — see [MIGRATION-v1.0.md](MIGRATION-v1.0.md) for the full
 > template format reference, state tier guide, and FAQ.
 > **New in v1.1** — see [MIGRATION-v1.1.md](MIGRATION-v1.1.md) for the new
