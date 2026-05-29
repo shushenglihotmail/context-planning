@@ -191,7 +191,7 @@ section('startRun — milestone tier');
   // dev-mini has 5 phases — all should be scaffolded
   const phasesDir = path.join(dir, '.planning', 'phases');
   const phaseEntries = fs.existsSync(phasesDir) ? fs.readdirSync(phasesDir) : [];
-  ok('5 phase dirs scaffolded (one per template phase)', phaseEntries.length === 5,
+  ok('6 phase dirs scaffolded (one per template phase)', phaseEntries.length === 6,
     `found: ${phaseEntries.join(', ')}`);
 
   // RUN.yaml exists at expected path
@@ -295,8 +295,11 @@ section('markPhaseComplete — single-phase wave advancement');
   // Wave 1: execute
   runtime.markPhaseComplete(slug, 'execute', '# Execute summary', {projectDir: dir, now});
 
-  // Wave 2: verify — last wave
-  const rLast = runtime.markPhaseComplete(slug, 'verify', '# Verify summary', {projectDir: dir, now});
+  // Wave 2: verify
+  runtime.markPhaseComplete(slug, 'verify', '# Verify summary', {projectDir: dir, now});
+
+  // Wave 3: finalize — last wave
+  const rLast = runtime.markPhaseComplete(slug, 'finalize', '# Finalize summary', {projectDir: dir, now});
   ok('last wave: doneAfter true', rLast.doneAfter === true, String(rLast.doneAfter));
   ok('last wave: nextInstruction null', rLast.nextInstruction === null, String(rLast.nextInstruction));
 

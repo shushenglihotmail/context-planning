@@ -46,3 +46,9 @@ phases:
       skill: executing-plans
       prompt: |
         Execute the plan.
+  - phase:
+      id: finalize
+      description: finalize
+      depends_on: [ execute ]
+      kind: scaffold
+      command: cp milestone-finalize {{milestone_slug}}

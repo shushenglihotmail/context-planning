@@ -481,6 +481,7 @@ function workflowInspect(args, cwd) {
   var tpl;
   try {
     tpl = wfLib.loadTemplate(filePath, {});
+    wfLib.applyAutoInjectFinalize(tpl);
   } catch (e) {
     process.stderr.write('error: ' + (e.message || String(e)) + '\n');
     process.exit(2);
@@ -530,7 +531,8 @@ function workflowInspect(args, cwd) {
               id: p.id,
               role: p.role || null,
               depends_on: Array.isArray(p.depends_on) ? p.depends_on : [],
-              model: p.model || null
+              model: p.model || null,
+              auto_injected: !!p._autoInjected
             };
           })
         };
@@ -589,7 +591,8 @@ function workflowInspect(args, cwd) {
         parts.push('depends on: ' + ph.depends_on.join(', '));
       }
       var suffix = parts.length > 0 ? '  (' + parts.join(', ') + ')' : '';
-      process.stdout.write('  - ' + ph.id + suffix + '\n');
+      var injectedTag = ph._autoInjected ? ' [auto-injected]' : '';
+      process.stdout.write('  - ' + ph.id + injectedTag + suffix + '\n');
     }
   }
 }

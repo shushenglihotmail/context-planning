@@ -206,10 +206,13 @@ section('cp workflow inspect dev → shows YAML + wave decomposition, exit 0');
   ok('stdout contains "Deduced execution sequence" header',
     r.stdout.includes('=== Deduced execution sequence ==='),
     'stdout missing wave header');
-  ok('stdout reports "1 wave(s)"', r.stdout.includes('1 wave(s)'),
+  ok('stdout reports "2 wave(s)"', r.stdout.includes('2 wave(s)'),
     'stdout=' + r.stdout.slice(-400));
-  ok('stdout has Wave 1 header', /Wave 1 of 1/.test(r.stdout),
+  ok('stdout has Wave 1 header', /Wave 1 of 2/.test(r.stdout),
     'stdout missing wave 1 line');
+  ok('stdout has auto-injected finalize phase',
+    /finalize.*\[auto-injected\]/.test(r.stdout),
+    'stdout missing auto-injected finalize');
   ok('stdout shows plan role', /plan.*role: planner/.test(r.stdout),
     'stdout missing plan role line');
   ok('stdout shows child-plan as child of plan',
@@ -228,11 +231,11 @@ section('cp workflow inspect dev --json → structured JSON, exit 0');
     ok('json.workflow=dev', parsed.workflow === 'dev', 'workflow=' + parsed.workflow);
     ok('json.binds_to=milestone', parsed.binds_to === 'milestone',
       'binds_to=' + parsed.binds_to);
-    ok('json.total_phases=3', parsed.total_phases === 3,
+    ok('json.total_phases=4', parsed.total_phases === 4,
       'total_phases=' + parsed.total_phases);
-    ok('json.total_waves=1', parsed.total_waves === 1,
+    ok('json.total_waves=2', parsed.total_waves === 2,
       'total_waves=' + parsed.total_waves);
-    ok('json.waves is array of length 1', Array.isArray(parsed.waves) && parsed.waves.length === 1,
+    ok('json.waves is array of length 2', Array.isArray(parsed.waves) && parsed.waves.length === 2,
       'waves.length=' + (parsed.waves && parsed.waves.length));
     ok('json wave 1 phase is plan with planner role',
       parsed.waves && parsed.waves[0].phases[0].id === 'plan' &&

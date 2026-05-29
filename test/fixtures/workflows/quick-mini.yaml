@@ -19,3 +19,9 @@ phases:
       depends_on: [ execute ]
       prompt: |
         Verify.
+  - phase:
+      id: finalize
+      description: finalize
+      depends_on: [ verify ]
+      kind: scaffold
+      command: cp quick-finalize {{slug_with_date}}

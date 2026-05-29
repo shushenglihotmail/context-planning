@@ -48,6 +48,7 @@ module.exports = {
   'milestone-finalize': require('./milestone-finalize'),
   'quick-setup': require('./quick-setup'),
   'quick-finalize': require('./quick-finalize'),
+  'run-finalize': require('./run-finalize'),
   abandon: require('./abandon'),
   list: require('./list'),
 };

@@ -147,5 +147,57 @@ section('lifecycle.singleRunStatus fails on missing run');
   ok('ok=false', !r.ok);
 }
 
+// ---------- run-finalize (v1.6 D1) ----------
+
+const runFinalize = require('../bin/commands/run-finalize');
+const custom = require('../lib/custom');
+
+section('run-finalize flips status to complete and writes SUMMARY');
+{
+  const dir = mkdir();
+  const slug = custom.createRun('my-wf', 'auto-close', {
+    projectDir: dir, now: new Date('2025-06-01T00:00:00Z'),
+  });
+  const r = runFinalize.finalize(slug, {
+    projectDir: dir, outcome: 'Auto-closed by framework',
+  });
+  ok('finalize ok', r.ok, r.error);
+  ok('SUMMARY.md exists', fs.existsSync(r.summaryPath));
+  ok('SUMMARY captures outcome', fs.readFileSync(r.summaryPath, 'utf8').includes('Auto-closed by framework'));
+  const state = custom.readState(slug, { projectDir: dir });
+  ok('state.status === complete', state.status === 'complete');
+  ok('state.current_phase === null', state.current_phase === null);
+  ok('last_activity updated', typeof state.last_activity === 'string');
+}
+
+section('run-finalize is idempotent');
+{
+  const dir = mkdir();
+  const slug = custom.createRun('my-wf', 'idem', {
+    projectDir: dir, now: new Date('2025-06-01T00:00:00Z'),
+  });
+  const r1 = runFinalize.finalize(slug, { projectDir: dir });
+  const r2 = runFinalize.finalize(slug, { projectDir: dir });
+  ok('first call ok', r1.ok);
+  ok('second call ok (no error)', r2.ok);
+  const state = custom.readState(slug, { projectDir: dir });
+  ok('state still complete', state.status === 'complete');
+}
+
+section('run-finalize rejects unknown slug');
+{
+  const dir = mkdir();
+  fs.mkdirSync(path.join(dir, '.planning', 'quick'), { recursive: true });
+  const r = runFinalize.finalize('2025-01-01-nope', { projectDir: dir });
+  ok('ok=false', !r.ok);
+  ok('error mentions not found', /not found/i.test(r.error || ''));
+}
+
+section('run-finalize rejects missing slug');
+{
+  const r = runFinalize.finalize(null, { projectDir: mkdir() });
+  ok('ok=false', !r.ok);
+}
+
 console.log(`\n${failed === 0 ? 'All' : ''} run-lifecycle checks ${failed === 0 ? 'passed' : 'failed'}. (${passed} passed, ${failed} failed)`);
 process.exit(failed === 0 ? 0 : 1);
