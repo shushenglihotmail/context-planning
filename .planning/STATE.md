@@ -17,12 +17,12 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 ## Current Position
 
 Phase: 95 (Template parameterization whitelist)
-Plan: 95-01
+Plan: 95-02
 Status: Ready to execute
 Current focus: docs-and-release
-Last activity: tick plan 94-01
+Last activity: tick plan 94-02
 
-Progress: [████████░░] 78%
+Progress: [█████████░] 89%
 
 ## Performance Metrics
 
