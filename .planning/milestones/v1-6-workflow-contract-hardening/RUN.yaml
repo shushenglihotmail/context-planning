@@ -1,0 +1,22 @@
+workflow: milestone
+slug: v1-6-workflow-contract-hardening
+status: done
+binding: milestone
+started: 2026-05-28T20:56:37.809Z
+last_activity: 2026-05-29T01:55:30.047Z
+current_wave: 6
+completed:
+  - setup
+  - brainstorm
+  - propose-project-updates
+  - apply-project-updates
+  - propose-phases
+  - finalize
+phaseNumByPhaseId:
+  setup: 76
+  brainstorm: 77
+  propose-project-updates: 78
+  apply-project-updates: 79
+  propose-phases: 80
+  finalize: 81
+template_path: C:\src\github\context-planning\templates\workflows\milestone.yaml

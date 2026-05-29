@@ -1,8 +1,8 @@
 <!-- cp:current-focus -->
-- **Current milestone:** v1-5-role-skill-semantics
-- **Slug:** v1-5-role-skill-semantics
+- **Current milestone:** v1-6-workflow-contract-hardening
+- **Slug:** v1-6-workflow-contract-hardening
 - **Status:** in-progress
-- **Updated:** 2026-05-28
+- **Updated:** 2026-05-29
 <!-- cp:current-focus -->
 
 # Project State
@@ -16,11 +16,11 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 81 (v1.6 Workflow Contract Hardening)
-Plan: -
-Status: Phase complete
-Current focus: finalize
-Last activity: v1.5.1 — verify v1.5 phase shape + complete-milestone no-op crash fix
+Phase: 82 (v1.6 Workflow Contract Hardening)
+Plan: 82-01
+Status: Ready to execute
+Current focus: prompt-scrub-and-config-fallbacks
+Last activity: scaffold-phase 84 (auto-inject-finalize)
 
 Progress: [░░░░░░░░░░] 0%
 

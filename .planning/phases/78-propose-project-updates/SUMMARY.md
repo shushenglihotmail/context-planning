@@ -1,0 +1,1 @@
+Wrote project-update.json with one add-active op for v1.6 Workflow Contract Hardening summarizing the four locked decisions (D1 implicit finalize injection, D2 'invoke skill:' directive + wave legend + unavailable-skill fallback, D3 expand CONFIG_FALLBACKS, D4 prompt-scrub) and the spec reference.
