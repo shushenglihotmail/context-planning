@@ -44,7 +44,7 @@ phases:
         starting point, NOT a green light. Ask follow-ups until both
         Approach and Done-When are unambiguous.
       role: tech-writer
-      skill: ${config.provider.plan_skill}
+      skill: plan
       outputs:
         - ".planning/quick/{{slug_with_date}}/DESIGN.md"
       prompt: |
@@ -57,7 +57,7 @@ phases:
       description: Implement the change agreed in DESIGN.md.
       depends_on: [design]
       role: developer
-      skill: ${config.provider.execute_skill}
+      skill: execute
       prompt: |
         Implement the change agreed in DESIGN.md. Commit atomically
         per task; append progress notes to STATE.md.
@@ -65,6 +65,9 @@ phases:
 
 **Watch out:**
 
+- `skill: plan` and `skill: execute` are **routing keys** — the
+  engine resolves them through your active provider's skills map
+  (see [reference §Canonical routing keys](./reference.md#canonical-routing-keys)).
 - The STOP language goes in **both** `description:` and `prompt:` —
   `description:` is what the user sees in `cp workflow inspect`;
   `prompt:` is what the harness reads.
@@ -88,7 +91,7 @@ phases:
     id: plan
     description: Decompose the milestone into 1-10 sub-features.
     role: planner
-    skill: ${config.provider.plan_skill}
+    skill: plan
     max_children: 10
     min_children: 1
     materialize: inline           # default; "roadmap-phases" for milestone
@@ -102,7 +105,7 @@ phases:
     description: Plan one sub-feature in detail.
     parent: plan                  # marks this as a child of `plan`
     role: planner
-    skill: ${config.provider.plan_skill}
+    skill: plan
     prompt: |
       Produce a detailed plan for the assigned sub-feature.
 
@@ -112,7 +115,7 @@ phases:
     parent: plan
     after: [child-plan]           # sequence siblings within the fan-out
     role: implementer
-    skill: ${config.provider.execute_skill}
+    skill: execute
     prompt: |
       Execute the planned sub-feature. Commit atomically per task.
 ```
@@ -185,17 +188,27 @@ phases:
 ## Recipe 4 — `${config.provider.*_skill}` for provider portability
 
 **When:** You want the template to work for any provider (Superpowers,
-manual, etc.) without hard-coding skill paths.
+manual, etc.) without hard-coding skill paths, and you want users to
+override skills per run via `--param`.
 
-**YAML:**
+**Pattern: param indirection.** `${config.…}` only resolves inside
+`params:` `default:` values — never directly in phase fields. Declare
+a param, default it from config, reference it via `{{...}}` in
+phases:
 
 ```yaml
+params:
+  - name: plan_skill
+    default: "${config.provider.plan_skill}"
+  - name: review_skill
+    default: "${config.provider.review_skill}"
+
 phases:
   - phase:
       id: plan
       description: Plan the change.
       role: planner
-      skill: ${config.provider.plan_skill}      # zero-config fallback
+      skill: "{{plan_skill}}"
       prompt: |
         Produce a detailed plan.
 
@@ -204,23 +217,31 @@ phases:
       description: Review the proposed change.
       depends_on: [plan]
       role: reviewer
-      skill: ${config.provider.review_skill}
+      skill: "{{review_skill}}"
       prompt: |
         Review for correctness, scope creep, and missed edge cases.
 ```
 
+**Don't** write `skill: ${config.provider.plan_skill}` directly in a
+phase — the runtime's `resolvePhaseSkill()`
+(`lib/runtime.js:257–297`) does not expand `${config.…}`. The value
+will pass through literally and the contract block will print a
+warning like *"Unknown skill `${config.provider.plan_skill}`"*.
+
 **Watch out:**
 
-- `${config.path}` references are resolved at run-time from
-  `cp doctor`'s view of your provider config; they don't need a
-  `params:` entry.
-- If a provider doesn't define a particular `<x>_skill`, cp falls
-  back to a built-in default (see the reference for the table).
+- `${config.path}` references resolve at param-default time, populated
+  from `lib/workflow-template-expand.js:CONFIG_FALLBACKS` plus your
+  `cp doctor` config tree.
+- For a simpler one-off (no per-run override), use the bare routing
+  key directly: `skill: plan`. The engine still resolves it through
+  the active provider's skills map.
 - `${config.…}` is distinct from `{{…}}`: dotted tokens **only** work
   through `${config.…}`. `{{provider.plan_skill}}` is forbidden.
 
-**See:** built-in `quick` and `docs` (both use these references
-throughout).
+**See:** built-in `quick` and `docs` (both declare provider-skill
+params at the top and reference them as `{{plan_skill}}`,
+`{{review_skill}}`, etc.).
 
 ---
 
@@ -245,7 +266,7 @@ phases:
       description: Plan + discuss.
       depends_on: [setup]
       role: planner
-      skill: ${config.provider.plan_skill}
+      skill: plan
       prompt: |
         Draft the plan; check it with the user.
 
@@ -261,8 +282,8 @@ phases:
 
 - `kind: scaffold` requires `command:`. No `prompt:`, no `skill:`, no
   `role:` (the runtime runs the command itself).
-- The contract block for a scaffold phase prints `invoke skill:
-  (none)` — there's nothing for the harness to do.
+- The contract block for a scaffold phase prints `skill: (none)` —
+  there's nothing for the harness to do beyond `mark-complete`.
 - You can omit your own `finalize` and let the runtime auto-inject
   one (see Reference §`binds_to`).
 
@@ -295,14 +316,14 @@ a persona (e.g., developer, tech-writer)."*
 - phase:
     id: plan
     role: tech-writer                              # persona
-    skill: ${config.provider.plan_skill}           # routing
+    skill: plan                                    # routing key
     prompt: |
       Plan the change.
 
 - phase:
     id: investigate
     role: analyst                                  # custom persona
-    skill: ${config.provider.brainstorm_skill}     # explicit routing
+    skill: brainstorm                              # explicit routing
     prompt: |
       Investigate the cause before proposing a fix.
 ```
@@ -314,11 +335,12 @@ a persona (e.g., developer, tech-writer)."*
 - If both `role:` and `skill:` are routing keys *and they disagree*,
   the validator fails (`role 'plan' and skill 'execute' both as
   routing keys — they must agree`).
-- Use canonical routing keys (`plan`, `execute`, `review`, `brainstorm`,
-  `verify`, `debug`, `worktree`, …) in `skill:`; use free personas in
+- Use canonical routing keys in `skill:`; use free personas in
   `role:`.
 
-**See:** Reference §"Skill phases" for the canonical routing key list.
+**See:** [reference §Canonical routing keys](./reference.md#canonical-routing-keys)
+for the full list (`brainstorm`, `plan`, `execute`, `review`,
+`verify`, `debug`, `worktree`, `tdd`, `finish`, …).
 
 ---
 
@@ -339,7 +361,7 @@ phases:
       id: review
       description: ...
       role: reviewer
-      skill: ${config.provider.review_skill}
+      skill: review
       prompt: |
         Review the diff.
 ```
