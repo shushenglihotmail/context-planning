@@ -549,7 +549,7 @@ Plans:
 ### Phase 82: prompt-scrub-and-config-fallbacks
 
 Plans:
-- [ ] 82-01: TBD
+- [x] 82-01: TBD
 
 ### Phase 83: invoke-skill-directive
 

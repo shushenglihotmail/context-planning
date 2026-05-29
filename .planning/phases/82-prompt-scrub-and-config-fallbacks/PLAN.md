@@ -28,19 +28,25 @@ base-commit: b747e240b8a69223c9517ebacc159704070a9536
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Implement D3 (expand CONFIG_FALLBACKS with 5 missing role-keys → Superpowers
+skill names) and D4 (6 inline prompt-scrub edits across 4 orchestrator skills)
+from the v1.6 design spec. No new files, smallest blast radius of the v1.6
+phases.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. `CONFIG_FALLBACKS` in `lib/workflow-template-expand.js` contains the 5 new rows
+   (`test_skill`, `debug_skill`, `verify_skill`, `execute_plan_skill`,
+   `finish_branch_skill`) plus the original 5 — 10 rows total.
+2. The 6 prompt edits from the spec's Change 4 table are applied verbatim
+   (intent-equivalent) to `cp-quick`, `cp-workflow-run`, `cp-new-project`,
+   `cp-execute-phase` SKILL.md files.
+3. `npm test` still passes (no broken assertions; no new tests needed for prose
+   edits, though new fallback rows may want a unit test).
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 82-01: {brief description}
+- [x] 82-01: Apply D3 CONFIG_FALLBACKS expansion + D4 prompt-scrub edits + unit test for new fallback rows.
 
 ## Notes
 

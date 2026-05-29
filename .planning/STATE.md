@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 82 (v1.6 Workflow Contract Hardening)
-Plan: 82-01
+Phase: 83 (v1.6 Workflow Contract Hardening)
+Plan: 83-01
 Status: Ready to execute
-Current focus: prompt-scrub-and-config-fallbacks
-Last activity: scaffold-phase 84 (auto-inject-finalize)
+Current focus: invoke-skill-directive
+Last activity: scaffold-phase 85 (docs-changelog-release)
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
