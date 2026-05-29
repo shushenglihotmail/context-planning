@@ -55,7 +55,7 @@ does that). TDD: every rule has a positive and a negative test.
        carrying a token, 1 negative case per forbidden field, dedicated
        `{{item.id}}` cases (in allowed field too — must still reject),
        walks nested arrays and objects.
-- [ ] 92-03: Implement `validatePostExpand(phase, opts)`. Walks each
+- [x] 92-03: Implement `validatePostExpand(phase, opts)`. Walks each
        field; rejects on any leftover `{{...}}` token (dotted or simple).
        Tests: positive case (fully substituted phase passes), negative
        cases (leftover simple `{{name}}` rejects; leftover dotted

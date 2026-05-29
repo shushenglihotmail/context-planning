@@ -588,7 +588,7 @@ Plans:
 Plans:
 - [x] 92-01: TBD
 - [x] 92-02: TBD
-- [ ] 92-03: TBD
+- [x] 92-03: TBD
 
 ### Phase 93: wire-validator-into-loader
 
