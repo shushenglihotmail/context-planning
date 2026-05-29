@@ -48,7 +48,7 @@ does that). TDD: every rule has a positive and a negative test.
        `{{x.y}}`, `CONFIG_TOKEN_RE` for `${config.x}`). Add unit-test
        skeleton `test/unit-workflow-template-validate.js`. Smoke test
        imports + error-class shape.
-- [ ] 92-02: Implement `validatePreExpand(phase, opts)`. Walks each field
+- [x] 92-02: Implement `validatePreExpand(phase, opts)`. Walks each field
        of the phase body; for non-whitelisted fields rejects on any
        `${...}` or `{{...}}` token; rejects `{{x.y}}` style anywhere
        regardless of field. Tests: 1 positive case per allowed field
