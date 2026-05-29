@@ -1,0 +1,153 @@
+workflow: docs
+version: 1
+binds_to: quick
+supervised: true
+principles:
+  - Clarify scope before reading materials; read materials before fanning out — context flows down, not up.
+  - One commit per document during child-write.
+  - Review is a single consolidated pass — customer sees all docs together, not piecemeal.
+params:
+  clarify_skill:
+    default: "${config.provider.brainstorm_skill}"
+  prepare_skill:
+    default: "${config.provider.plan_skill}"
+  write_skill:
+    default: "${config.provider.plan_skill}"
+  review_skill:
+    default: "${config.provider.review_skill}"
+phases:
+  - phase:
+      id: setup
+      description: |
+        Create the quick-task state directory for this documentation run.
+      kind: scaffold
+      command: "cp quick-setup {{slug_with_date}}"
+  - phase:
+      id: clarify
+      description: |
+        Clarify the documentation set, audience, format, source materials,
+        and success bar with the user before reading source artefacts.
+      depends_on: [ setup ]
+      role: analyst
+      skill: "{{clarify_skill}}"
+      outputs:
+        - ".planning/quick/{{slug_with_date}}/DESIGN.md"
+      prompt: |
+        Open .planning/quick/{{slug_with_date}}/DESIGN.md. If it does not
+        exist, create it in that state directory.
+
+        Work with the user to enumerate the documentation request:
+        - documents to generate, including slug-safe ids and titles;
+        - intended audience or audiences for each document;
+        - preferred output format (Markdown, RST, mixed, or other);
+        - source materials to read (paths, URLs, issues, specs, notes);
+        - the success bar for an acceptable documentation set.
+
+        Write the confirmed scope into DESIGN.md.
+
+        STOP. Do not read the materials or mark this phase complete until
+        the user explicitly confirms the document list, audiences, formats,
+        source materials, and success bar.
+  - phase:
+      id: read-materials
+      description: |
+        Read the identified source materials and summarize writer-facing
+        context into CONTEXT.md.
+      depends_on: [ clarify ]
+      role: researcher
+      outputs:
+        - ".planning/quick/{{slug_with_date}}/CONTEXT.md"
+      prompt: |
+        Read .planning/quick/{{slug_with_date}}/DESIGN.md, then read every
+        source material the user identified: repository files, planning
+        artefacts, URLs, issues, specs, or notes.
+
+        Write .planning/quick/{{slug_with_date}}/CONTEXT.md for the document
+        writers. Summarize the key facts, decisions, terminology, constraints,
+        audiences, requested formats, target files, and source references they
+        will need. Keep CONTEXT.md concise and under about 400 lines.
+  - phase:
+      id: prepare
+      description: |
+        Decompose the documentation request into one item per document.
+      depends_on: [ read-materials ]
+      role: planner
+      skill: "{{prepare_skill}}"
+      max_children: 10
+      min_children: 1
+      prompt: |
+        Read .planning/quick/{{slug_with_date}}/DESIGN.md and
+        .planning/quick/{{slug_with_date}}/CONTEXT.md. Decompose the request
+        into 1-10 documentation items, one per document to be written.
+
+        By default, the runtime executes items sequentially in the order you
+        list them. To opt into parallel/DAG execution, set the top-level
+        `optimizable: true` flag AND declare `depends_on` on every item
+        (use `[]` for items with no deps; omitted is also treated as `[]`).
+
+        Only set `optimizable: true` if you are confident about ALL inter-item
+        dependencies. If you are unsure about any item, set `optimizable: false`
+        (or omit the flag) and the runtime will fall back to safe sequential
+        execution — any `depends_on` you wrote will be ignored.
+
+        Return JSON shaped like:
+          {
+            "optimizable": false,
+            "items": [
+              {
+                "id": "slug-safe-doc-id",
+                "title": "Document title",
+                "audience": "intended audience",
+                "format": "Markdown",
+                "refs": [".planning/quick/{{slug_with_date}}/CONTEXT.md#section"]
+              }
+            ]
+          }
+
+        Each item's refs must point to relevant paths, URLs, or sections in
+        CONTEXT.md or the original source materials. Include an output path in
+        the item only when the default docs/<id>.md path is wrong.
+  - phase:
+      id: child-write
+      description: |
+        Write one document for the assigned documentation item.
+      parent: prepare
+      depends_on: [ prepare ]
+      role: writer
+      skill: "{{write_skill}}"
+      prompt: |
+        Write the single document assigned to this child item.
+
+        The supervisor will provide the item's fields (id, title, audience,
+        format, refs, and any item-specified output path). Use
+        .planning/quick/{{slug_with_date}}/CONTEXT.md plus the item's source
+        refs as grounding. Write to the path specified by the item; if the
+        item does not declare one, default to `docs/<item.id>.md`.
+
+        Verify the document against the requested audience, format, source
+        references, and success bar. Do not skip applicable checks. Commit the
+        completed document atomically with exactly this document's changes.
+  - phase:
+      id: review
+      description: |
+        Present all generated documents together, collect feedback, and loop
+        until the user explicitly approves the full set.
+      depends_on: [ child-write ]
+      role: reviewer
+      skill: "{{review_skill}}"
+      prompt: |
+        Present the full set of generated documents to the user together, not
+        piecemeal. Walk through each document's path, purpose, audience, and
+        notable content. Ask for feedback against the confirmed success bar.
+
+        If the user requests changes, apply the fixes yourself or dispatch
+        focused fix subagents, then present the updated full set again. Continue
+        this review loop until the user explicitly says the documentation set is
+        approved.
+  - phase:
+      id: finalize
+      description: |
+        Explicit no-op finalize scaffold for quick documentation workflows.
+      depends_on: [ review ]
+      kind: scaffold
+      command: "cp quick-finalize {{slug_with_date}}"
