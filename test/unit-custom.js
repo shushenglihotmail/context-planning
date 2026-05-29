@@ -95,6 +95,17 @@ section('createRun — slug generation');
   ok('leading/trailing dashes trimmed', /^\d{4}-\d{2}-\d{2}-trimme$/.test(slug), slug);
 }
 
+{
+  const dir = freshProject();
+  const now = new Date('2026-05-24T15:30:00.000Z');
+  const longName = 'design a workflow for document work with phases clarify with user what document work is read through source materials for docs fan out phase to prepare for multiple documents';
+  const slug = custom.createRun('debug', longName, { projectDir: dir, now });
+  const namePart = slug.replace(/^\d{4}-\d{2}-\d{2}-/, '');
+  ok('long name slug capped at 60 chars', namePart.length <= 60, `len=${namePart.length} slug=${slug}`);
+  ok('capped slug has no trailing dash', !namePart.endsWith('-'), namePart);
+  ok('capped slug starts with original name prefix', namePart.startsWith('design-a-workflow-for-document-work'), namePart);
+}
+
 // ---------- 2. createRun collision handling ----------
 
 section('createRun — collision handling');
