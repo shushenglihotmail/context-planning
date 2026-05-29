@@ -599,7 +599,7 @@ Plans:
 ### Phase 94: audit-and-migrate-builtins
 
 Plans:
-- [ ] 94-01: TBD
+- [x] 94-01: TBD
 - [ ] 94-02: TBD
 
 ### Phase 95: docs-and-release

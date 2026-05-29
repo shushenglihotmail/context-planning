@@ -17,12 +17,12 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 ## Current Position
 
 Phase: 94 (Template parameterization whitelist)
-Plan: 94-01
+Plan: 94-02
 Status: Ready to execute
 Current focus: audit-and-migrate-builtins
 Last activity: tick plan 93-02
 
-Progress: [██████░░░░] 56%
+Progress: [███████░░░] 67%
 
 ## Performance Metrics
 
