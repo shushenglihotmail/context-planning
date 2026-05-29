@@ -1,9 +1,9 @@
 workflow: docs
 slug: 2026-05-29-write-workflow-template-tutorial
-status: in-progress
+status: done
 binding: quick
 started: 2026-05-29T17:01:08.490Z
-last_activity: 2026-05-29T17:25:46.854Z
+last_activity: 2026-05-29T18:08:27.759Z
 current_phase: null
 completed:
   - setup
@@ -11,11 +11,15 @@ completed:
   - read-materials
   - prepare
   - child-write
+  - review
+  - finalize
 artifacts:
   setup: 01-setup.md
   clarify: 02-clarify.md
   read-materials: 03-read-materials.md
   prepare: 04-prepare.md
   child-write: 05-child-write.md
+  review: 06-review.md
+  finalize: 07-finalize.md
 template_path: C:\src\github\context-planning\templates\workflows\docs.yaml
-current_wave: 5
+current_wave: 7
