@@ -198,8 +198,10 @@ List in-flight runs with `cp run status`.
 
 ## Where to go next
 
-- [`reference.md`](./reference.md) — every field, every default,
-  every exit code.
+- [`reference.md`](./reference.md) — full schema with the meaning,
+  runtime behaviour, validation rules, and common mistakes for every
+  workflow-level and phase-level field; plus the CLI surface and
+  validation error table.
 - [`recipes.md`](./recipes.md) — fan-out, parallel-with-dependencies,
   mixed scaffold + prompt phases, parameterised workflows.
 - `cp workflow show <name>` — read the built-ins

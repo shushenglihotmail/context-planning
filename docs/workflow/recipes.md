@@ -71,7 +71,12 @@ phases:
 - The STOP language goes in **both** `description:` and `prompt:` —
   `description:` is what the user sees in `cp workflow inspect`;
   `prompt:` is what the harness reads.
-- The `outputs:` field is a hint for humans, not enforced.
+- The `outputs:` field is a **hard contract** under `supervised: true`:
+  the sub-agent supervisor (`lib/supervisor.js:261-264`) rejects writes
+  outside the declared paths, and the checkpoint logic uses the same
+  list for backup/rollback. Declare every path the phase will write,
+  and only those paths — see
+  [reference §`outputs:`](./reference.md#outputs) for full semantics.
 - `binds_to: quick` auto-injects the `finalize` phase. You can omit
   it.
 
