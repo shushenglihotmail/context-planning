@@ -16,10 +16,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 154 of 154
-Status: Idle
-Current focus: -
+Phase: 81 (v1.6 Workflow Contract Hardening)
+Plan: -
+Status: Phase complete
+Current focus: finalize
 Last activity: v1.5.1 — verify v1.5 phase shape + complete-milestone no-op crash fix
 
 Progress: [░░░░░░░░░░] 0%

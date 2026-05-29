@@ -531,6 +531,20 @@ Plans:
 ### Phase 75: Docs + CHANGELOG + v1.5.0 release
 
 </details>
+
+### 🚧 v1.6 Workflow Contract Hardening (In Progress)
+
+### Phase 76: setup
+
+### Phase 77: brainstorm
+
+### Phase 78: propose-project-updates
+
+### Phase 79: apply-project-updates
+
+### Phase 80: propose-phases
+
+### Phase 81: finalize
 ## Progress
 
 **Execution Order:**
