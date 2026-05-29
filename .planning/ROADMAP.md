@@ -550,6 +550,11 @@ Plans:
 
 Plans:
 - [ ] 82-01: TBD
+
+### Phase 83: invoke-skill-directive
+
+Plans:
+- [ ] 83-01: TBD
 ## Progress
 
 **Execution Order:**
