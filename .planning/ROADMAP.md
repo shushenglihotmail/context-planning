@@ -568,6 +568,45 @@ Plans:
 - [x] 85-01: TBD
 
 </details>
+
+### 🚧 Template parameterization whitelist (In Progress)
+
+### Phase 86: setup
+
+### Phase 87: brainstorm
+
+### Phase 88: propose-project-updates
+
+### Phase 89: apply-project-updates
+
+### Phase 90: propose-phases
+
+### Phase 91: finalize
+
+### Phase 92: validator-and-tests
+
+Plans:
+- [ ] 92-01: TBD
+- [ ] 92-02: TBD
+- [ ] 92-03: TBD
+
+### Phase 93: wire-validator-into-loader
+
+Plans:
+- [ ] 93-01: TBD
+- [ ] 93-02: TBD
+
+### Phase 94: audit-and-migrate-builtins
+
+Plans:
+- [ ] 94-01: TBD
+- [ ] 94-02: TBD
+
+### Phase 95: docs-and-release
+
+Plans:
+- [ ] 95-01: TBD
+- [ ] 95-02: TBD
 ## Progress
 
 **Execution Order:**

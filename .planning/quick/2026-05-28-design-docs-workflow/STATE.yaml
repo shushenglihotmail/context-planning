@@ -1,0 +1,19 @@
+workflow: quick
+slug: 2026-05-28-design-a-workflow-for-document-work-with-phases-clarify-with-user-what-document-work-is-read-through-source-materials-for-docs-fan-out-phase-to-prepare-for-multiple-documents-same-execution-per-document-in-parallel-review-with-customer-finalize
+status: done
+binding: quick
+started: 2026-05-29T04:04:46.707Z
+last_activity: 2026-05-29T04:24:31.158Z
+current_phase: null
+completed:
+  - setup
+  - design
+  - execute
+  - finalize
+artifacts:
+  setup: 01-setup.md
+  design: 02-design.md
+  execute: 03-execute.md
+  finalize: 04-finalize.md
+template_path: C:\src\github\context-planning\templates\workflows\quick.yaml
+current_wave: 4

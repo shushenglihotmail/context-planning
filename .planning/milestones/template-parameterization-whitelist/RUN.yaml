@@ -1,0 +1,20 @@
+workflow: milestone
+slug: template-parameterization-whitelist
+status: in-progress
+binding: milestone
+started: 2026-05-29T05:26:45.336Z
+last_activity: 2026-05-29T05:31:43.769Z
+current_wave: 4
+completed:
+  - setup
+  - brainstorm
+  - propose-project-updates
+  - apply-project-updates
+phaseNumByPhaseId:
+  setup: 86
+  brainstorm: 87
+  propose-project-updates: 88
+  apply-project-updates: 89
+  propose-phases: 90
+  finalize: 91
+template_path: C:\src\github\context-planning\templates\workflows\milestone.yaml

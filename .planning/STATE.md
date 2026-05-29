@@ -16,10 +16,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 158 of 158
-Status: Idle
-Current focus: -
+Phase: 92 (Template parameterization whitelist)
+Plan: 92-01
+Status: Ready to execute
+Current focus: validator-and-tests
 Last activity: /cp-complete-milestone v1.6 Workflow Contract Hardening
 
 Progress: [░░░░░░░░░░] 0%
