@@ -555,6 +555,11 @@ Plans:
 
 Plans:
 - [ ] 83-01: TBD
+
+### Phase 84: auto-inject-finalize
+
+Plans:
+- [ ] 84-01: TBD
 ## Progress
 
 **Execution Order:**
