@@ -51,7 +51,7 @@ existing `_resolverErrors` channel.
        `validatePreExpand(innerRaw)` BEFORE the per-phase `substituteArgs`;
        pass `templateName` as `filePath`. Throws propagate up; the
        outer try/catch captures them.
-- [ ] 93-02: Post-expand pass + integration tests. (a) After all
+- [x] 93-02: Post-expand pass + integration tests. (a) After all
        expansion in `loadTemplate`, walk every resolved phase and call
        `validatePostExpand`; push violations into `resolverErrors`.
        (b) Add `test/unit-workflow-template-validate-integration.js`

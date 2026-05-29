@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 93 (Template parameterization whitelist)
-Plan: 93-02
+Phase: 94 (Template parameterization whitelist)
+Plan: 94-01
 Status: Ready to execute
-Current focus: wire-validator-into-loader
-Last activity: tick plan 92-03
+Current focus: audit-and-migrate-builtins
+Last activity: tick plan 93-01
 
-Progress: [████░░░░░░] 44%
+Progress: [██████░░░░] 56%
 
 ## Performance Metrics
 

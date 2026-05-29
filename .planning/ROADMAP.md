@@ -594,7 +594,7 @@ Plans:
 
 Plans:
 - [x] 93-01: TBD
-- [ ] 93-02: TBD
+- [x] 93-02: TBD
 
 ### Phase 94: audit-and-migrate-builtins
 
