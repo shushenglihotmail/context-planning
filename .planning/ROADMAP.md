@@ -569,7 +569,8 @@ Plans:
 
 </details>
 
-### 🚧 Template parameterization whitelist (In Progress)
+<details>
+<summary>✅ Template parameterization whitelist (Phases 86-95) — SHIPPED 2026-05-29</summary>
 
 ### Phase 86: setup
 
@@ -607,6 +608,8 @@ Plans:
 Plans:
 - [x] 95-01: TBD
 - [x] 95-02: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**

@@ -901,3 +901,34 @@
 - Phase 83: invoke-skill-directive — see `.planning/phases/83-invoke-skill-directive/`
 - Phase 84: auto-inject-finalize — see `.planning/phases/84-auto-inject-finalize/`
 - Phase 85: docs-changelog-release — see `.planning/phases/85-docs-changelog-release/`
+
+## Template parameterization whitelist  — shipped 2026-05-29
+
+**Phases:** 86-95    **Plans:** 9    **Duration:** —
+
+**Key decisions:**
+- Whitelist v1 covers skill, prompt, description, max_children, min_children  _(phase 92)_
+- Pre-expand pass validates param field names against whitelist before substitution  _(phase 92)_
+- Post-expand pass uses allowedTokenNames Set for supervisor-supplied no-default params  _(phase 92)_
+- No-default params declared at top-level workflow are supervisor-injected and post-expand allow-listed  _(phase 93)_
+- Pre-v1.7 silent escape replaced by loud post-expand rejection  _(phase 93)_
+- Workflow-template inclusion gains uniqueness via include id auto-prefix, not via {{scope}} interpolation  _(phase 93)_
+- Phase 94 scope folded into phase 93; no additional code changes required  _(phase 94)_
+- Built-in migration delivered in phase 93; phase 94 plans book the same work for accountability  _(phase 94)_
+- Released as 1.7.0 minor ? additive validator, but author-facing breaking change for custom workflow-templates  _(phase 95)_
+- Migration guide ships alongside release; recipe-style format matches prior MIGRATION-v1.x.md  _(phase 95)_
+
+**Files (created):** lib/workflow-template-validate.js, test/unit-workflow-template-validate.js
+**Files (modified):** lib/workflow-template-expand.js, lib/workflow.js, templates/workflow-templates/review-and-address.yaml, templates/workflows/docs.yaml, templates/workflows/milestone.yaml, templates/workflows/quick.yaml, test/dryrun-template-cli-v13.js, test/fixtures/workflows/dev-mini.yaml, test/fixtures/workflows/quick-mini.yaml, test/integration-workflow-templates-v13.js, test/unit-workflow-template-expand.js, test/unit-workflow-toplevel-params.js
+
+**Phase summaries:**
+- Phase 86: setup — see `.planning/phases/86-setup/`
+- Phase 87: brainstorm — see `.planning/phases/87-brainstorm/`
+- Phase 88: propose-project-updates — see `.planning/phases/88-propose-project-updates/`
+- Phase 89: apply-project-updates — see `.planning/phases/89-apply-project-updates/`
+- Phase 90: propose-phases — see `.planning/phases/90-propose-phases/`
+- Phase 91: finalize — see `.planning/phases/91-finalize/`
+- Phase 92: validator-and-tests — see `.planning/phases/92-validator-and-tests/`
+- Phase 93: wire-validator-into-loader — see `.planning/phases/93-wire-validator-into-loader/`
+- Phase 94: audit-and-migrate-builtins — see `.planning/phases/94-audit-and-migrate-builtins/`
+- Phase 95: docs-and-release — see `.planning/phases/95-docs-and-release/`

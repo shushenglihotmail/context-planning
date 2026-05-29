@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 95 (Template parameterization whitelist)
-Plan: 9 of 9
-Status: Phase complete
-Current focus: docs-and-release
+Phase: -
+Plan: 167 of 167
+Status: Idle
+Current focus: -
 Last activity: tick plan 95-02
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -82,5 +82,5 @@ Items acknowledged and carried forward from previous milestone close:
 ## Session Continuity
 
 Last session: 2026-05-29
-Stopped at: shipped v1.6 Workflow Contract Hardening
+Stopped at: shipped Template parameterization whitelist
 Resume file: None
