@@ -1,15 +1,17 @@
 workflow: milestone
 slug: template-parameterization-whitelist
-status: in-progress
+status: done
 binding: milestone
 started: 2026-05-29T05:26:45.336Z
-last_activity: 2026-05-29T05:31:43.769Z
-current_wave: 4
+last_activity: 2026-05-29T05:34:34.058Z
+current_wave: 6
 completed:
   - setup
   - brainstorm
   - propose-project-updates
   - apply-project-updates
+  - propose-phases
+  - finalize
 phaseNumByPhaseId:
   setup: 86
   brainstorm: 87
