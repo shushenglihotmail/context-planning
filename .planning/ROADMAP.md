@@ -606,7 +606,7 @@ Plans:
 
 Plans:
 - [x] 95-01: TBD
-- [ ] 95-02: TBD
+- [x] 95-02: TBD
 ## Progress
 
 **Execution Order:**
