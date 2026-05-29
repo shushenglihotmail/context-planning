@@ -532,7 +532,8 @@ Plans:
 
 </details>
 
-### 🚧 v1.6 Workflow Contract Hardening (In Progress)
+<details>
+<summary>✅ v1.6 Workflow Contract Hardening (Phases 76-85) — SHIPPED 2026-05-29</summary>
 
 ### Phase 76: setup
 
@@ -565,6 +566,8 @@ Plans:
 
 Plans:
 - [x] 85-01: TBD
+
+</details>
 ## Progress
 
 **Execution Order:**

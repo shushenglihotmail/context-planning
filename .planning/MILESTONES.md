@@ -868,3 +868,36 @@
 - Phase 73: Rewrite built-in workflow YAMLs — see `.planning/phases/73-rewrite-built-in-workflow-yamls/`
 - Phase 74: Migrate workflow test fixtures and tests — see `.planning/phases/74-migrate-workflow-test-fixtures-and-tests/`
 - Phase 75: Docs + CHANGELOG + v1.5.0 release — see `.planning/phases/75-docs-changelog-v1-5-0-release/`
+
+## v1.6 Workflow Contract Hardening  — shipped 2026-05-29
+
+**Phases:** 76-85    **Plans:** 4    **Duration:** —
+
+**Key decisions:**
+- Land D3 (5 new CONFIG_FALLBACKS rows) and D4 (6 prompt-scrub edits) in a single phase since both are mechanical, no-runtime-risk changes and share a single test run.  _(phase 82)_
+- Use 'invoke skill: <name> (when available; otherwise inline)' wording uniformly across the 4 skill files to give agents one consistent directive that closes the prior loophole without breaking unavailable-skill cases.  _(phase 82)_
+- Defer the runtime-emission change (D2) and finalize auto-injection (D1) to phases 83 and 84 to keep this phase test-cheap.  _(phase 82)_
+- Default mode now emits 'invoke skill: <name>' as a per-phase directive and 'skill: (none)' for absent skills, with the contract legend printed once per wave above the phase blocks. The verb 'invoke' on the per-phase line carries the imperative.  _(phase 83)_
+- Provenance ((source: routing-key|pinned|pass-through) and the legacy (absent) literal) is preserved behind a new 'cp run --verbose' flag (also applies to 'cp run resume --verbose'), used for routing debugging only.  _(phase 83)_
+- verbose is passed through opts on runtime.startRun/resumeRun/formatInstruction. mark-complete/retry callsites use the default (new) format — verbose is not persisted in run state, matching its role as a debugging convenience.  _(phase 83)_
+- Auto-inject finalize lives in exported helper applyAutoInjectFinalize, called by runtime + workflow inspect — NOT inside loadTemplate, to keep raw-template fixtures stable.  _(phase 84)_
+- cp run-finalize CLI uses lib/custom (STATE.yaml store), not lib/quick-helpers (legacy STATE.md store).  _(phase 84)_
+- Finalize command is binding-aware: milestone→cp milestone-finalize, quick→cp quick-finalize, else→cp run-finalize.  _(phase 84)_
+- v1.6.0 ships as a single release covering all four design items (D1 auto-inject finalize, D2 invoke-skill directive, D3 expanded CONFIG_FALLBACKS, D4 prompt scrub).  _(phase 85)_
+- Migration notes target workflow authors (no action needed for explicit finalize) and supervisor agents (read the one-time contract legend).  _(phase 85)_
+- README gets a dedicated 'Skill invocation (v1.6)' subsection rather than scattering the contract across existing sections.  _(phase 85)_
+
+**Files (created):** bin/commands/run-finalize.js, test/unit-workflow-auto-inject-finalize.js
+**Files (modified):** lib/workflow-template-expand.js, test/unit-workflow-template-expand.js, bin/commands/run.js, lib/runtime.js, test/integration-format-instruction-skills.js, test/integration-runtime.js, bin/commands/index.js, bin/commands/workflow.js, lib/workflow.js, test/dryrun-workflow-cli.js, test/fixtures/workflows/dev-mini.yaml, test/fixtures/workflows/quick-mini.yaml, test/unit-run-lifecycle.js
+
+**Phase summaries:**
+- Phase 76: setup — see `.planning/phases/76-setup/`
+- Phase 77: brainstorm — see `.planning/phases/77-brainstorm/`
+- Phase 78: propose-project-updates — see `.planning/phases/78-propose-project-updates/`
+- Phase 79: apply-project-updates — see `.planning/phases/79-apply-project-updates/`
+- Phase 80: propose-phases — see `.planning/phases/80-propose-phases/`
+- Phase 81: finalize — see `.planning/phases/81-finalize/`
+- Phase 82: prompt-scrub-and-config-fallbacks — see `.planning/phases/82-prompt-scrub-and-config-fallbacks/`
+- Phase 83: invoke-skill-directive — see `.planning/phases/83-invoke-skill-directive/`
+- Phase 84: auto-inject-finalize — see `.planning/phases/84-auto-inject-finalize/`
+- Phase 85: docs-changelog-release — see `.planning/phases/85-docs-changelog-release/`

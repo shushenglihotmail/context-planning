@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 85 (v1.6 Workflow Contract Hardening)
-Plan: 4 of 4
-Status: Phase complete
-Current focus: docs-changelog-release
+Phase: -
+Plan: 158 of 158
+Status: Idle
+Current focus: -
 Last activity: tick plan 85-01
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -81,6 +81,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-28
-Stopped at: shipped v1.5 Role/skill semantics
+Last session: 2026-05-29
+Stopped at: shipped v1.6 Workflow Contract Hardening
 Resume file: None
