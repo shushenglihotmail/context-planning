@@ -1,0 +1,18 @@
+{
+  "milestone_slug": "template-parameterization-whitelist",
+  "version": "v1.7",
+  "operations": [
+    {
+      "op": "append",
+      "target": "Requirements/Active",
+      "value": "- **Template parameterization whitelist**: restrict workflow + phase template parameterization to a whitelist of content-bearing fields (`skill`, `prompt`, `description`, `max_children`, `min_children`); reject parameterization in operational fields (`id`, `parent`, `after`, `depends_on`, `optimizable`, `runner`, `outputs`, `title`, `require`, `invoke`, `config_fallback`, `completion`); hard-ban `{{item.X}}` tokens and any unresolved `{{...}}` after expansion; applies to both `templates/workflows/*.yaml` and `templates/phases/**`. Hard break with in-milestone audit + migration of all built-in templates. Closes the silent-substitution bug surfaced by the v1.6 `docs` workflow. Spec: `.planning/milestones/template-parameterization-whitelist/DESIGN.md`. — v1.7"
+    },
+    {
+      "op": "replace_footer",
+      "value": "*Last updated: 2026-05-29 — started v1.7 Template parameterization whitelist milestone*"
+    }
+  ],
+  "validated_promotions": [],
+  "deferred": [],
+  "notes": "No existing requirements move state; this milestone is purely additive. v1.5 and v1.6 remain Active (not closed in this milestone). Out-of-Scope and Constraints unchanged."
+}
