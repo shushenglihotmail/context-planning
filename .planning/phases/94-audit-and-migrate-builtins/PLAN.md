@@ -41,7 +41,7 @@ base-commit: e5d525c84293bdb5a6f03734b17527cb0847ac9b
 <!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
 
 - [x] 94-01: {brief description}
-- [ ] 94-02: {brief description}
+- [x] 94-02: {brief description}
 
 ## Notes
 

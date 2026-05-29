@@ -600,7 +600,7 @@ Plans:
 
 Plans:
 - [x] 94-01: TBD
-- [ ] 94-02: TBD
+- [x] 94-02: TBD
 
 ### Phase 95: docs-and-release
 
