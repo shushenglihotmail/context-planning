@@ -6,6 +6,9 @@ principles:
   - "Try to run autonomously until hitting a blocker"
 defaults:
   model: middle
+params:
+  # Supervisor-supplied (no default): injected at run-time.
+  - name: milestone_slug
 phases:
   - phase:
       id: brainstorm

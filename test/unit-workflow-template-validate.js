@@ -57,15 +57,15 @@ test('exports the public API', () => {
   assert.ok(Array.isArray(FORBIDDEN_PARAM_FIELDS));
 });
 
-test('whitelist contains exactly the 5 allowed fields', () => {
-  const expected = ['skill', 'prompt', 'description', 'max_children', 'min_children'];
+test('whitelist contains exactly the 8 allowed fields', () => {
+  const expected = ['skill', 'role', 'prompt', 'description', 'command', 'outputs', 'max_children', 'min_children'];
   assert.deepStrictEqual(ALLOWED_PARAM_FIELDS.slice().sort(), expected.slice().sort());
 });
 
-test('forbidden list contains the 12 expected fields', () => {
+test('forbidden list contains the 11 expected fields', () => {
   const expected = [
     'id', 'parent', 'after', 'depends_on', 'optimizable', 'runner',
-    'outputs', 'title', 'require', 'invoke', 'config_fallback', 'completion',
+    'title', 'require', 'invoke', 'config_fallback', 'completion',
   ];
   for (const f of expected) {
     assert.ok(FORBIDDEN_PARAM_FIELDS.includes(f), `forbidden list missing: ${f}`);
@@ -150,7 +150,7 @@ test('rejects parameterization in each forbidden field individually', () => {
     const phase = { id: 'plan' };
     if (field === 'id') {
       phase.id = '${config.bad}';
-    } else if (field === 'after' || field === 'depends_on' || field === 'outputs') {
+    } else if (field === 'after' || field === 'depends_on') {
       phase[field] = ['${config.bad}'];
     } else {
       phase[field] = '${config.bad}';
@@ -297,6 +297,49 @@ test('post-expand walks deeply nested structures', () => {
       },
     }),
     (e) => e.rule === 'unresolved-token' && /completion\.when\.all_of\[1\]/.test(e.fieldPath)
+  );
+});
+
+test('allows tokens in role/command/outputs (new in v1.7)', () => {
+  validatePreExpand({
+    id: 'p',
+    role: '${config.provider.role}',
+    command: 'cp setup {{slug}}',
+    outputs: ['${config.dir}/file.md', '{{slug}}/x.md'],
+  });
+});
+
+test('validatePostExpand: allowedTokenNames as Set permits matching leftover', () => {
+  validatePostExpand(
+    { id: 'p', command: 'cp setup {{slug_with_date}}' },
+    { allowedTokenNames: new Set(['slug_with_date']) }
+  );
+});
+
+test('validatePostExpand: allowedTokenNames as Array also works', () => {
+  validatePostExpand(
+    { id: 'p', prompt: 'do {{task_description}}' },
+    { allowedTokenNames: ['task_description'] }
+  );
+});
+
+test('validatePostExpand: allowedTokenNames does NOT permit dotted tokens', () => {
+  expectThrow(
+    () => validatePostExpand(
+      { id: 'p', prompt: 'do {{slug.x}}' },
+      { allowedTokenNames: new Set(['slug']) }
+    ),
+    (e) => e.rule === 'unresolved-token' && e.token === '{{slug.x}}'
+  );
+});
+
+test('validatePostExpand: still rejects undeclared simple token when allow-list given', () => {
+  expectThrow(
+    () => validatePostExpand(
+      { id: 'p', prompt: 'do {{other}}' },
+      { allowedTokenNames: new Set(['slug_with_date']) }
+    ),
+    (e) => e.rule === 'unresolved-token' && e.token === '{{other}}'
   );
 });
 

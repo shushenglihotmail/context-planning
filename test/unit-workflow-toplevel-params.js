@@ -89,12 +89,14 @@ check('top-level params: project config overrides fallback', () => {
   assert.strictEqual(t.phases[0].description, 'x project-exec');
 });
 
-check('top-level params: runtime tokens are left intact', () => {
+check('top-level params: runtime tokens are left intact when declared as supervisor-supplied', () => {
   const tpl = yaml.stringify({
     workflow: 'quick',
     binds_to: 'quick',
     params: [
       { name: 'design_skill', default: '${config.provider.quick_design_skill}' },
+      // No default → declared supervisor-supplied (v1.7).
+      { name: 'task_description' },
     ],
     phases: [
       {
@@ -141,7 +143,7 @@ check('top-level params: unknown ${config...} path with no fallback yields resol
   );
 });
 
-check('top-level params: param without default is rejected', () => {
+check('top-level params: param without default is accepted as supervisor-supplied (v1.7)', () => {
   const tpl = yaml.stringify({
     workflow: 'demo',
     binds_to: 'quick',
@@ -150,8 +152,25 @@ check('top-level params: param without default is rejected', () => {
   });
   const { tplPath } = makeProject(tpl);
   const t = loadTemplate(tplPath);
-  assert.ok(t._resolverErrors.length > 0);
-  assert.ok(/no default/.test(t._resolverErrors.join('\n')));
+  assert.deepStrictEqual(t._resolverErrors, []);
+  // {{x}} survives post-expand validation because x is declared.
+  assert.strictEqual(t.phases[0].description, '{{x}}');
+});
+
+check('top-level params: undeclared runtime token is rejected post-expand (v1.7)', () => {
+  const tpl = yaml.stringify({
+    workflow: 'demo',
+    binds_to: 'quick',
+    params: [],
+    phases: [{ id: 'a', description: 'task={{not_declared}}' }],
+  });
+  const { tplPath } = makeProject(tpl);
+  const t = loadTemplate(tplPath);
+  assert.ok(t._resolverErrors.length > 0, 'expected at least one resolver error');
+  assert.ok(
+    /unresolved-token/.test(t._resolverErrors.join('\n')),
+    'error mentions unresolved-token rule'
+  );
 });
 
 check('top-level params: t.params is exposed for inspection', () => {

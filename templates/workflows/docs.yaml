@@ -7,14 +7,17 @@ principles:
   - One commit per document during child-write.
   - Review is a single consolidated pass — customer sees all docs together, not piecemeal.
 params:
-  clarify_skill:
+  - name: clarify_skill
     default: "${config.provider.brainstorm_skill}"
-  prepare_skill:
+  - name: prepare_skill
     default: "${config.provider.plan_skill}"
-  write_skill:
+  - name: write_skill
     default: "${config.provider.plan_skill}"
-  review_skill:
+  - name: review_skill
     default: "${config.provider.review_skill}"
+  # Supervisor-supplied (no default): injected at run-time by the
+  # /cp-quick skill (docs workflow shares quick's scaffold dir layout).
+  - name: slug_with_date
 phases:
   - phase:
       id: setup

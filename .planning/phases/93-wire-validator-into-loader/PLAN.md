@@ -25,24 +25,42 @@ base-commit: e5d525c84293bdb5a6f03734b17527cb0847ac9b
 
 **Milestone**: Template parameterization whitelist
 **Created**: 2026-05-29
+**Depends on**: Phase 92
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Hook `validatePreExpand` and `validatePostExpand` into the workflow loader
+so every loaded template is validated. Violations surface through the
+existing `_resolverErrors` channel.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. A workflow file with `${config.x}` in any forbidden field is rejected.
+2. A workflow file with `{{item.id}}` anywhere is rejected.
+3. A workflow whose substitution leaves any `{{...}}` leftover is
+   rejected post-expand.
+4. All existing tests still pass.
+5. Integration tests cover each rejection scenario.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 93-01: {brief description}
-- [ ] 93-02: {brief description}
+- [x] 93-01: Pre-expand hooks. (a) In `lib/workflow.js::loadTemplate`,
+       call `validatePreExpand` on each top-level phase BEFORE the
+       `substituteArgs` pass; capture errors into `resolverErrors`.
+       (b) In `lib/workflow-template-expand.js::expandGroup`, call
+       `validatePreExpand(innerRaw)` BEFORE the per-phase `substituteArgs`;
+       pass `templateName` as `filePath`. Throws propagate up; the
+       outer try/catch captures them.
+- [ ] 93-02: Post-expand pass + integration tests. (a) After all
+       expansion in `loadTemplate`, walk every resolved phase and call
+       `validatePostExpand`; push violations into `resolverErrors`.
+       (b) Add `test/unit-workflow-template-validate-integration.js`
+       with cases for each rejection scenario.
 
 ## Notes
 
-<!-- Free-form during phase execution. -->
+- `_wrapperKind` (and any underscore-prefixed engine-internal key) must
+  be added to `opts.skipFields` to avoid false positives.
+- Post-expand is the safety net for the `allowUndeclared: true` pass
+  at workflow.js L116.
+

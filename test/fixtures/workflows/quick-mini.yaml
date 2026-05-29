@@ -1,6 +1,9 @@
 workflow: quick-mini
 version: 1
 binds_to: quick
+params:
+  # Supervisor-supplied (no default): injected at run-time.
+  - name: slug_with_date
 phases:
   - phase:
       id: discuss

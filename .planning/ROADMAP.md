@@ -593,7 +593,7 @@ Plans:
 ### Phase 93: wire-validator-into-loader
 
 Plans:
-- [ ] 93-01: TBD
+- [x] 93-01: TBD
 - [ ] 93-02: TBD
 
 ### Phase 94: audit-and-migrate-builtins

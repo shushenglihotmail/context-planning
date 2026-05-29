@@ -17,6 +17,9 @@ params:
     default: "plan"
   - name: plan_role
     default: "developer"
+  # Supervisor-supplied (no default): injected at run-time by the
+  # /cp-new-milestone skill.
+  - name: milestone_slug
 phases:
   - phase:
       id: setup

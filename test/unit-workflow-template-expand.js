@@ -45,16 +45,16 @@ check('worked-example: review-and-address resolves with prefixes + wrapper after
       phases: [
         {
           phase: {
-            id: 'review-{{scope}}',
+            id: 'review',
             role: 'reviewer',
             prompt: 'Review {{scope}}.',
           },
         },
         {
           phase: {
-            id: 'address-{{scope}}',
+            id: 'address',
             role: 'implementer',
-            after: ['review-{{scope}}'],
+            after: ['review'],
             prompt: 'Address {{scope}}.',
           },
         },
@@ -72,11 +72,11 @@ check('worked-example: review-and-address resolves with prefixes + wrapper after
     { projectDir: dir }
   );
   assert.strictEqual(result.phases.length, 2);
-  assert.strictEqual(result.phases[0].id, 'review--review-auth');
+  assert.strictEqual(result.phases[0].id, 'review--review');
   assert.deepStrictEqual(result.phases[0].after, ['plan']);
-  assert.strictEqual(result.phases[1].id, 'review--address-auth');
-  assert.deepStrictEqual(result.phases[1].after, ['review--review-auth']);
-  assert.deepStrictEqual(result.exitIds, ['review--address-auth']);
+  assert.strictEqual(result.phases[1].id, 'review--address');
+  assert.deepStrictEqual(result.phases[1].after, ['review--review']);
+  assert.deepStrictEqual(result.exitIds, ['review--address']);
   assert.strictEqual(result.warnings.length, 0);
 });
 

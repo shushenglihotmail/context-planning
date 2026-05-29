@@ -51,21 +51,21 @@ console.log('\nintegration-workflow-templates-v13:');
 
 check('worked example: review-and-address expands per DESIGN.md', () => {
   const t = loadTemplate(fx('uses-workflow-template.yaml'));
-  // Expected resolved phase list (DESIGN.md §"Worked example"):
+  // Expected resolved phase list (post-v1.7 whitelist migration):
   //   - id: plan
-  //   - id: review--review-auth, after: [plan]
-  //   - id: review--address-auth, after: [review--review-auth]
-  //   - id: execute, after: [review--address-auth]   ← rewritten from after: review
+  //   - id: review--review,  after: [plan]
+  //   - id: review--address, after: [review--review]
+  //   - id: execute,         after: [review--address]   ← rewritten from after: review
   assert.deepStrictEqual(t.phases.map((p) => p.id), [
     'plan',
-    'review--review-auth',
-    'review--address-auth',
+    'review--review',
+    'review--address',
     'execute',
   ]);
   const byId = Object.fromEntries(t.phases.map((p) => [p.id, p]));
-  assert.deepStrictEqual(byId['review--review-auth'].after, ['plan']);
-  assert.deepStrictEqual(byId['review--address-auth'].after, ['review--review-auth']);
-  assert.deepStrictEqual(byId['execute'].after, ['review--address-auth']);
+  assert.deepStrictEqual(byId['review--review'].after, ['plan']);
+  assert.deepStrictEqual(byId['review--address'].after, ['review--review']);
+  assert.deepStrictEqual(byId['execute'].after, ['review--address']);
   const r = validate(t);
   assert.deepStrictEqual(r.errors, [], `unexpected errors: ${r.errors.join(' | ')}`);
 });

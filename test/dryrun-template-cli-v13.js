@@ -158,7 +158,7 @@ section('cp workflow inspect surfaces templates_referenced');
   try { parsed = JSON.parse(r.stdout); } catch (_) {}
   ok('templates_referenced present', parsed && Array.isArray(parsed.templates_referenced));
   ok('lists review-and-address', parsed && parsed.templates_referenced.some((t) => t.name === 'review-and-address' && t.kind === 'workflow-template'));
-  ok('shows expanded prefixed ids', parsed && JSON.stringify(parsed.waves).indexOf('review--review-auth') >= 0);
+  ok('shows expanded prefixed ids', parsed && JSON.stringify(parsed.waves).indexOf('review--review') >= 0);
 }
 
 section('cp workflow inspect human form');

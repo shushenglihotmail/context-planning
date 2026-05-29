@@ -4,9 +4,9 @@
 #   milestone_slug: "template-parameterization-whitelist"  (for milestone-tier DESIGN.md)
 milestone_slug: "template-parameterization-whitelist"
 milestone: Template parameterization whitelist
-status: proposed
+status: accepted
 created: 2026-05-29
-updated: 2026-05-29
+updated: 2026-05-29 (revised: 8-field whitelist; supervisor-supplied params rule)
 deciders: []
 supersedes: []
 superseded_by: null
@@ -54,8 +54,11 @@ substitution.
 **Allow** parameterization (`${...}` and `{{...}}` tokens) in:
 
 - `skill`
+- `role`
 - `prompt`
 - `description`
+- `command`
+- `outputs`
 - `max_children`
 - `min_children`
 
@@ -67,7 +70,6 @@ substitution.
 - `depends_on`
 - `optimizable`
 - `runner`
-- `outputs`
 - `title`
 - `require`
 - `invoke`
@@ -77,7 +79,32 @@ substitution.
 ### Hard bans (any field)
 
 - `{{item.X}}` tokens anywhere → reject on load.
-- Any `{{...}}` token still present after expansion completes → reject.
+- Any `{{...}}` token still present after expansion completes → reject
+  UNLESS its name appears in the workflow's declared `params:` list
+  (see "Supervisor-supplied params" below).
+
+### Supervisor-supplied params
+
+Some `{{name}}` tokens are supplied by the supervisor at run-time rather
+than substituted at load-time (e.g. `task_description`, `slug_with_date`,
+`milestone_slug`). To distinguish "intentional runtime injection" from
+"undeclared bug" the workflow author MUST declare them in `params:`:
+
+```yaml
+params:
+  - name: task_description    # no default → supervisor-supplied
+  - name: slug_with_date      # no default → supervisor-supplied
+  - name: design_skill
+    default: "plan"           # has default → substituted at load
+```
+
+The validator's post-expand pass accepts leftover `{{name}}` tokens
+whose `name` matches a declared param. Tokens with no declaration
+trigger an `unresolved-token` rejection.
+
+(Pre-v1.7, undeclared tokens flowed through silently via the
+`allowUndeclared: true` substitution pass. v1.7 removes that escape
+hatch by requiring an explicit declaration.)
 
 ### Scope
 

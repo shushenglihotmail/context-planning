@@ -17,6 +17,10 @@ params:
     default: "execute"
   - name: execute_role
     default: "developer"
+  # Supervisor-supplied (no default): injected at run-time by the
+  # /cp-quick skill before each phase executes.
+  - name: task_description
+  - name: slug_with_date
 phases:
   - phase:
       id: setup
