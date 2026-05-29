@@ -586,7 +586,7 @@ Plans:
 ### Phase 92: validator-and-tests
 
 Plans:
-- [ ] 92-01: TBD
+- [x] 92-01: TBD
 - [ ] 92-02: TBD
 - [ ] 92-03: TBD
 
