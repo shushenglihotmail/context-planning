@@ -67,7 +67,7 @@ Once you've started, every path converges on the same `/cp-plan-phase N`
 ```bash
 npm install -g context-planning
 # exposes BOTH `cplan` and `cp` on PATH
-cp --version    # should print 1.5.x
+cp --version    # should print 1.7.x
 ```
 
 ### Node CLI (from source — for development)
@@ -443,6 +443,28 @@ they hide.
 > actually reaches the supervisor. v1.5 also formalises **role vs.
 > skill semantics** — see [Role vs. skill (v1.5)](#role-vs-skill-v15)
 > below — and the schema validator now warns/errors on conflation.
+
+> **New in v1.6** — workflow contract hardening. Adds `cp run-finalize`
+> (generic terminal-state CLI), an auto-injected finalize phase so
+> every `cp run` lands in a closed state even if the supervisor stops
+> mid-flow, a one-time skill-invocation contract legend printed at the
+> top of each run (`invoke skill: <name>` is binding, with a documented
+> fallback when the skill is unavailable), and consistent fallback
+> wording across all built-in workflow prompts. See the v1.6 entry
+> in [CHANGELOG.md](CHANGELOG.md).
+
+> **New in v1.7** — template parameterization whitelist. Workflow
+> templates and top-level workflows now ship with a small documented
+> whitelist of fields that may contain `{{...}}` substitution tokens
+> (`skill`, `role`, `prompt`, `description`, `command`, `outputs`,
+> `max_children`, `min_children`). Everything else — `id`, `parent`,
+> `after`, `depends_on`, `runner`, `title`, `require`, `invoke`,
+> `config_fallback`, `completion`, `optimizable` — is forbidden from
+> templating. A post-expand validator pass rejects any stray
+> `{{...}}` tokens that survived substitution. Tokens the supervisor
+> agent injects at run-time (e.g. `slug_with_date`) get a first-class
+> declaration shape: list them as no-default `params:` entries at the
+> top of the workflow YAML. See [MIGRATION-v1.7.md](MIGRATION-v1.7.md).
 
 cp ships a reusable YAML workflow format that lets you define phase DAGs once
 and run them via `cp run`. Each workflow declares phases, dependencies (for
