@@ -72,8 +72,8 @@ run and which finalizer to inject if you don't declare one.
 
 If your `phases:` array does not contain an entry with `id: finalize`,
 the runtime appends one of kind `scaffold` that runs the command
-above. See [recipes §custom finalizer](./recipes.md) to declare your
-own.
+above. See [recipes §mixing scaffold + prompt phases](./recipes.md)
+to declare your own.
 
 ### Supervised mode
 
@@ -147,7 +147,25 @@ Resolution order for `{{name}}`:
 
 #### `${config.path}` references
 
-Pulled from `cp doctor`'s resolved config. The most useful ones:
+Resolved by the param expander (`lib/workflow.js:128`) from the
+config tree that `cp doctor` prints. **They only resolve inside
+`params:` `default:` values — not inside phase fields like `skill:`,
+`role:`, `command:`, or `prompt:`.** To use a config value in a phase
+field, declare it as a param and reference it via `{{...}}`:
+
+```yaml
+params:
+  - name: plan_skill
+    default: "${config.provider.plan_skill}"   # ✓ resolves here
+
+phases:
+  - phase:
+      id: classify
+      role: planner
+      skill: "{{plan_skill}}"                  # ✓ correct indirection
+```
+
+The most useful `${config.…}` paths:
 
 | Reference                            | Resolves to                          |
 | ------------------------------------ | ------------------------------------ |
@@ -162,6 +180,28 @@ Fallbacks (`lib/workflow-template-expand.js:CONFIG_FALLBACKS`) ensure
 these references resolve to a usable skill name even with zero config:
 e.g., `provider.plan_skill → writing-plans` for the
 `superpowers` provider.
+
+#### Canonical routing keys
+
+The `skill:` phase field accepts a **routing key** — the engine looks
+it up under the active provider's `skills` map
+(`templates/config.json` → `providers.<name>.skills`). Built-in keys:
+
+| Key              | Routes to (superpowers)               |
+| ---------------- | ------------------------------------- |
+| `brainstorm`     | `brainstorming`                       |
+| `plan`           | `writing-plans`                       |
+| `execute`        | `subagent-driven-development`         |
+| `execute_simple` | `executing-plans`                     |
+| `review`         | `requesting-code-review`              |
+| `receive_review` | `receiving-code-review`               |
+| `finish`         | `finishing-a-development-branch`      |
+| `worktree`       | `using-git-worktrees`                 |
+| `tdd`            | `test-driven-development`             |
+| `debug`          | `systematic-debugging`                |
+| `verify`         | `verification-before-completion`      |
+
+`cp doctor` prints the resolved table for your active provider.
 
 ## Phase entries
 
@@ -217,7 +257,7 @@ The `kind:` field selects the execution mode. Default is the implicit
     id: classify
     description: Classify the inbox item.
     role: planner
-    skill: ${config.provider.plan_skill}
+    skill: plan                          # routing key — see canonical table above
     prompt: |
       Read the item and return JSON: { "kind": "..." }
 ```
@@ -225,12 +265,18 @@ The `kind:` field selects the execution mode. Default is the implicit
 - `role:` is a free-form string. Used in the v1.6 contract block for
   the human reader. Conventional values: `planner`, `writer`,
   `implementer`, `reviewer`, `verifier`, `tech-writer`.
-- `skill:` is the **only** mechanism that routes work. Either a bare
-  skill name (`writing-plans`), a fully-qualified path
-  (`superpowers/writing-plans`), or a `${config.provider.<x>_skill}`
-  reference (recommended — provider-agnostic).
-- If `skill:` is omitted, the v1.6 contract prints `invoke skill:
-  (none)` and the harness follows `prompt:` inline.
+- `skill:` is the **only** mechanism that routes work. Accepted forms:
+  - A canonical **routing key** (`plan`, `execute`, `review`, …) —
+    resolved through the active provider's `skills` map.
+  - A literal skill name (`writing-plans`) — resolved as "pinned" if
+    it appears as a value anywhere in the provider table.
+  - A `{{param_name}}` token whose param defaults to
+    `"${config.provider.X_skill}"` (recommended for
+    provider-overridable workflows — see [§`${config.path}` references](#configpath-references)).
+  - **Not** a direct `${config.…}` reference — those only expand
+    inside `params:` defaults, never in phase fields.
+- If `skill:` is omitted, the v1.6 contract prints `skill: (none)`
+  and the harness follows `prompt:` inline.
 - `prompt:` is required for skill phases. Use a YAML block scalar
   (`|`) for multi-line content.
 
@@ -260,7 +306,7 @@ one or more "child" phases per item.
     id: plan
     description: Decompose into 1-10 items.
     role: planner
-    skill: ${config.provider.plan_skill}
+    skill: plan
     max_children: 10            # default 10; positive integer
     min_children: 1             # default 1
     materialize: inline         # default; or "roadmap-phases"
@@ -272,7 +318,7 @@ one or more "child" phases per item.
     description: Plan one item.
     parent: plan                # marks this as a child of `plan`
     role: planner
-    skill: ${config.provider.plan_skill}
+    skill: plan
     prompt: |
       Plan the item assigned to this child.
 
@@ -282,7 +328,7 @@ one or more "child" phases per item.
     parent: plan
     after: [child-plan]         # cross-sibling sequencing
     role: implementer
-    skill: ${config.provider.execute_skill}
+    skill: execute
     prompt: |
       Execute the planned item.
 ```
@@ -309,25 +355,82 @@ dependency, set `optimizable: false` — the runtime will ignore any
 
 ### Template inclusions
 
+There are **two** distinct inclusion mechanisms — keep them straight:
+
+#### Phase-templates (one phase, body comes from a template)
+
+The `template:` key sits **nested inside** a `phase:` block. The
+phase's id, description, and `after:` stay in the workflow; the
+phase's body (`role`, `skill`, `prompt`, …) comes from the named
+phase-template after `{{arg}}` substitution.
+
 ```yaml
 phases:
-  - template:
-      id: clarify-and-design     # local id this inclusion takes
-      name: superpowers/brainstorm
-      args:
-        skill: ${config.provider.brainstorm_skill}
-      after: [setup]
+  - phase:
+      id: review-auth
+      description: review-auth
+      template:
+        name: reviewer            # phase-template name
+        args:
+          scope: auth
+          min_findings: 1
+      after: [ plan ]
 ```
 
-| Field | Notes |
-| ----- | ----- |
-| `id`         | Local id. Required. |
-| `name`       | Template name. Resolved against `phase-templates/` (`cp phase-template ls`). |
-| `args`       | Map of arg name → value. The template's `params:` define what's expected. |
-| `after`      | Same as on regular phases. `depends_on:` is **not** allowed here. |
+Resolution order (project shadows built-in):
+1. `<projectDir>/.planning/phase-templates/<name>.yaml`
+2. `<repoRoot>/templates/phase-templates/<name>.yaml`
 
-`cp phase-template ls` and `cp phase-template show <name>` list and
-inspect available templates.
+Built-ins: `feature-plan`, `feature-execute`, `reviewer`.
+
+CLI: `cp phase-template ls` (list), `cp phase-template show <name>`
+(print YAML), `cp phase-template new <name> [--from <built-in>]`
+(scaffold a new one in `.planning/phase-templates/`).
+
+#### Workflow-templates (one inclusion expands to multiple phases)
+
+The `- template:` key sits **at the top level** of `phases:`. It
+expands into multiple phases — each prefixed with the inclusion's
+`id` via the namespace separator `--`. The included workflow-template
+declares its own `params:` schema; pass values through `args:`.
+
+```yaml
+phases:
+  - phase:
+      id: plan
+      description: plan
+      role: planner
+      skill: plan
+      prompt: "Plan the change."
+
+  - template:
+      id: r                           # local namespace for expanded phases
+      name: review-and-address        # workflow-template name
+      args:
+        scope: auth
+      after: [ plan ]                 # depends_on: is NOT allowed here
+```
+
+After expansion, the `review-and-address` template (which itself has
+two phases, `review` and `address`) contributes phases `r--review`
+and `r--address` to the parent workflow's DAG.
+
+Resolution order (project shadows built-in,
+`lib/workflow-template-loader.js:25–27`):
+1. `<projectDir>/.planning/workflow-templates/<name>.yaml`
+2. `<repoRoot>/templates/workflow-templates/<name>.yaml`
+
+Built-ins: `review-and-address`.
+
+CLI: `cp workflow-template ls`, `cp workflow-template show <name>`,
+`cp workflow-template new <name> [--from <built-in>]`.
+
+| Field   | Where                          | Notes |
+| ------- | ------------------------------ | ----- |
+| `id`    | both                           | Local id. Required. Becomes the namespace prefix for workflow-template inclusions. |
+| `name`  | both                           | Template name as listed by the matching `ls` command. |
+| `args`  | both                           | Map of arg name → value. Must satisfy the template's `params:` schema. |
+| `after` | top-level workflow-template    | Same semantics as on regular phases. `depends_on:` is **not** allowed on inclusions. |
 
 ## The v1.6 invocation contract
 
@@ -384,8 +487,8 @@ execution and tell the user which skill is missing.
 | `cp run abandon <slug> [--yes]`                               | Mark a run abandoned. |
 | `cp run mark-complete <slug> <phase-id>`                      | Mark a phase complete. Reads summary from stdin: `cp run mark-complete <slug> <phase> < summary.md`. |
 | `cp run status [slug] [--json]`                               | Show one run's state or list all active runs. |
-| `cp run state <slug> [--json]`                                | Print supervised-run `STATE.yaml` (read-only). |
-| `cp run state get <slug> <path>`                              | Get a value at a dot-path from `STATE.yaml`. |
+| `cp run state <slug> [--json]`                                | Print supervised-run `state.json` (read-only). |
+| `cp run state get <slug> <path>`                              | Get a value at a dot-path from `state.json`. |
 | `cp run state set <slug> <path> <val>`                        | Set a value (val parsed as JSON, fallback string). |
 | `cp run state append <slug> <path> <val>`                     | Append to an array at a dot-path. |
 
@@ -415,14 +518,20 @@ Common errors you'll hit and what to fix:
 | `phase 'X' materialize must be 'inline' or 'roadmap-phases'`| Pick one of the two. |
 | `depends_on references unknown phase 'X'`                   | Either typo or missing phase. |
 
-## Deprecations and aliases
+## Aliases and legacy forms
 
-| Deprecated                | Use instead                |
-| ------------------------- | -------------------------- |
-| `persist_output:`         | `persist:`                 |
-| `binds_to: custom`        | `binds_to: quick`          |
-| Bare `- id: …` phase entry| `- phase: { id: …, … }`    |
+The loader normalises a few legacy spellings silently before
+validation runs:
 
-`cp workflow validate` prints warnings (not errors) for deprecations
-so existing workflows keep working. `--strict` promotes them to
-errors, which is what `cp install --ci`'s GitHub Action uses.
+| Legacy form               | Normalised to              | Notes |
+| ------------------------- | -------------------------- | ----- |
+| `binds_to: custom`        | `binds_to: quick`          | Silent rewrite at `lib/workflow.js:72–78`. `validate` does not warn. |
+| `persist_output:` field   | `persist:` (run-time only) | The deprecation warning fires only when the runtime expands a phase for execution (`lib/workflow.js:1168`), **not** from `cp workflow validate`. |
+
+The bare `- id: …` phase entry (without `phase:` wrapping) is **not**
+a deprecation — it's a hard validation **error** (see Validation
+errors table above, "entry must be wrapped in `phase:`").
+
+Prefer the modern form in new workflows; the runtime keeps reading
+the legacy forms for backward compatibility with already-published
+templates.
