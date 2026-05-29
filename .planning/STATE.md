@@ -20,7 +20,7 @@ Phase: -
 Plan: 167 of 167
 Status: Idle
 Current focus: -
-Last activity: tick plan 95-02
+Last activity: /cp-complete-milestone Template parameterization whitelist
 
 Progress: [░░░░░░░░░░] 0%
 
