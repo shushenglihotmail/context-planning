@@ -11,7 +11,8 @@ You'll build a runnable workflow named `triage` that classifies an
 inbox item, drafts a response, asks the user to approve it, then
 finalises. Five commands, no schema theory — that lives in
 [`reference.md`](./reference.md). Patterns for fan-out, parallel
-items, and custom finalizers are in [`recipes.md`](./recipes.md).
+items, and mixed scaffold + prompt phases are in
+[`recipes.md`](./recipes.md).
 
 ## Prerequisites
 
@@ -20,9 +21,12 @@ cp doctor
 ```
 
 You want to see your harness, a provider (`superpowers` or `manual`),
-and `Skill resolution` with the canonical keys (`brainstorm`, `plan`,
-`execute`, `review`, …) resolving to skill paths. Anything labelled
-`MISSING` must be installed before the engine can route phases.
+and the `Roles → resolved skill` table with the canonical keys
+(`brainstorm`, `plan`, `execute`, `review`, …) resolving to skill
+paths. A `✓` means the role resolved; `✗` (often with a
+`[fallback from missing X]` note) means the engine couldn't route
+that role and is using a fallback. Install the missing skill before
+running any workflow that depends on it.
 
 ```bash
 cp workflow init
@@ -60,6 +64,14 @@ description: |
   ask the user to approve before sending.
 supervised: true
 params:
+  # Indirection lets users override the skill per run
+  # (e.g. `cp run triage X --param plan_skill=my-custom-plan`)
+  # while defaulting to whatever the active provider routes
+  # `plan` to. Direct `${config.…}` only resolves inside
+  # `default:` here — NOT inside phase fields.
+  - name: plan_skill
+    default: "${config.provider.plan_skill}"
+
   # Supervisor-supplied per run (no default). Declaring it here
   # tells the validator to tolerate {{slug_with_date}} tokens.
   - name: slug_with_date
@@ -76,7 +88,7 @@ phases:
       description: Classify the inbox item.
       depends_on: [setup]
       role: planner
-      skill: ${config.provider.plan_skill}
+      skill: "{{plan_skill}}"
       prompt: |
         Read the inbox item provided by the supervisor. Classify it
         as one of: bug, feature, question, noise. Return JSON:
@@ -87,7 +99,7 @@ phases:
       description: Draft a response and ask the user to approve.
       depends_on: [classify]
       role: writer
-      skill: ${config.provider.plan_skill}
+      skill: "{{plan_skill}}"
       prompt: |
         Read the classification. Draft a response (~3 sentences)
         appropriate for the kind. Ask the user to approve, edit, or
@@ -96,10 +108,11 @@ phases:
 
 Four things worth noticing here, each cross-referenced in
 [`reference.md`](./reference.md): every entry is wrapped in `phase:`,
-every phase has a `description:`, `skill:` uses a
-`${config.provider.plan_skill}` config fallback (your provider's
-plan skill, zero-config), and `depends_on:` is what serialises phases
-into waves. (`after:` works too; built-ins use `depends_on`.)
+every phase has a `description:`, `skill:` references a `params:`
+entry via `{{plan_skill}}` (the param itself defaults from the
+active provider's plan skill, zero-config), and `depends_on:` is
+what serialises phases into waves. (`after:` works too; built-ins
+use `depends_on`.)
 
 ## Step 3 — Validate
 
@@ -132,23 +145,40 @@ cp run triage my-first-triage
 
 The engine creates `.planning/quick/<YYYY-MM-DD>-my-first-triage/`
 (date prefix is automatic), writes a `STATE.yaml`, and prints
-**wave 1** with the v1.6 contract block:
+**wave 1** with the v1.6 contract legend and per-phase block:
 
 ```
+Wave 1 of 4 — 1 phase(s) to execute:
+
+[contract] For each phase below:
+  'invoke skill: <name>'  → call that skill via your harness's skill tool now;
+                            do NOT perform the phase inline.
+  'skill: (none)'         → no skill is routed; follow the prompt inline.
+
 Phase: setup
-  role:  scaffold
-  invoke skill: (none)
-  command: cp quick-setup ...
+  role:  (absent)
+  model: (absent)
+  skill: (none)
+  persist_output: (absent)
+  prompt: |
+
+When all phases in this wave are complete, run:
+  cp run mark-complete <slug> setup < summary.md
 ```
+
+The `setup` phase is `kind: scaffold`, so its `command:` already ran
+when the runtime printed the wave — there is nothing for the agent
+to do beyond mark-complete. Subsequent waves (e.g. `classify`) will
+print `invoke skill: writing-plans` (because the `{{plan_skill}}`
+param defaulted to your provider's plan skill) plus a populated
+`prompt:` block — those are the ones the agent actually runs.
 
 The contract is the only protocol you need to remember:
 
 - **`invoke skill: <name>`** — your harness's agent must call that
   skill via its skill mechanism. Do **not** inline the work.
-- **`invoke skill: (none)`** — no skill is routed; follow the prompt
-  inline.
-- **`command: …`** — a scaffold phase. The runtime already ran the
-  command; there is nothing for the agent to do.
+- **`skill: (none)`** — no skill is routed; follow the prompt inline
+  (typical for scaffold phases or prompt-only phases).
 
 When every phase in a wave is finished, mark it complete so the next
 wave prints:
@@ -171,7 +201,7 @@ List in-flight runs with `cp run status`.
 - [`reference.md`](./reference.md) — every field, every default,
   every exit code.
 - [`recipes.md`](./recipes.md) — fan-out, parallel-with-dependencies,
-  custom finalizers, parameterised workflows.
+  mixed scaffold + prompt phases, parameterised workflows.
 - `cp workflow show <name>` — read the built-ins
   (`quick`, `dev`, `docs`, `debug`, `milestone`,
   `complete-milestone`).
