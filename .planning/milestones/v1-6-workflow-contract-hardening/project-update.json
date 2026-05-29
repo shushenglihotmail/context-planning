@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "milestone": "v1.6",
+  "ops": [
+    {
+      "op": "add-active",
+      "text": "- **Workflow Contract Hardening**: close three foundational gaps in the workflow contract. (1) Make the `skill:` field in wave-block output read as a directive (`invoke skill: <name>`) with a one-time per-wave legend defining the contract and a single sanctioned fallback (skill unavailable → inline + tell user); move `(source: routing-key)` provenance behind `cp run --verbose`. (2) Auto-inject an implicit `finalize` phase at workflow-load time when YAML omits one, plus a generic `cp run-finalize <slug>` CLI for custom workflows — closes the gap where built-in `debug.yaml`/`dev.yaml` and any user-authored workflow can finish without closing. (3) Expand `CONFIG_FALLBACKS` in `lib/workflow-template-expand.js` with 5 missing role-keys (test → `test-driven-development`, debug → `systematic-debugging`, verify → `verification-before-completion`, execute_plan → `executing-plans`, finish_branch → `finishing-a-development-branch`) so natural workflow authoring routes to the right Superpowers skill out of the box. Also 6 inline prompt-scrub edits across `cp-quick`, `cp-workflow-run`, `cp-new-project`, `cp-execute-phase` to remove wording that legitimized inline execution. Spec: `docs/superpowers/specs/2026-05-28-v1-6-workflow-contract-hardening-design.md`. — v1.6",
+      "version": "v1.6"
+    }
+  ]
+}
