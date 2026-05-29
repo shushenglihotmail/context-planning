@@ -554,7 +554,7 @@ Plans:
 ### Phase 83: invoke-skill-directive
 
 Plans:
-- [ ] 83-01: TBD
+- [x] 83-01: TBD
 
 ### Phase 84: auto-inject-finalize
 

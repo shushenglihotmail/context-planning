@@ -28,19 +28,18 @@ base-commit: 48beeb0f1579582fb82780dc6faa64c8f190b888
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Land v1.6 design change D2: the agent-facing wave block emits `invoke skill: <name>` as a binding directive instead of `skill: <name> (source: ...)`, and prints a one-time per-wave contract legend explaining the directive. Provenance is moved behind a new `cp run --verbose` flag.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. Default (`cp run <wf>`) output uses `invoke skill: <name>` per phase, `skill: (none)` when absent, and no `(source: …)` annotation.
+2. A contract legend (verbatim from spec §Change 1) prints once above the per-phase blocks of every wave.
+3. `cp run --verbose <wf>` (and the same flag on `resume`) restores `skill: <name> (source: <source>)` and `skill: (absent)` for routing debugging.
+4. Existing integration test `integration-format-instruction-skills.js` is updated to assert both modes; all unit + integration tests pass.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 83-01: {brief description}
+- [x] 83-01: implement D2 invoke-skill directive in runtime + CLI verbose flag, update format-instruction-skills tests for dual-mode output
 
 ## Notes
 
