@@ -346,6 +346,37 @@ check('CONFIG_FALLBACKS lists the documented superpowers skill defaults', () => 
   assert.strictEqual(CONFIG_FALLBACKS['provider.review_skill'], 'requesting-code-review');
 });
 
+check('CONFIG_FALLBACKS includes v1.6 D3 extension rows (test/debug/verify/execute_plan/finish_branch)', () => {
+  assert.strictEqual(CONFIG_FALLBACKS['provider.test_skill'], 'test-driven-development');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.debug_skill'], 'systematic-debugging');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.verify_skill'], 'verification-before-completion');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.execute_plan_skill'], 'executing-plans');
+  assert.strictEqual(CONFIG_FALLBACKS['provider.finish_branch_skill'], 'finishing-a-development-branch');
+});
+
+check('v1.6 D3 fallback rows resolve through interpolateConfigTokens with empty cfg', () => {
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.test_skill}', {}, { templateName: 't' }),
+    'test-driven-development'
+  );
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.debug_skill}', {}, { templateName: 't' }),
+    'systematic-debugging'
+  );
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.verify_skill}', {}, { templateName: 't' }),
+    'verification-before-completion'
+  );
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.execute_plan_skill}', {}, { templateName: 't' }),
+    'executing-plans'
+  );
+  assert.strictEqual(
+    interpolateConfigTokens('${config.provider.finish_branch_skill}', {}, { templateName: 't' }),
+    'finishing-a-development-branch'
+  );
+});
+
 console.log(
   failed
     ? `unit-workflow-template-expand: ${passed} passed, ${failed} FAILED`

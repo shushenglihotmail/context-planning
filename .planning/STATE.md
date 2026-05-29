@@ -20,7 +20,7 @@ Phase: 83 (v1.6 Workflow Contract Hardening)
 Plan: 83-01
 Status: Ready to execute
 Current focus: invoke-skill-directive
-Last activity: scaffold-phase 85 (docs-changelog-release)
+Last activity: tick plan 82-01
 
 Progress: [███░░░░░░░] 25%
 
