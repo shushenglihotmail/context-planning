@@ -28,19 +28,20 @@ base-commit: ff27c0d29d4edef12cc34ccb4ea02729c7820353
 
 ## Goal
 
-{Describe what this phase delivers in 1-2 sentences.}
+Ship v1.6.0: update CHANGELOG with D1–D4 entry, refresh README for
+`cp run-finalize` + auto-inject + skill-invocation contract, bump
+package.json to 1.6.0, publish to npm.
 
 ## Success Criteria
 
-<!-- Observable from the user's perspective. -->
-1. {behavior 1}
-2. {behavior 2}
+1. CHANGELOG.md has a complete `[1.6.0]` section covering D1, D2, D3, D4.
+2. README.md documents `cp run-finalize`, auto-injection, and the
+   `invoke skill:` directive.
+3. `package.json` version is `1.6.0`; `npm publish` succeeds.
 
 ## Plans
 
-<!-- Each plan is a 1-3 hour atomic unit. Toggle with `cp tick {NN-MM}`. -->
-
-- [ ] 85-01: {brief description}
+- [x] 85-01: Docs + version bump + npm publish
 
 ## Notes
 

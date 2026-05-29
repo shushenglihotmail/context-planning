@@ -564,7 +564,7 @@ Plans:
 ### Phase 85: docs-changelog-release
 
 Plans:
-- [ ] 85-01: TBD
+- [x] 85-01: TBD
 ## Progress
 
 **Execution Order:**
