@@ -545,6 +545,11 @@ Plans:
 ### Phase 80: propose-phases
 
 ### Phase 81: finalize
+
+### Phase 82: prompt-scrub-and-config-fallbacks
+
+Plans:
+- [ ] 82-01: TBD
 ## Progress
 
 **Execution Order:**
