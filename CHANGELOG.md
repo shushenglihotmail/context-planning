@@ -6,6 +6,63 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-05-29 — Template parameterization whitelist
+
+Closes the "any field can be templated, any token may slip through" gap
+exposed by v1.6 workflow authoring. Workflow templates and top-level
+workflows now ship with a small, documented whitelist of param-able
+fields, a loud post-expand pass that rejects stray `{{...}}` tokens,
+and a first-class declaration shape for tokens the supervisor injects
+at run-time.
+
+### Added
+
+- **`lib/workflow-template-validate.js`** — new validator module with
+  two passes:
+  - `validatePreExpand(phase, opts)` — walks each phase before token
+    substitution and rejects fields not in the whitelist.
+  - `validatePostExpand(phase, opts)` — walks every leaf string after
+    substitution and rejects any remaining `{{...}}` tokens. Accepts
+    `opts.allowedTokenNames` (a `Set` or `Array` of single-identifier
+    names) for supervisor-supplied params; dotted tokens like
+    `{{x.y}}` are always rejected regardless of allow-listing.
+- **Supervisor-supplied params** — a top-level workflow may now
+  declare a param with no `default:` value (e.g. `- name:
+  slug_with_date`). The loader collects these into a per-run
+  `supervisorTokenNames` set and threads it to `validatePostExpand`,
+  so tokens the supervisor agent will inject at execution time pass
+  the post-expand pass loudly instead of silently surviving via the
+  pre-v1.7 escape hatch.
+- **Built-in workflow declarations** — `templates/workflows/quick.yaml`,
+  `milestone.yaml`, and `docs.yaml` now declare their supervisor-supplied
+  tokens (`task_description`, `slug_with_date`, `milestone_slug`, …).
+  `docs.yaml` also has its previously broken object-shaped `params:`
+  block converted to the spec-required array shape.
+
+### Changed
+
+- **8-field whitelist (was 5)** — `skill`, `prompt`, `description`,
+  `max_children`, `min_children`, **and now** `role`, `command`,
+  `outputs`. These are the only fields whose values may contain
+  `{{...}}` substitution tokens.
+- **11-field forbidden list (was 12)** — `outputs` is no longer
+  forbidden; the rest (`id`, `parent`, `after`, `depends_on`,
+  `optimizable`, `runner`, `title`, `require`, `invoke`,
+  `config_fallback`, `completion`) remain locked.
+- **`templates/workflow-templates/review-and-address.yaml`** —
+  migrated off the old `{{scope}}` interpolation in `id:` and `after:`
+  fields. Uniqueness across multiple inclusions now comes from the
+  caller's `template.id` auto-prefix (e.g. `review--review`,
+  `review--address`) instead of in-field substitution.
+
+### Migration notes
+
+Any user workflow-template that templated `id` or `after` with
+caller args (e.g. `id: review-{{scope}}`) will now fail loudly at
+load time with a `validatePreExpand` error. Drop the templated piece
+and rely on the include-id auto-prefix, or use a distinct include
+id per call site. See `MIGRATION-v1.7.md` for the full recipe.
+
 ## [1.6.0] - 2026-05-29 — Workflow contract hardening
 
 Closes four classes of "the supervisor agent didn't do what the YAML

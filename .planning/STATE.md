@@ -18,9 +18,9 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 Phase: 95 (Template parameterization whitelist)
 Plan: 9 of 9
-Status: Ready to write summary
+Status: Phase complete
 Current focus: docs-and-release
-Last activity: tick plan 95-01
+Last activity: tick plan 95-02
 
 Progress: [██████████] 100%
 
