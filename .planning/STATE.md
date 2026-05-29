@@ -20,7 +20,7 @@ Phase: -
 Plan: 158 of 158
 Status: Idle
 Current focus: -
-Last activity: tick plan 85-01
+Last activity: /cp-complete-milestone v1.6 Workflow Contract Hardening
 
 Progress: [░░░░░░░░░░] 0%
 
