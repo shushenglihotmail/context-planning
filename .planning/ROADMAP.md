@@ -559,7 +559,7 @@ Plans:
 ### Phase 84: auto-inject-finalize
 
 Plans:
-- [ ] 84-01: TBD
+- [x] 84-01: TBD
 
 ### Phase 85: docs-changelog-release
 

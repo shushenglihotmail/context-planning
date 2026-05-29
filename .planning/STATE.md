@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 84 (v1.6 Workflow Contract Hardening)
-Plan: 84-01
+Phase: 85 (v1.6 Workflow Contract Hardening)
+Plan: 85-01
 Status: Ready to execute
-Current focus: auto-inject-finalize
+Current focus: docs-changelog-release
 Last activity: tick plan 83-01
 
-Progress: [█████░░░░░] 50%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
