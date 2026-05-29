@@ -1,0 +1,17 @@
+workflow: complete-milestone
+slug: 2026-05-29-template-parameterization-whitelist
+status: done
+binding: quick
+started: 2026-05-29T16:48:43.884Z
+last_activity: 2026-05-29T16:49:36.917Z
+current_phase: null
+completed:
+  - verify
+  - complete
+  - finalize
+artifacts:
+  verify: 01-verify.md
+  complete: 02-complete.md
+  finalize: 03-finalize.md
+template_path: C:\src\github\context-planning\templates\workflows\complete-milestone.yaml
+current_wave: 3
