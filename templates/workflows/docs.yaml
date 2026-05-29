@@ -3,9 +3,10 @@ version: 1
 binds_to: quick
 supervised: true
 principles:
-  - Clarify scope before reading materials; read materials before fanning out — context flows down, not up.
-  - One commit per document during child-write.
-  - Review is a single consolidated pass — customer sees all docs together, not piecemeal.
+  - Clarify scope before fanning out — each item carries its own grounding.
+  - "Per-item subtrees (read-child → write-child) are independent by design — prefer `optimizable: true` unless items genuinely depend on each other's outputs."
+  - One commit per document during write-child.
+  - Review is a single consolidated pass — the customer sees all docs together, not piecemeal; the user explicitly approves the full set.
 params:
   - name: clarify_skill
     default: "${config.provider.brainstorm_skill}"
@@ -29,7 +30,7 @@ phases:
       id: clarify
       description: |
         Clarify the documentation set, audience, format, source materials,
-        and success bar with the user before reading source artefacts.
+        and success bar with the user before fanning out.
       depends_on: [ setup ]
       role: analyst
       skill: "{{clarify_skill}}"
@@ -43,110 +44,141 @@ phases:
         - documents to generate, including slug-safe ids and titles;
         - intended audience or audiences for each document;
         - preferred output format (Markdown, RST, mixed, or other);
-        - source materials to read (paths, URLs, issues, specs, notes);
+        - source materials each document will draw from (paths, URLs,
+          issues, specs, notes), recorded against the individual docs so
+          the per-item fan-out can attach the right grounding;
         - the success bar for an acceptable documentation set.
 
         Write the confirmed scope into DESIGN.md.
 
-        STOP. Do not read the materials or mark this phase complete until
-        the user explicitly confirms the document list, audiences, formats,
-        source materials, and success bar.
-  - phase:
-      id: read-materials
-      description: |
-        Read the identified source materials and summarize writer-facing
-        context into CONTEXT.md.
-      depends_on: [ clarify ]
-      role: researcher
-      outputs:
-        - ".planning/quick/{{slug_with_date}}/CONTEXT.md"
-      prompt: |
-        Read .planning/quick/{{slug_with_date}}/DESIGN.md, then read every
-        source material the user identified: repository files, planning
-        artefacts, URLs, issues, specs, or notes.
-
-        Write .planning/quick/{{slug_with_date}}/CONTEXT.md for the document
-        writers. Summarize the key facts, decisions, terminology, constraints,
-        audiences, requested formats, target files, and source references they
-        will need. Keep CONTEXT.md concise and under about 400 lines.
+        STOP. Do not fan out or mark this phase complete until the user
+        explicitly confirms the document list, audiences, formats, source
+        materials, and success bar.
   - phase:
       id: prepare
       description: |
         Decompose the documentation request into one item per document.
-      depends_on: [ read-materials ]
+        Each item is a self-contained unit grounded by its own refs.
+      depends_on: [ clarify ]
       role: planner
       skill: "{{prepare_skill}}"
       max_children: 10
       min_children: 1
       prompt: |
-        Read .planning/quick/{{slug_with_date}}/DESIGN.md and
-        .planning/quick/{{slug_with_date}}/CONTEXT.md. Decompose the request
-        into 1-10 documentation items, one per document to be written.
+        Read .planning/quick/{{slug_with_date}}/DESIGN.md. Decompose the
+        request into 1-10 documentation items — one per document to be
+        written.
 
-        By default, the runtime executes items sequentially in the order you
-        list them. To opt into parallel/DAG execution, set the top-level
-        `optimizable: true` flag AND declare `depends_on` on every item
-        (use `[]` for items with no deps; omitted is also treated as `[]`).
+        Each item is self-contained: a sibling read-child phase will
+        gather per-item grounding from this item's `refs` into a context
+        file, and a sibling write-child phase will produce the document
+        using only that per-item context plus the original refs.
 
-        Only set `optimizable: true` if you are confident about ALL inter-item
-        dependencies. If you are unsure about any item, set `optimizable: false`
-        (or omit the flag) and the runtime will fall back to safe sequential
-        execution — any `depends_on` you wrote will be ignored.
+        Because items are self-contained by design, **strongly prefer
+        `optimizable: true` with `depends_on: []` on every item** so the
+        runtime can run the per-item read→write subtrees fully in
+        parallel. Only set `optimizable: false` (or list real per-item
+        `depends_on`) when documents genuinely depend on each other's
+        outputs — for example, a top-level index that must reference
+        paths produced by sibling documents.
 
         Return JSON shaped like:
           {
-            "optimizable": false,
+            "optimizable": true,
             "items": [
               {
                 "id": "slug-safe-doc-id",
                 "title": "Document title",
                 "audience": "intended audience",
                 "format": "Markdown",
-                "refs": [".planning/quick/{{slug_with_date}}/CONTEXT.md#section"]
+                "refs": [
+                  "path/to/source-file.md",
+                  "https://example.com/spec#section",
+                  "src/module/file.js:42-120"
+                ],
+                "depends_on": []
               }
             ]
           }
 
-        Each item's refs must point to relevant paths, URLs, or sections in
-        CONTEXT.md or the original source materials. Include an output path in
-        the item only when the default docs/<id>.md path is wrong.
+        Each item's `refs` must point to the specific paths, URLs, line
+        ranges, or sections the writer will need for THIS document. Do
+        not list materials a sibling document needs — fan-out works
+        best when item refs do not overlap. Include an `output` path on
+        the item only when the default `docs/<id>.md` is wrong.
   - phase:
-      id: child-write
+      id: read-child
+      description: |
+        Gather per-item grounding for one documentation item.
+      parent: prepare
+      depends_on: [ prepare ]
+      role: researcher
+      prompt: |
+        The supervisor has assigned a single documentation item. You will
+        receive its fields (id, title, audience, format, refs) in the
+        runtime context.
+
+        Read .planning/quick/{{slug_with_date}}/DESIGN.md, then read
+        exactly the source materials this item's `refs` point to. Do NOT
+        pull in materials for sibling items — those have their own
+        read-child runs.
+
+        Write a focused per-item context file to
+        .planning/quick/{{slug_with_date}}/contexts/<item.id>.md
+        (substitute the assigned item's actual id). Capture only what the
+        writer needs for THIS document: terminology, decisions, code
+        references, verbatim quotes from sources, examples, and the
+        audience/format constraints. Keep it concise — target ~200 lines.
+  - phase:
+      id: write-child
       description: |
         Write one document for the assigned documentation item.
       parent: prepare
-      depends_on: [ prepare ]
+      depends_on: [ read-child ]
+      after: [ read-child ]
       role: writer
       skill: "{{write_skill}}"
       prompt: |
         Write the single document assigned to this child item.
 
-        The supervisor will provide the item's fields (id, title, audience,
-        format, refs, and any item-specified output path). Use
-        .planning/quick/{{slug_with_date}}/CONTEXT.md plus the item's source
-        refs as grounding. Write to the path specified by the item; if the
-        item does not declare one, default to `docs/<item.id>.md`.
+        The supervisor will provide the item's fields (id, title,
+        audience, format, refs, and any item-specified output path).
+        Read .planning/quick/{{slug_with_date}}/contexts/<item.id>.md
+        (produced by this item's read-child run) as primary grounding;
+        consult DESIGN.md for the agreed success bar; open the item's
+        `refs` directly when you need verbatim source material.
 
-        Verify the document against the requested audience, format, source
-        references, and success bar. Do not skip applicable checks. Commit the
-        completed document atomically with exactly this document's changes.
+        Write to the path specified by the item; if the item does not
+        declare one, default to `docs/<item.id>.md`.
+
+        Verify the document against the requested audience, format,
+        source references, and success bar. Do not skip applicable
+        checks. Commit the completed document atomically with exactly
+        this document's changes.
   - phase:
       id: review
       description: |
-        Present all generated documents together, collect feedback, and loop
-        until the user explicitly approves the full set.
-      depends_on: [ child-write ]
+        Present all generated documents together, collect feedback, and
+        loop until the user explicitly approves the full set.
+      depends_on: [ write-child ]
       role: reviewer
       skill: "{{review_skill}}"
       prompt: |
-        Present the full set of generated documents to the user together, not
-        piecemeal. Walk through each document's path, purpose, audience, and
-        notable content. Ask for feedback against the confirmed success bar.
+        Present the full set of generated documents to the user together,
+        not piecemeal. Walk through each document's path, purpose,
+        audience, and notable content.
 
-        If the user requests changes, apply the fixes yourself or dispatch
-        focused fix subagents, then present the updated full set again. Continue
-        this review loop until the user explicitly says the documentation set is
-        approved.
+        Check the set as a whole for consistency that per-item review
+        cannot catch: shared terminology across documents, no
+        contradictions between docs, a coherent narrative when the docs
+        form a series, and a working cross-reference map when docs link
+        to each other.
+
+        Ask for feedback against the confirmed success bar. If the user
+        requests changes, apply the fixes yourself or dispatch focused
+        fix subagents, then present the updated full set again. Continue
+        this review loop until the user explicitly says the documentation
+        set is approved.
   - phase:
       id: finalize
       description: |
