@@ -18,9 +18,9 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 Phase: 85 (v1.6 Workflow Contract Hardening)
 Plan: 4 of 4
-Status: Ready to write summary
+Status: Phase complete
 Current focus: docs-changelog-release
-Last activity: tick plan 84-01
+Last activity: tick plan 85-01
 
 Progress: [██████████] 100%
 

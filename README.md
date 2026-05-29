@@ -390,6 +390,13 @@ cp quick-finalize <slug> [--summary <md>]
                                 # v1.4: internal verb used by the `quick`
                                 # workflow's finalize phase. Writes
                                 # SUMMARY.md and flips STATE status.
+cp run-finalize <slug> [--summary <md>]
+                                # v1.6: generic terminal-state CLI for
+                                # any `cp run <workflow>` run. Auto-injected
+                                # at the end of any workflow that doesn't
+                                # declare an explicit terminal phase. Flips
+                                # STATE.yaml `status: complete` and writes
+                                # a minimal SUMMARY.md.
 cp milestone-setup <name>       # v1.4: internal verb used by the
                                 # `milestone` workflow's setup phase.
                                 # Pre-flight + scaffold milestone shell.
@@ -496,6 +503,27 @@ cp run status <slug>                    # status: done
 > (matching the `.planning/quick/` storage root). `binds_to: custom` in
 > existing templates still loads, with a one-line deprecation warning;
 > removal is scheduled for v1.3.
+
+> **v1.6 — auto-injected finalize.** Any workflow that does not declare
+> an explicit terminal phase (e.g. `finalize`) gets one appended
+> automatically by the runtime. The injected phase calls
+> `cp milestone-finalize`, `cp quick-finalize`, or `cp run-finalize`
+> depending on `binds_to`. This guarantees every `cp run` lands in a
+> closed state. Run `cp workflow inspect <name>` to see auto-injected
+> phases (tagged `[auto-injected]` in human output, `auto_injected: true`
+> in JSON).
+
+### Skill invocation (v1.6)
+
+When a wave-block in `cp run` output prints `invoke skill: <name>`,
+that is a binding directive: the supervisor agent **must** call the
+skill tool with that skill name, not improvise the work inline. A
+one-time contract legend is printed at the top of each run that
+spells out the rule and the fallback (do the equivalent work
+yourself if the named skill is not available in the active
+provider). Use `cp run --verbose` to additionally see
+`(source: routing-key | pinned | …)` annotations for debugging
+routing decisions.
 
 Define your own with `cp workflow new <name> --from quick` and validate with
 `cp workflow validate <name>` before running. Project-local templates in

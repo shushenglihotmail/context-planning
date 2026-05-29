@@ -6,6 +6,84 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-05-29 — Workflow contract hardening
+
+Closes four classes of "the supervisor agent didn't do what the YAML
+asked" failures observed in the wild after v1.5: skipped routed skills,
+inconsistent fallback wording across docs, ambiguous skill annotations
+in the wave-block output, and `cp run` workflows that never reached a
+closed terminal state when the user simply stopped engaging.
+
+### Added
+
+- **`cp run-finalize <slug>`** — generic terminal-state CLI for any
+  `cp run <workflow>` run. Flips STATE.yaml `status` to `complete`,
+  clears `current_phase`, and writes a minimal `SUMMARY.md`. Pairs
+  with the existing `cp quick-finalize` / `cp milestone-finalize`
+  for binding-specific runs.
+- **Auto-injected finalize phase (D1)** — any workflow template that
+  does not declare an explicit terminal phase now gets one appended
+  at runtime by `applyAutoInjectFinalize()`. The injected phase is a
+  `kind: scaffold` step depending on the previous tail, with a
+  binding-aware command (`cp milestone-finalize`, `cp quick-finalize`,
+  or `cp run-finalize`). This guarantees every run lands in a closed
+  state even if the supervisor stops mid-flow.
+- **`cp workflow inspect` surfaces auto-injection** — auto-injected
+  phases are tagged `[auto-injected]` in the human output and carry
+  `"auto_injected": true` in `--json` output.
+- **`cp run --verbose` / `cp run resume --verbose`** — opt-in flag
+  that restores the legacy `skill: <name> (source: …)` annotation in
+  the wave-block output for debugging routing decisions.
+- **5 new `CONFIG_FALLBACKS` (D3)** for superpowers skills:
+  `test`, `debug`, `verify`, `execute_plan`, `finish_branch`. Built-in
+  templates and custom workflows can now reference these via
+  `${config.provider.…_skill}` and get a sensible default with or
+  without superpowers installed.
+
+### Changed
+
+- **Wave-block output uses an `invoke skill: <name>` directive (D2).**
+  Previously the supervisor saw `skill: <name> (source: routing-key)`,
+  which several real-world agents interpreted as informational and
+  proceeded to do the work inline. The default format is now an
+  imperative `invoke skill: <name>` directive preceded by a one-time
+  contract legend explaining that "invoke" means call the skill tool
+  with the named skill, and how to fall back if the skill is not
+  available in the active provider. Unrouted phases render as
+  `skill: (none)`. The old annotation moves behind `--verbose`.
+- **Slash-command prompt scrub (D4).** Reworked the skill-invocation
+  language in `cp-quick`, `cp-workflow-run`, `cp-new-project`, and
+  `cp-execute-phase` so every doc gives the agent the same
+  `invoke skill: <name>` directive and the same fallback rule. No
+  more "the workflow suggests…" / "you may want to use…" phrasing
+  that earlier versions used in different places.
+
+### Fixed
+
+- Built-in templates that previously ended on a non-scaffold phase
+  (e.g. `dev` → `… → review`) now always finalize. Runtime callers
+  apply `applyAutoInjectFinalize` after `loadTemplate` at all four
+  hook sites: `startRun`, `resumeRun`, `markPhaseComplete`,
+  `retryPhase`. Idempotent — re-loading on resume is a no-op when an
+  explicit `finalize` phase already exists.
+
+### Migration
+
+- **For workflow authors:** No action required. If your template
+  already ends on a phase named `finalize`, auto-injection is a
+  no-op. If it ends on something else, you'll see a new `finalize`
+  phase in `cp workflow inspect` output tagged `[auto-injected]` —
+  add an explicit one to opt out.
+- **For agents/supervisors:** Read the new contract legend printed
+  at the top of `cp run` output once per run. The short version:
+  when a wave-block says `invoke skill: <name>`, call the skill
+  tool — don't inline the work. If the named skill is not available
+  in the active provider, do the equivalent work yourself.
+- **For consumers of `cp run --json` / `workflow inspect --json`:**
+  Phase entries now carry an `auto_injected: boolean` field. Older
+  consumers that read by key will see the field as falsy and behave
+  identically.
+
 ## [1.5.0] - 2026-06 — Role/skill semantics + zero-config workflow defaults
 
 Fixes a v1.4 regression where `/cp-quick` would jump straight into
