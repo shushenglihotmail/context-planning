@@ -110,8 +110,8 @@ section('formatInstruction — output format');
   ok('role field present',
     /role:\s+investigator/.test(instr));
 
-  ok('absent fields render as (absent)',
-    /model: \(absent\)/.test(instr) && /skill: \(absent\)/.test(instr));
+  ok('absent fields render as (absent) / (none)',
+    /model: \(absent\)/.test(instr) && /skill: \(none\)/.test(instr));
 
   ok('closing cp run mark-complete line present',
     /cp run mark-complete test-slug collect-symptoms < summary\.md/.test(instr));

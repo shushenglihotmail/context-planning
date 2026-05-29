@@ -30,7 +30,9 @@ var USAGE = [
   'Subcommands:',
   '  cp run <workflow> [name]              Start a new run.',
   '                                        --plan-only   Print waves without mutating state.',
+  '                                        --verbose     Include skill `(source: …)` provenance.',
   '  cp run resume <slug>                  Resume a paused/in-progress run.',
+  '                                        --verbose     Include skill `(source: …)` provenance.',
   '  cp run retry <slug> <phase-id>        Retry a phase (rolls back wave if needed).',
   '  cp run abandon <slug> [--yes]         Mark a run abandoned.',
   '  cp run mark-complete <slug> <phase-id>',
@@ -142,10 +144,12 @@ function runStart(args) {
   var name = null;
   var planOnly = false;
   var projectDir = null;
+  var verbose = false;
 
   for (var i = 0; i < args.length; i++) {
     var a = args[i];
     if (a === '--plan-only') { planOnly = true; }
+    else if (a === '--verbose') { verbose = true; }
     else if (a === '--projectDir') { projectDir = args[++i]; }
     else if (a.startsWith('-')) { console.error('unknown option: ' + a); process.exit(2); }
     else if (!workflowArg) { workflowArg = a; }
@@ -215,7 +219,7 @@ function runStart(args) {
 
   var result;
   try {
-    result = runtime.startRun(workflowArg, {name: name, dryRun: planOnly, projectDir: projectDir});
+    result = runtime.startRun(workflowArg, {name: name, dryRun: planOnly, projectDir: projectDir, verbose: verbose});
   } catch (e) {
     var emsg = e.message || String(e);
     if (emsg.startsWith('Template not found:')) {
@@ -268,10 +272,12 @@ function runStart(args) {
 function runResume(args) {
   var slug = null;
   var projectDir = null;
+  var verbose = false;
 
   for (var i = 0; i < args.length; i++) {
     var a = args[i];
     if (a === '--projectDir') { projectDir = args[++i]; }
+    else if (a === '--verbose') { verbose = true; }
     else if (a.startsWith('-')) { console.error('unknown option: ' + a); process.exit(2); }
     else if (!slug) { slug = a; }
     else { console.error('unexpected arg: ' + a); process.exit(2); }
@@ -284,7 +290,7 @@ function runResume(args) {
 
   var result;
   try {
-    result = runtime.resumeRun(slug, {projectDir: projectDir});
+    result = runtime.resumeRun(slug, {projectDir: projectDir, verbose: verbose});
   } catch (e) {
     var msg = e.message || String(e);
     if (msg.startsWith('Run not found:')) {
