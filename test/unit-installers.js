@@ -283,6 +283,70 @@ section('cp install <unknown harness>: usage error');
     `stderr: ${r.stderr}`);
 }
 
+// =============================================================
+section('cp install --global: writes harness wiring under user-home scope');
+{
+  // We can't safely write into the real $HOME during tests, so redirect HOME
+  // (and USERPROFILE on Windows) for the spawned child to a temp dir. The
+  // four harness installers all call os.homedir(), which honours these vars.
+  const fakeHome = mktmp('global-home');
+  const root = bootRepo('global-repo');
+  const childEnv = { ...process.env, HOME: fakeHome, USERPROFILE: fakeHome };
+
+  const r = spawnSync(
+    process.execPath,
+    [CLI, 'install', 'copilot', '--global'],
+    { cwd: root, encoding: 'utf8', env: childEnv }
+  );
+  ok('exit 0', r.status === 0, `stderr: ${r.stderr}`);
+
+  // Skills land in the user-home harness dir, NOT the repo
+  const userSkillsDir = path.join(fakeHome, '.copilot', 'skills');
+  ok('--global: wrote into ~/.copilot/skills', fs.existsSync(userSkillsDir),
+    `stdout: ${r.stdout.slice(0, 400)}`);
+  ok('--global: at least one cp-* skill present in user-home',
+    fs.existsSync(userSkillsDir) &&
+      fs.readdirSync(userSkillsDir).some((f) => /^cp-/.test(f)));
+  ok('--global: ambient context file at ~/.copilot/context-planning.md',
+    fs.existsSync(path.join(fakeHome, '.copilot', 'context-planning.md')));
+
+  // And NOT into the repo
+  ok('--global: did NOT touch <repo>/.github/skills',
+    !fs.existsSync(path.join(root, '.github', 'skills')));
+}
+
+section('cp install (no --global): writes per-repo, ignores user-home');
+{
+  const fakeHome = mktmp('default-home');
+  const root = bootRepo('default-repo');
+  const childEnv = { ...process.env, HOME: fakeHome, USERPROFILE: fakeHome };
+  // Make sure no inherited CP_INSTALL_SCOPE leaks through and flips us.
+  delete childEnv.CP_INSTALL_SCOPE;
+
+  const r = spawnSync(
+    process.execPath,
+    [CLI, 'install', 'copilot'],
+    { cwd: root, encoding: 'utf8', env: childEnv }
+  );
+  ok('exit 0', r.status === 0, `stderr: ${r.stderr}`);
+  ok('default: wrote into <repo>/.github/skills',
+    fs.existsSync(path.join(root, '.github', 'skills')));
+  ok('default: did NOT touch ~/.copilot/skills',
+    !fs.existsSync(path.join(fakeHome, '.copilot', 'skills')));
+}
+
+// =============================================================
+section('cp install with no harness arg: usage error mentions --global');
+{
+  const root = bootRepo('no-harness');
+  const r = run(['install'], root);
+  ok('exit 2', r.status === 2, `got ${r.status}`);
+  ok('usage mentions --global flag', /--global/.test(r.stderr),
+    `stderr: ${r.stderr}`);
+}
+
+// =============================================================
+
 // Cleanup
 for (const d of tracked) {
   try { fs.rmSync(d, { recursive: true, force: true }); } catch { /* ignore */ }

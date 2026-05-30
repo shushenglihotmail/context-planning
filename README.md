@@ -65,12 +65,25 @@ its own thing.
 # 1. Install once per machine
 npm install -g context-planning
 
-# 2. Install into your harness (any one)
+# 2. Install into your harness (any one), per repo OR globally
 cp install copilot      # GitHub Copilot CLI
 cp install claude       # Claude Code
 cp install cursor       # Cursor
 cp install aider        # Aider
+
+# Add --global to wire the harness once at user-home scope instead
+# of per-repo. Useful when you want /cp-* commands available in every
+# repo on this machine. Still per-harness — run once per harness.
+cp install copilot --global
 ```
+
+> **Two different "install" steps, easy to conflate:**
+> - `npm i -g context-planning` puts the **`cp` binary** on your PATH.
+>   Do this once per machine.
+> - `cp install <harness>` wires that binary into a specific
+>   **harness** (Copilot / Claude / Cursor / Aider) by writing the
+>   slash-skill files it loads. Per-repo by default; per-user with
+>   `--global`. Run it once per harness you actually use.
 
 cp gives you **two ways to work**, depending on the shape of the work.
 Pick the one that fits and skip the other — you don't need both.
@@ -449,6 +462,14 @@ installer writes the appropriate slash-skill shims that shell out to
 check, post-commit tick). `cp install --ci` installs a GitHub Actions
 audit workflow.
 
+**Per-repo vs per-user.** By default, `cp install <harness>` writes
+into the current repo (`.github/`, `.claude/`, `.cursor/`, `.aider/`)
+— so `/cp-*` commands only appear in that repo. Add `--global` to
+write into the user-home scope (`~/.copilot/`, `~/.claude/`,
+`~/.cursor/`, `~/.aider/`) instead — `/cp-*` commands then appear
+in every repo on this machine for that harness. Still per-harness:
+run `cp install <harness> --global` once for each harness you use.
+
 ---
 
 ## GSD compatibility
@@ -473,6 +494,8 @@ directories on top.
 
 ```bash
 cp install <harness>           # install into copilot | claude | cursor | aider
+                               #   default: per-repo (writes .github/, .claude/, ...)
+cp install <harness> --global  # install at user-home scope (~/.copilot, ~/.claude, ...)
 cp install --hooks             # install git hooks
 cp install --ci                # install GitHub Actions audit workflow
 cp install --uninstall-hooks   # remove cp-owned hooks

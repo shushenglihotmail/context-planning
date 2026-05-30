@@ -68,12 +68,25 @@ function run(args = []) {
   if (args.includes('--ci')) {
     return _runCi(args);
   }
-  const harness = args[0];
+  // --global wires the harness at the user-home scope (~/.copilot, ~/.claude,
+  // ~/.cursor, ~/.aider) instead of the repo. The harness installers read
+  // CP_INSTALL_SCOPE=user to switch their target dir, so we set the env var
+  // here before delegating. The env var stays the internal contract; the
+  // user-facing knob is --global.
+  const globalScope = args.includes('--global');
+  if (globalScope) process.env.CP_INSTALL_SCOPE = 'user';
+
+  const harness = args.find((a) => !a.startsWith('--'));
   if (!harness) {
-    console.error('Usage: cp install <copilot|claude|cursor|aider|echo-provider> [--force]');
+    console.error('Usage: cp install <copilot|claude|cursor|aider|echo-provider> [--global] [--force]');
     console.error('       cp install --hooks [--force]      install git hooks');
     console.error('       cp install --uninstall-hooks      remove cp-owned git hooks');
     console.error('       cp install --ci [--force]         install GitHub Actions audit workflow');
+    console.error('');
+    console.error('  --global  wire the harness at the user-home scope (~/.copilot, ~/.claude, ...)');
+    console.error('            instead of the current repo (.github/, .claude/, ...). Result:');
+    console.error('            /cp-* commands visible in every repo on this machine for that');
+    console.error('            harness. Default (no flag) is per-repo install.');
     process.exit(2);
   }
   const force = args.includes('--force');

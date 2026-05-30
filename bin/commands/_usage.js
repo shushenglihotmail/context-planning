@@ -7,6 +7,12 @@ function usage() {
 
 Usage:
   cp install <harness>            Install into a harness (copilot | claude | cursor | aider)
+                                  Default: per-repo wiring (writes to .github/,
+                                  .claude/, .cursor/, .aider/ in the current repo).
+  cp install <harness> --global   Install at user-home scope (~/.copilot, ~/.claude,
+                                  ~/.cursor, ~/.aider). Result: /cp-* commands
+                                  visible in every repo on this machine for that
+                                  harness. Still per-harness — run once per harness.
   cp install --hooks [--force]    Install cp git hooks (pre-commit, post-commit) into git repo
   cp install --uninstall-hooks    Remove cp-owned git hooks
   cp install --ci [--force]       Install GitHub Actions audit workflow (.github/workflows/cp-audit.yml)
