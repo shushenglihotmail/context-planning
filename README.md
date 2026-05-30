@@ -80,11 +80,22 @@ Pick the one that fits and skip the other — you don't need both.
 For real product/feature work where you want a roadmap, milestones,
 phase history, and a long-lived `PROJECT.md`.
 
+**A "project" in cp = one `.planning/` directory, not one git repo.**
+You run `/cp-new-project` once **per project root** — that is, once
+per directory you want to give its own `.planning/`. A monorepo
+hosting three services means three independent `/cp-new-project`
+runs, one in each service directory. See
+[Multi-project repos](#multi-project-repos) for the layout and
+the first-time anchoring rule.
+
 ```bash
-cd your-repo
+cd path/to/project-root          # the dir that should own .planning/.
+                                 # In a single-project repo this is
+                                 # the repo root; in a monorepo it's
+                                 # the subproject dir (e.g. services/api).
 
 # In your harness:
-/cp-new-project                  # scaffolds .planning/, brainstorms
+/cp-new-project                  # scaffolds .planning/ HERE, brainstorms
                                  # PROJECT.md with you, creates the
                                  # first milestone + phase breakdown.
 
@@ -92,17 +103,19 @@ cd your-repo
 /cp-autonomous                   # drive the active milestone end-to-end
 ```
 
-`/cp-new-project` is the **one-time setup per project**. After it, the
-project is bootstrapped and the rest of the cp commands work against
-the `.planning/` it created. Multi-project repos (monorepos) are
-supported — see [Multi-project repos](#multi-project-repos) below.
+`/cp-new-project` is the **one-time setup per project root**. After
+it, the rest of the cp commands work against the `.planning/` it
+created, anchored from whatever directory you run them in (see the
+Multi-project section for how the anchoring walk works).
 
 ### Path B — One-shot tasks (no project required)
 
 For ad-hoc work where you don't need a long-lived plan.
 
 ```bash
-cd your-repo                     # any repo, no project setup needed
+cd path/to/work-dir              # any dir, no project setup needed.
+                                 # The quick task's artifacts will
+                                 # live under <here>/.planning/quick/.
 
 cp run quick "rename version flag"
 # or, equivalently, in your harness:
