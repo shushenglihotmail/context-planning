@@ -7,6 +7,7 @@ interactively (route each to a quick task, phase, seed, or discard).
 ## Open
 
 - [ ] [2026-05-28T22:19] Restrict workflow template parameterization to a whitelist (skill, prompt, description, max_children, min_children); forbid {{item.X}} and any unresolved {{...}} tokens after expansion. Audit built-in templates (workflows + phases) and migrate any non-conforming usage. Decide whether the same rule applies to phase templates. Origin: cp-quick docs.yaml work surfaced silent literal-string bug from un-templated {{item.id}}.
+- [ ] [2026-05-30T11:11] YAGNI: explored adding user-defined parallel route groups to workflows (third parallelism mechanism). Concluded the v1.3 `template:` (workflow-template inclusion) entry already provides exactly this — parallel sibling routes by default, route-on-route DAG via `after:`, nesting with depth limit, multi-instance via `id:` + `args:`. Run `add-user-defined-parallel-phases-in-workflow` abandoned. If discoverability/DX is the real pain, reach for docs/examples first (see _fixtures-v13/), not engine work.
 
 ## Triaged
 
