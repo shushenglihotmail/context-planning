@@ -1,7 +1,7 @@
 {
   "name": "context-planning",
   "version": "1.7.0",
-  "description": "Stateful planning + a reusable YAML workflow engine for AI coding agents — define phase DAGs, run them with `cp run`, customize templates per project. Delegates skill execution to Superpowers or any compatible provider.",
+  "description": "A fully customizable workflow and context-management system for AI coding agents. Define repeatable phase DAGs in YAML, run them with `cp run`, keep all long-lived state on disk. Harness-agnostic and provider-pluggable, with a built-in `manual` fallback so it works with zero external dependencies.",
   "bin": {
     "cp": "bin/cp.js",
     "cplan": "bin/cp.js"
