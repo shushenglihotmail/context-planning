@@ -88,25 +88,41 @@ runs, one in each service directory. See
 [Multi-project repos](#multi-project-repos) for the layout and
 the first-time anchoring rule.
 
-> **Existing code? Run `/cp-map-codebase` first.** For brownfield
-> projects (any repo with code that predates cp), run
-> `/cp-map-codebase` **before** `/cp-new-project`. It scans the
-> codebase via parallel sub-agents and writes 7 structured docs
-> (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING,
-> CONCERNS) into `.planning/codebase/`. `/cp-new-project`'s brainstorm
-> step picks these up automatically, so your `PROJECT.md` and first
-> milestone are grounded in real code rather than guesses.
-> `/cp-map-codebase` auto-runs `cp init` for you if `.planning/`
-> doesn't exist yet, so the brownfield order is just:
->
-> ```
-> /cp-map-codebase        # 1. understand the code (writes .planning/codebase/)
-> /cp-new-project         # 2. brainstorm PROJECT.md + first milestone
-> ```
->
-> For **greenfield** (empty repo, or a new subproject dir with no
-> code yet), skip straight to `/cp-new-project` — there's nothing
-> to map.
+#### Two one-time setup commands, not one
+
+cp has two bootstrap commands that produce **different artifacts**:
+
+|                          | `/cp-map-codebase`                                                                              | `/cp-new-project`                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| **Answers**              | *What does the existing code look like?*                                                        | *What do we want to build, and what's milestone 1?*                                                |
+| **Writes**               | 7 reality docs in `.planning/codebase/` (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING, CONCERNS) | `PROJECT.md` (intent) + first milestone in `ROADMAP.md`                                            |
+| **How**                  | 4 parallel sub-agents scanning the source tree                                                  | Interactive brainstorm with you. Reads `.planning/codebase/*.md` if present, so PROJECT.md is grounded in real code. |
+| **Auto-runs `cp init`?** | Yes (if `.planning/` is missing)                                                                | Yes (its first step)                                                                               |
+
+This is the same split that **GSD** has — cp inherited it on purpose
+so the two commands stay independently useful.
+
+**So which do you run first?**
+
+- **Greenfield** (empty repo / new subproject dir with no code yet) →
+  just `/cp-new-project`. There's nothing to map.
+- **Brownfield** (code already exists) → `/cp-map-codebase` **first**,
+  then `/cp-new-project`. The brainstorm reads `.planning/codebase/*.md`
+  automatically, so `PROJECT.md` and the first milestone are grounded
+  in reality instead of guesses.
+- **Trivial codebase** (<5 source files) → skip map, just
+  `/cp-new-project`. Mapping an empty tree produces thin docs.
+
+`/cp-map-codebase` is also useful **outside** the bootstrap, which is
+why we keep it standalone:
+
+- Refresh after a big refactor: `/cp-map-codebase --force`.
+- Onboarding to an unfamiliar codebase you didn't write.
+- Pre-refactor exploration (understand current state).
+- Focused refresh of one slice:
+  `/cp-map-codebase --fast --focus arch`.
+
+#### The commands
 
 ```bash
 cd path/to/project-root          # the dir that should own .planning/.
@@ -114,19 +130,26 @@ cd path/to/project-root          # the dir that should own .planning/.
                                  # the repo root; in a monorepo it's
                                  # the subproject dir (e.g. services/api).
 
-# In your harness:
-/cp-new-project                  # scaffolds .planning/ HERE, brainstorms
-                                 # PROJECT.md with you, creates the
-                                 # first milestone + phase breakdown.
+# Brownfield only — skip on greenfield:
+/cp-map-codebase                 # 4 parallel agents → .planning/codebase/*.md
+                                 # Also auto-runs `cp init` if needed.
 
+# Both paths run this:
+/cp-new-project                  # brainstorms PROJECT.md (grounds on
+                                 # .planning/codebase/ if present) and
+                                 # creates the first milestone.
+
+# After bootstrap:
 /cp-new-milestone "<goal>"       # for each later milestone
 /cp-autonomous                   # drive the active milestone end-to-end
 ```
 
-`/cp-new-project` is the **one-time setup per project root**. After
-it, the rest of the cp commands work against the `.planning/` it
-created, anchored from whatever directory you run them in (see the
-Multi-project section for how the anchoring walk works).
+`/cp-new-project` is the **one-time intent setup per project root**.
+`/cp-map-codebase` is the **one-time codebase-knowledge bootstrap**
+(plus a refresh tool you can re-run anytime). After both, the rest
+of the cp commands work against the `.planning/` they created,
+anchored from whatever directory you run them in (see
+[Multi-project repos](#multi-project-repos) for how anchoring works).
 
 ### Path B — One-shot tasks (no project required)
 
