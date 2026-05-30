@@ -88,6 +88,26 @@ runs, one in each service directory. See
 [Multi-project repos](#multi-project-repos) for the layout and
 the first-time anchoring rule.
 
+> **Existing code? Run `/cp-map-codebase` first.** For brownfield
+> projects (any repo with code that predates cp), run
+> `/cp-map-codebase` **before** `/cp-new-project`. It scans the
+> codebase via parallel sub-agents and writes 7 structured docs
+> (STACK, INTEGRATIONS, ARCHITECTURE, STRUCTURE, CONVENTIONS, TESTING,
+> CONCERNS) into `.planning/codebase/`. `/cp-new-project`'s brainstorm
+> step picks these up automatically, so your `PROJECT.md` and first
+> milestone are grounded in real code rather than guesses.
+> `/cp-map-codebase` auto-runs `cp init` for you if `.planning/`
+> doesn't exist yet, so the brownfield order is just:
+>
+> ```
+> /cp-map-codebase        # 1. understand the code (writes .planning/codebase/)
+> /cp-new-project         # 2. brainstorm PROJECT.md + first milestone
+> ```
+>
+> For **greenfield** (empty repo, or a new subproject dir with no
+> code yet), skip straight to `/cp-new-project` — there's nothing
+> to map.
+
 ```bash
 cd path/to/project-root          # the dir that should own .planning/.
                                  # In a single-project repo this is
@@ -350,7 +370,7 @@ engine (each one runs a built-in YAML in supervised mode):
 | `/cp-capture <text>`         | `cp capture`                                | Drop an idea into INBOX without disturbing flow.                     |
 | `/cp-workflow-run <wf> <name>` | `cp run <wf>`                             | Run any workflow (built-in or project) in supervised mode.           |
 | `/cp-workflow-{list,show,inspect,new,validate,brainstorm,export,import,customize,diagram,resume}` | the `cp workflow ...` family | Author and inspect workflows.    |
-| `/cp-map-codebase`           | parallel scan into `.planning/codebase/`    | Bootstrap codebase intel docs.                                       |
+| `/cp-map-codebase`           | parallel scan into `.planning/codebase/`    | **Brownfield bootstrap.** Run this in any repo that already has code, *before* `/cp-new-project`, so the brainstorm grounds on real STACK / ARCHITECTURE / CONVENTIONS / etc. docs. Auto-runs `cp init` if `.planning/` is missing. Re-run with `--force` after major refactors. |
 | `/cp-write-summary <plan-id>` | `cp write-summary`                         | Write a per-plan summary with validated frontmatter.                 |
 | `/cp-update`                 | `cp update`                                 | Refresh per-repo state after a cp version bump.                      |
 
