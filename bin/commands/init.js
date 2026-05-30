@@ -82,6 +82,15 @@ function run() {
     console.log(`as a GSD-compatible project.`);
   }
   console.log(`\nNext: edit .planning/PROJECT.md, then run /cp-new-milestone or /cp-autonomous.`);
+
+  // Soft-deprecation hint (stderr, so it doesn't pollute parsed stdout).
+  // `cp init` is plumbing; interactive setup should go through /cp-new-project,
+  // which calls cp init internally and then fills PROJECT.md via brainstorm.
+  process.stderr.write(
+    `\nTip: \`cp init\` only scaffolds empty templates. For interactive ` +
+    `setup that also fills PROJECT.md and plans your first milestone, ` +
+    `use /cp-new-project in your harness instead.\n`
+  );
 }
 
 module.exports = { name: 'init', run };

@@ -108,8 +108,9 @@ ${CP_BLOCK_END}
   console.log(`\nNext steps:`);
   console.log(`  1. Make sure your workflow provider (default: superpowers) is installed.`);
   console.log(`     - For Claude Code:  /plugin install superpowers@superpowers-marketplace`);
-  console.log(`  2. In a project directory:  cp init`);
-  console.log(`  3. Then in Claude Code:     /cp-new-milestone "my first milestone"`);
+  console.log(`  2. cd into a repo and pick a path:`);
+  console.log(`     • Project work:  /cp-new-project              (scaffolds .planning/ + first milestone)`);
+  console.log(`     • One-shot task: cp run quick "<task>"        (no project setup needed)`);
 
   return { written, identical, userModified };
 }

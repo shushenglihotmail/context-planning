@@ -194,9 +194,9 @@ function install({ pluginRoot, repoRoot, force = false }) {
   }
   console.log(`\nNext steps:`);
   console.log(`  1. Restart aider so it picks up the new \`read:\` entry.`);
-  console.log(`  2. In a project directory:  cp init`);
-  console.log(`  3. Ask Aider: "use cp to make a new milestone called 'my first'"`);
-  console.log(`     Aider will run \`cp scaffold-milestone\` (or similar) via shell.`);
+  console.log(`  2. cd into a repo and pick a path:`);
+  console.log(`     • Project work:  ask Aider to "use cp to start a new project" (drives /cp-new-project).`);
+  console.log(`     • One-shot task: cp run quick "<task>"        (no project setup needed)`);
   console.log(`  Note: Aider has no per-project slash command mechanism. cp's slash`);
   console.log(`        commands are installed as read-only context files; invocations`);
   console.log(`        happen via \`cp <subcommand>\` shell calls from the chat.`);

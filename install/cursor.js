@@ -111,8 +111,9 @@ ${buildDriftDefenseBlock(pluginRoot)}`;
   }
   console.log(`\nNext steps:`);
   console.log(`  1. Reload Cursor (or run "Cursor: Reload Window") to pick up the new rules.`);
-  console.log(`  2. In a project directory:  cp init`);
-  console.log(`  3. In Cursor chat:          @cp-new-milestone "my first milestone"`);
+  console.log(`  2. cd into a repo and pick a path:`);
+  console.log(`     • Project work:  @cp-new-project              (scaffolds .planning/ + first milestone)`);
+  console.log(`     • One-shot task: cp run quick "<task>"        (no project setup needed)`);
   console.log(`     (or any other @cp-<name> rule)`);
 
   return { written, identical, userModified };
