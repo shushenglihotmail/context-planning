@@ -62,7 +62,7 @@ its own thing.
 ## Quick start
 
 ```bash
-# 1. Install
+# 1. Install once per machine
 npm install -g context-planning
 
 # 2. Install into your harness (any one)
@@ -70,25 +70,85 @@ cp install copilot      # GitHub Copilot CLI
 cp install claude       # Claude Code
 cp install cursor       # Cursor
 cp install aider        # Aider
+```
 
-# 3. Scaffold a project
+cp gives you **two ways to work**, depending on the shape of the work.
+Pick the one that fits and skip the other — you don't need both.
+
+### Path A — Project work (recurring, multi-milestone)
+
+For real product/feature work where you want a roadmap, milestones,
+phase history, and a long-lived `PROJECT.md`.
+
+```bash
 cd your-repo
-cp init
 
-# 4. Run something
-cp run quick "rename-version-flag"
+# In your harness:
+/cp-new-project                  # scaffolds .planning/, brainstorms
+                                 # PROJECT.md with you, creates the
+                                 # first milestone + phase breakdown.
 
-# 5. Or invoke via slash-skill in your harness
+/cp-new-milestone "<goal>"       # for each later milestone
+/cp-autonomous                   # drive the active milestone end-to-end
+```
+
+`/cp-new-project` is the **one-time setup per project**. After it, the
+project is bootstrapped and the rest of the cp commands work against
+the `.planning/` it created. Multi-project repos (monorepos) are
+supported — see [Multi-project repos](#multi-project-repos) below.
+
+### Path B — One-shot tasks (no project required)
+
+For ad-hoc work where you don't need a long-lived plan.
+
+```bash
+cd your-repo                     # any repo, no project setup needed
+
+cp run quick "rename version flag"
+# or, equivalently, in your harness:
 /cp-quick rename version flag
 ```
+
+`cp run quick` auto-creates `.planning/quick/<date-slug>/` for its
+DESIGN.md + STATE.md + SUMMARY.md. It does **not** touch `PROJECT.md`,
+does **not** require `/cp-new-project`, and works on any repo
+(including one that's also a Path A project — they coexist).
 
 ### Sanity check
 
 ```bash
 cp doctor             # resolved config, provider status, skill routing table
-cp status             # "you are here": current milestone, phase, next plan
+cp status             # current milestone / phase / next plan (Path A only)
 cp workflow ls        # built-in + project workflow templates
 ```
+
+### Multi-project repos
+
+A "project" in cp = one `.planning/` directory. To run multiple
+independent projects out of a single git repo, give each subproject
+its own `.planning/`:
+
+```
+monorepo/
+├── .git/
+├── services/
+│   ├── api/
+│   │   └── .planning/        # project A
+│   └── web/
+│       └── .planning/        # project B
+```
+
+Project root is detected by walking up from `cwd` and using the **first
+`.planning/` found**, falling back to `.git/` if none. So
+`cd services/api && cp run …` anchors at `services/api/.planning/`
+automatically.
+
+> **First-time gotcha:** in a fresh subproject directory there's no
+> `.planning/` yet to anchor on, so the walker will keep going up to
+> `.git/` and use the **wrong** root. Before running `/cp-new-project`
+> in a subproject for the first time, run `mkdir <subproject>/.planning`
+> to anchor the lookup. After that, all cp commands run from inside
+> the subproject behave correctly.
 
 ---
 
@@ -197,8 +257,10 @@ The canonical schema, recipes, and walkthroughs live under
 
 ## The state layer
 
-`cp init` scaffolds `.planning/` with the file shape every cp command
-reads and writes:
+Every cp project has a `.planning/` directory with the file shape
+below. `/cp-new-project` scaffolds it for you (and fills `PROJECT.md`
+via the brainstorm skill); `cp run quick` auto-creates the `quick/`
+subtree on demand. You never need to create these files by hand.
 
 ```
 .planning/
@@ -263,9 +325,9 @@ engine (each one runs a built-in YAML in supervised mode):
 
 | Slash skill                  | Wraps                                       | When to use                                                          |
 | ---------------------------- | ------------------------------------------- | -------------------------------------------------------------------- |
-| `/cp-quick <task>`           | `cp run quick`                              | Small one-shot tasks.                                                |
-| `/cp-new-project`            | bootstrap a new cp project                  | First-time setup: PROJECT.md + initial ROADMAP.                      |
-| `/cp-new-milestone <goal>`   | `cp run milestone`                          | Start a new milestone (brainstorm → phase breakdown → lock ROADMAP). |
+| `/cp-quick <task>`           | `cp run quick`                              | Small one-shot tasks. No project setup required.                     |
+| `/cp-new-project`            | `cp init` + brainstorm + first milestone    | **One-time setup** per project: scaffolds `.planning/`, fills `PROJECT.md` with you, creates the first milestone + phase breakdown. |
+| `/cp-new-milestone <goal>`   | `cp run milestone`                          | Start a new milestone (brainstorm → phase breakdown → lock ROADMAP). Requires a project (Path A). |
 | `/cp-complete-milestone`     | `cp run complete-milestone`                 | Close out the active milestone.                                      |
 | `/cp-plan-phase`             | planner for the active phase                | Write `phases/{NN-slug}/PLAN.md`.                                    |
 | `/cp-execute-phase`          | `cp scaffold-phase --continue` + execution  | Drive the active phase (plan + execute).                             |
@@ -354,7 +416,6 @@ directories on top.
 ## CLI reference
 
 ```bash
-cp init                        # scaffold .planning/
 cp install <harness>           # install into copilot | claude | cursor | aider
 cp install --hooks             # install git hooks
 cp install --ci                # install GitHub Actions audit workflow
@@ -409,6 +470,21 @@ cp help
 
 Every command supports `--json` where output structure matters. See
 `cp help` or `cp <subcommand> --help` for the full flag set.
+
+### Plumbing
+
+```bash
+cp init                        # scaffold an EMPTY .planning/ (no content)
+```
+
+`cp init` is a low-level primitive. It writes empty template files
+(`PROJECT.md`, `ROADMAP.md`, `STATE.md`, `MILESTONES.md`,
+`config.json`) and exits — it does no brainstorming and no milestone
+planning, so the project isn't actually usable until you fill those
+files in. For interactive bootstrap that includes both the scaffold
+and the content, use **`/cp-new-project`**. The only standalone use
+case for `cp init` is repair / restore (it's idempotent, so re-running
+it puts back any deleted templates).
 
 ---
 

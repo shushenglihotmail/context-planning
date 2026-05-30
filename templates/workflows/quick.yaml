@@ -77,8 +77,10 @@ phases:
   - phase:
       id: finalize
       description: |
-        Write SUMMARY.md, set status=complete, append row to project
-        STATE.md Quick Tasks Completed table.
+        Write SUMMARY.md and flip the per-task STATE.md status to
+        complete. Quick tasks are self-contained — finalize does NOT
+        touch the project's STATE.md or ROADMAP.md, so this workflow
+        is safe to run in repos that have no cp project at all.
       depends_on: [ execute ]
       kind: scaffold
       command: "cp quick-finalize {{slug_with_date}}"
