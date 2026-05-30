@@ -8,14 +8,21 @@ function usage() {
 Usage:
   cp install <harness>            Install into a harness (copilot | claude | cursor | aider)
                                   Default: per-repo wiring (writes to .github/,
-                                  .claude/, .cursor/, .aider/ in the current repo).
+                                  .claude/, .cursor/, .aider/ in the current repo;
+                                  cp walks up from cwd to find .git / package.json).
+  cp install <harness> --repo <path>
+                                  Per-repo install targeting <path> from any cwd
+                                  (mutually exclusive with --global).
   cp install <harness> --global   Install at user-home scope (~/.copilot, ~/.claude,
                                   ~/.cursor, ~/.aider). Result: /cp-* commands
                                   visible in every repo on this machine for that
                                   harness. Still per-harness — run once per harness.
-  cp install --hooks [--force]    Install cp git hooks (pre-commit, post-commit) into git repo
-  cp install --uninstall-hooks    Remove cp-owned git hooks
-  cp install --ci [--force]       Install GitHub Actions audit workflow (.github/workflows/cp-audit.yml)
+  cp install --hooks [--repo <path>] [--force]
+                                  Install cp git hooks (pre-commit, post-commit) into git repo
+  cp install --uninstall-hooks [--repo <path>]
+                                  Remove cp-owned git hooks
+  cp install --ci [--repo <path>] [--force]
+                                  Install GitHub Actions audit workflow (.github/workflows/cp-audit.yml)
   cp init                         Scaffold .planning/ in this repo
   cp gsd-import [--root <dir>] [--json] [--apply]
                                   Read-only audit of any planning project

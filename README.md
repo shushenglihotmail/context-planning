@@ -66,14 +66,24 @@ its own thing.
 npm install -g context-planning
 
 # 2. Install into your harness (any one), per repo OR globally
+#    Per-repo (default): cd into the target repo first — cp walks up
+#    from cwd to find .git / package.json and writes into .github/ |
+#    .claude/ | .cursor/ | .aider/ in that repo only.
+cd path/to/your/repo
 cp install copilot      # GitHub Copilot CLI
 cp install claude       # Claude Code
 cp install cursor       # Cursor
 cp install aider        # Aider
 
+# Or target a specific repo from anywhere with --repo <path>
+# (handy from a wrapper script or when you don't want to cd first):
+cp install copilot --repo path/to/your/repo
+
 # Add --global to wire the harness once at user-home scope instead
-# of per-repo. Useful when you want /cp-* commands available in every
-# repo on this machine. Still per-harness — run once per harness.
+# of per-repo. Run from anywhere; files land under ~/.copilot,
+# ~/.claude, ~/.cursor, ~/.aider. /cp-* commands then appear in
+# every repo on this machine for that harness. Still per-harness —
+# run once per harness you use.
 cp install copilot --global
 ```
 
@@ -463,12 +473,17 @@ check, post-commit tick). `cp install --ci` installs a GitHub Actions
 audit workflow.
 
 **Per-repo vs per-user.** By default, `cp install <harness>` writes
-into the current repo (`.github/`, `.claude/`, `.cursor/`, `.aider/`)
-— so `/cp-*` commands only appear in that repo. Add `--global` to
-write into the user-home scope (`~/.copilot/`, `~/.claude/`,
-`~/.cursor/`, `~/.aider/`) instead — `/cp-*` commands then appear
-in every repo on this machine for that harness. Still per-harness:
-run `cp install <harness> --global` once for each harness you use.
+into the **current repo** (`.github/`, `.claude/`, `.cursor/`,
+`.aider/`), so `/cp-*` commands only appear in that repo. You must
+run it from inside the target repo — `cp` walks up from your cwd
+looking for `.git` / `package.json`. Use `--repo <path>` to target
+a specific repo from any cwd (handy in wrapper scripts or when you
+don't want to cd first). Add `--global` to write into the user-home
+scope (`~/.copilot/`, `~/.claude/`, `~/.cursor/`, `~/.aider/`)
+instead — `/cp-*` commands then appear in every repo on this
+machine for that harness. Still per-harness: run
+`cp install <harness> --global` once for each harness you use.
+`--global` and `--repo` are mutually exclusive.
 
 ---
 
@@ -493,9 +508,12 @@ directories on top.
 ## CLI reference
 
 ```bash
-cp install <harness>           # install into copilot | claude | cursor | aider
-                               #   default: per-repo (writes .github/, .claude/, ...)
-cp install <harness> --global  # install at user-home scope (~/.copilot, ~/.claude, ...)
+cp install <harness>                  # install into copilot | claude | cursor | aider
+                                      #   default: per-repo — run from inside the target repo
+                                      #   (cp walks up to .git/package.json)
+cp install <harness> --repo <path>    # per-repo install targeting <path> from any cwd
+cp install <harness> --global         # install at user-home scope (~/.copilot, ~/.claude, ...)
+                                      #   run from anywhere; mutually exclusive with --repo
 cp install --hooks             # install git hooks
 cp install --ci                # install GitHub Actions audit workflow
 cp install --uninstall-hooks   # remove cp-owned hooks

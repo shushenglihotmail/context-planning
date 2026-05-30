@@ -343,6 +343,89 @@ section('cp install with no harness arg: usage error mentions --global');
   ok('exit 2', r.status === 2, `got ${r.status}`);
   ok('usage mentions --global flag', /--global/.test(r.stderr),
     `stderr: ${r.stderr}`);
+  ok('usage mentions --force flag', /--force/.test(r.stderr),
+    `stderr: ${r.stderr}`);
+  ok('usage lists all four harnesses',
+    /copilot/.test(r.stderr) && /claude/.test(r.stderr) &&
+    /cursor/.test(r.stderr) && /aider/.test(r.stderr),
+    `stderr: ${r.stderr}`);
+}
+
+// =============================================================
+section('cp install --help: exit 0, prints usage to stdout');
+{
+  const root = bootRepo('install-help');
+  const r = run(['install', '--help'], root);
+  ok('exit 0', r.status === 0, `got ${r.status}; stderr: ${r.stderr}`);
+  ok('--help: usage printed to stdout (not stderr)',
+    /Usage: cp install/.test(r.stdout) && !/Usage: cp install/.test(r.stderr),
+    `stdout starts with: ${r.stdout.slice(0, 200)}`);
+  ok('--help: mentions --global', /--global/.test(r.stdout));
+  ok('--help: mentions --repo <path>', /--repo <path>/.test(r.stdout),
+    `stdout tail: ${r.stdout.slice(-400)}`);
+  ok('--help: explains npm-vs-harness distinction',
+    /npm i -g context-planning/.test(r.stdout) &&
+    /two\s+separate install steps/.test(r.stdout),
+    `stdout tail: ${r.stdout.slice(-300)}`);
+
+  // -h short form behaves the same
+  const rShort = run(['install', '-h'], root);
+  ok('-h: also exits 0', rShort.status === 0, `got ${rShort.status}`);
+  ok('-h: prints same usage to stdout',
+    /Usage: cp install/.test(rShort.stdout));
+}
+
+// =============================================================
+section('cp install --repo <path>: targets that repo from a foreign cwd');
+{
+  const targetRepo = bootRepo('repo-flag-target');
+  // Run from a completely unrelated cwd (no .git anywhere up the tree).
+  const foreignCwd = mktmp('repo-flag-cwd');
+  const r = run(['install', 'copilot', '--repo', targetRepo], foreignCwd);
+  ok('exit 0', r.status === 0, `stderr: ${r.stderr}`);
+  ok('wrote into target repo .github/skills',
+    fs.existsSync(path.join(targetRepo, '.github', 'skills')),
+    'target .github/skills missing');
+  ok('did NOT write into foreign cwd',
+    !fs.existsSync(path.join(foreignCwd, '.github')),
+    'foreign cwd .github appeared');
+}
+
+// =============================================================
+section('cp install --repo= (equals form) is supported');
+{
+  const targetRepo = bootRepo('repo-flag-eq');
+  const foreignCwd = mktmp('repo-flag-eq-cwd');
+  const r = run(['install', 'copilot', `--repo=${targetRepo}`], foreignCwd);
+  ok('exit 0', r.status === 0, `stderr: ${r.stderr}`);
+  ok('wrote into target repo via --repo=',
+    fs.existsSync(path.join(targetRepo, '.github', 'skills')));
+}
+
+// =============================================================
+section('cp install --repo with bad input: clear errors, no writes');
+{
+  const foreignCwd = mktmp('repo-flag-bad-cwd');
+
+  // 1. Missing value
+  const rNoVal = run(['install', 'copilot', '--repo'], foreignCwd);
+  ok('--repo with no value exits 2', rNoVal.status === 2, `got ${rNoVal.status}`);
+  ok('--repo with no value mentions path requirement',
+    /requires a path/.test(rNoVal.stderr), `stderr: ${rNoVal.stderr}`);
+
+  // 2. Nonexistent path
+  const ghost = path.join(os.tmpdir(), 'cp-repo-flag-ghost-' + Date.now());
+  const rGhost = run(['install', 'copilot', '--repo', ghost], foreignCwd);
+  ok('--repo nonexistent exits 2', rGhost.status === 2, `got ${rGhost.status}`);
+  ok('--repo nonexistent mentions "does not exist"',
+    /does not exist/.test(rGhost.stderr), `stderr: ${rGhost.stderr}`);
+
+  // 3. --repo + --global conflict
+  const target = bootRepo('repo-flag-conflict');
+  const rConflict = run(['install', 'copilot', '--global', '--repo', target], foreignCwd);
+  ok('--global + --repo exits 2', rConflict.status === 2, `got ${rConflict.status}`);
+  ok('conflict error mentions mutually exclusive',
+    /mutually exclusive/.test(rConflict.stderr), `stderr: ${rConflict.stderr}`);
 }
 
 // =============================================================
