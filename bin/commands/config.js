@@ -4,7 +4,37 @@ const fs = require('fs');
 const { repoRoot } = require('../../lib/paths');
 const provider = require('../../lib/provider');
 
+function printUsage(stream) {
+  stream.write(
+    'Usage: cp config get [<key>]\n' +
+    '       cp config set <key> <value>\n' +
+    '       cp config refresh [--dry-run]\n' +
+    '\n' +
+    '  Read or write cp.* values in .planning/config.json, or merge\n' +
+    '  upstream defaults from the installed cp package (refresh).\n' +
+    '\n' +
+    'Subcommands:\n' +
+    '  get [<key>]        Print cp.<key> value, or the whole cp block when no key.\n' +
+    '  set <key> <value>  Update cp.<key>. Auto-coerces "true" / "false" / numbers.\n' +
+    '  refresh            Merge upstream defaults into .planning/config.json.\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --dry-run          (refresh only) Show planned changes, write nothing.\n' +
+    '  -h, --help         Show this message and exit.\n' +
+    '\n' +
+    'Examples:\n' +
+    '  cp config get\n' +
+    '  cp config get provider.name\n' +
+    '  cp config set provider.name superpowers\n' +
+    '  cp config refresh --dry-run\n'
+  );
+}
+
 function run(args = []) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printUsage(process.stdout);
+    process.exit(0);
+  }
   const root = repoRoot();
   const sub = args[0];
 
@@ -63,7 +93,7 @@ function run(args = []) {
     console.log(`set cp.${key} = ${JSON.stringify(val)}`);
     return;
   }
-  console.error('Usage: cp config get [<key>] | set <key> <value> | refresh [--dry-run]');
+  printUsage(process.stderr);
   process.exit(2);
 }
 

@@ -224,7 +224,8 @@ section('CLI: usage errors');
 {
   const root = bootProject('wt-usage');
   const noSub = run(['worktree'], root);
-  ok('no subcommand: exit 2', noSub.status === 2);
+  ok('no subcommand: exit 0 (prints help)', noSub.status === 0);
+  ok('no subcommand: stdout has Usage', /Usage: cp worktree/.test(noSub.stdout));
   const badSub = run(['worktree', 'frobnicate'], root);
   ok('bad subcommand: exit 2', badSub.status === 2);
   const missingName = run(['worktree', 'create'], root);

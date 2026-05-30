@@ -7,6 +7,84 @@ const provider = require('../../lib/provider');
 const lifecycle = require('../../lib/lifecycle');
 const worktree = require('../../lib/worktree');
 
+function printUsage(stream) {
+  stream.write(
+    'Usage: cp worktree <create|list|remove> [...]\n' +
+    '\n' +
+    '  Manage cp-tracked git worktrees registered in\n' +
+    '  .planning/WORKTREES.md.\n' +
+    '\n' +
+    'Subcommands:\n' +
+    '  create <name>   Create a new worktree and register it.\n' +
+    '  list            List registered worktrees (with on-disk status).\n' +
+    '  remove <slug>   Remove a worktree and its registry entry.\n' +
+    '\n' +
+    'Flags:\n' +
+    '  -h, --help      Show this message and exit.\n' +
+    '\n' +
+    'Run `cp worktree <subcommand> --help` for per-subcommand options.\n'
+  );
+}
+
+function printCreateUsage(stream) {
+  stream.write(
+    'Usage: cp worktree create <name> [--branch <b>] [--from <base>]\n' +
+    '                                 [--path <dir>] [--phase <N>]\n' +
+    '                                 [--no-create] [--no-commit] [--dry-run]\n' +
+    '                                 [--use-provider]\n' +
+    '\n' +
+    '  Run `git worktree add` and append a row to .planning/WORKTREES.md.\n' +
+    '\n' +
+    'Args:\n' +
+    '  <name>          Free-form worktree name (slugified for paths).\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --branch <b>    Branch name (default: phase/<slug>).\n' +
+    '  --from <base>   Base ref for the new branch (default: current HEAD).\n' +
+    '  --path <dir>    Worktree directory (default: ../<repo>-<slug>).\n' +
+    '  --phase <N>     Phase number to associate with this worktree.\n' +
+    '  --no-create     Skip `git worktree add`; only register in WORKTREES.md.\n' +
+    '  --no-commit     Write WORKTREES.md but skip the auto-commit.\n' +
+    '  --dry-run       Print what would change without writing.\n' +
+    '  --use-provider  Hand off to the provider\'s worktree skill (if any).\n' +
+    '  -h, --help      Show this message and exit.\n' +
+    '\n' +
+    'Examples:\n' +
+    '  cp worktree create p7-parallel-phases --phase 7\n' +
+    '  cp worktree create review --from main --branch review/codex\n'
+  );
+}
+
+function printListUsage(stream) {
+  stream.write(
+    'Usage: cp worktree list [--json]\n' +
+    '\n' +
+    '  List worktrees registered in .planning/WORKTREES.md and cross-\n' +
+    '  reference each entry with `git worktree list`.\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --json          Output JSON with both the registry and git\'s view.\n' +
+    '  -h, --help      Show this message and exit.\n'
+  );
+}
+
+function printRemoveUsage(stream) {
+  stream.write(
+    'Usage: cp worktree remove <slug> [--force] [--no-commit]\n' +
+    '\n' +
+    '  Run `git worktree remove` and drop the matching row from\n' +
+    '  .planning/WORKTREES.md. Use `cp worktree list` to find slugs.\n' +
+    '\n' +
+    'Args:\n' +
+    '  <slug>          The slug shown by `cp worktree list`.\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --force         Pass --force to `git worktree remove`.\n' +
+    '  --no-commit     Write WORKTREES.md but skip the auto-commit.\n' +
+    '  -h, --help      Show this message and exit.\n'
+  );
+}
+
 // Best-effort canonical path: collapses Windows short names (FOO~1) and
 // resolves symlinks. Falls back to path.resolve() if the path doesn't
 // exist (which can happen for registry entries whose worktree was
@@ -34,6 +112,10 @@ function samePath(a, b) {
 }
 
 function runCreate(args, root) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printCreateUsage(process.stdout);
+    process.exit(0);
+  }
   let name = null;
   let branch = null;
   let from = null;
@@ -57,7 +139,7 @@ function runCreate(args, root) {
     else if (!name) name = a;
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
-  if (!name) { console.error('Usage: cp worktree create <name> [--branch <b>] [--from <base>] [--path <dir>] [--phase <N>]'); process.exit(2); }
+  if (!name) { printCreateUsage(process.stderr); process.exit(2); }
 
   const slug = worktree.slugify(name);
   const finalPath = wpath ? path.resolve(wpath) : worktree.defaultWorktreePath(root, slug);
@@ -131,6 +213,10 @@ function runCreate(args, root) {
 }
 
 function runList(args, root) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printListUsage(process.stdout);
+    process.exit(0);
+  }
   const json = args.includes('--json');
   const entries = worktree.listRegistry(root);
 
@@ -158,6 +244,10 @@ function runList(args, root) {
 }
 
 function runRemove(args, root) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printRemoveUsage(process.stdout);
+    process.exit(0);
+  }
   let slug = null;
   let force = false;
   let noCommit = false;
@@ -169,7 +259,7 @@ function runRemove(args, root) {
     else if (!slug) slug = a;
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
-  if (!slug) { console.error('Usage: cp worktree remove <slug> [--force]'); process.exit(2); }
+  if (!slug) { printRemoveUsage(process.stderr); process.exit(2); }
 
   const r = worktree.removeRegistryEntry(root, slug);
   if (!r.removed) {
@@ -201,17 +291,18 @@ function runRemove(args, root) {
 }
 
 function run(args = []) {
-  const sub = args.shift();
-  if (!sub) {
-    console.error('Usage: cp worktree <create|list|remove> [...]');
-    process.exit(2);
+  if (args.length === 0 || args[0] === '--help' || args[0] === '-h' || args[0] === 'help') {
+    printUsage(process.stdout);
+    process.exit(0);
   }
+  const sub = args.shift();
   const root = repoRoot();
 
   if (sub === 'create') return runCreate(args, root);
   if (sub === 'list')   return runList(args, root);
   if (sub === 'remove' || sub === 'rm') return runRemove(args, root);
   console.error(`Unknown worktree subcommand: ${sub}`);
+  printUsage(process.stderr);
   process.exit(2);
 }
 

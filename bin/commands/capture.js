@@ -4,7 +4,33 @@ const { repoRoot } = require('../../lib/paths');
 const lifecycle = require('../../lib/lifecycle');
 const inbox = require('../../lib/inbox');
 
+function printUsage(stream) {
+  stream.write(
+    'Usage: cp capture <text> [--no-commit]\n' +
+    '\n' +
+    '  Append a free-form item to .planning/INBOX.md with an ISO timestamp.\n' +
+    '  Triage open items later with `/cp-capture` (slash command) or list\n' +
+    '  them with `cp inbox`.\n' +
+    '\n' +
+    'Args:\n' +
+    '  <text>          One or more words; everything not starting with -- is\n' +
+    '                  joined with spaces into a single inbox item.\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --no-commit     Write the file but skip the auto-commit.\n' +
+    '  -h, --help      Show this message and exit.\n' +
+    '\n' +
+    'Examples:\n' +
+    '  cp capture "remember to refactor the worker pool"\n' +
+    '  cp capture quick:rename-version-flag --no-commit\n'
+  );
+}
+
 function run(args = []) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printUsage(process.stdout);
+    process.exit(0);
+  }
   // Collect everything up to first -- flag as the text. Allow --no-commit too.
   let noCommit = false;
   const positional = [];
@@ -21,7 +47,7 @@ function run(args = []) {
   }
   const text = positional.join(' ').trim();
   if (!text) {
-    console.error('Usage: cp capture <text> [--no-commit]');
+    printUsage(process.stderr);
     process.exit(2);
   }
   const root = repoRoot();

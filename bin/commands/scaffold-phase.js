@@ -4,7 +4,44 @@ const path = require('path');
 const { repoRoot } = require('../../lib/paths');
 const lifecycle = require('../../lib/lifecycle');
 
+function printUsage(stream) {
+  stream.write(
+    'Usage: cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>]\n' +
+    '                              [--no-commit] [--dry-run] [--force] [--continue]\n' +
+    '\n' +
+    '  Add `### Phase N: <name>` under the active in-progress milestone and\n' +
+    '  create .planning/phases/{NN-slug}/PLAN.md.\n' +
+    '\n' +
+    '  Refuses to scaffold phase N when phase N-1 has ticked plans without\n' +
+    '  SUMMARY.md. Use --force to override silently or --continue to override\n' +
+    '  and add a "Continues from" note to the new PLAN.md (v0.8 P6/P10).\n' +
+    '\n' +
+    'Args:\n' +
+    '  <N>             Phase number (positive integer).\n' +
+    '\n' +
+    'Required:\n' +
+    '  --name <name>   Phase name.\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --plans <count> Pre-fill PLAN.md with <count> empty plan rows.\n' +
+    '  --milestone <n> Target a specific milestone (default: active in-progress).\n' +
+    '  --no-commit     Write the file but skip the auto-commit.\n' +
+    '  --dry-run       Print what would change without writing.\n' +
+    '  --force         Bypass the prior-summary check silently.\n' +
+    '  --continue      Bypass the check; append "Continues from" note to PLAN.md.\n' +
+    '  -h, --help      Show this message and exit.\n' +
+    '\n' +
+    'Examples:\n' +
+    '  cp scaffold-phase 7 --name "user-defined parallel phases" --plans 3\n' +
+    '  cp scaffold-phase 8 --name "polish" --milestone "v0.12"\n'
+  );
+}
+
 function run(args = []) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printUsage(process.stdout);
+    process.exit(0);
+  }
   const root = repoRoot();
   let num = null;
   let name = null;
@@ -28,7 +65,7 @@ function run(args = []) {
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
   if (!num || !name) {
-    console.error('Usage: cp scaffold-phase <N> --name <name> [--plans <count>] [--milestone <name>] [--no-commit] [--dry-run] [--force] [--continue]');
+    printUsage(process.stderr);
     process.exit(2);
   }
 

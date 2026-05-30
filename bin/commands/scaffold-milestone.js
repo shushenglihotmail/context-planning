@@ -4,7 +4,35 @@ const path = require('path');
 const { repoRoot } = require('../../lib/paths');
 const lifecycle = require('../../lib/lifecycle');
 
+function printUsage(stream) {
+  stream.write(
+    'Usage: cp scaffold-milestone <name> [--planned] [--status <s>]\n' +
+    '                                    [--no-commit] [--dry-run]\n' +
+    '\n' +
+    '  Add a milestone heading to .planning/ROADMAP.md.\n' +
+    '  Default status is in-progress (### 🚧 <name> (In Progress)).\n' +
+    '\n' +
+    'Args:\n' +
+    '  <name>          Milestone name (free-form; preserved as-is in the heading).\n' +
+    '\n' +
+    'Flags:\n' +
+    '  --planned       Use planned status instead (### 📋 <name> (Planned)).\n' +
+    '  --status <s>    Set status explicitly: in-progress | planned.\n' +
+    '  --no-commit     Write the file but skip the auto-commit.\n' +
+    '  --dry-run       Print what would change without writing.\n' +
+    '  -h, --help      Show this message and exit.\n' +
+    '\n' +
+    'Examples:\n' +
+    '  cp scaffold-milestone "v0.12 — workflow polish"\n' +
+    '  cp scaffold-milestone "Q1 2025 platform overhaul" --planned\n'
+  );
+}
+
 function run(args = []) {
+  if (args.includes('--help') || args.includes('-h')) {
+    printUsage(process.stdout);
+    process.exit(0);
+  }
   const root = repoRoot();
   let name = null;
   let dryRun = false;
@@ -21,7 +49,7 @@ function run(args = []) {
     else { console.error(`unexpected arg: ${a}`); process.exit(2); }
   }
   if (!name) {
-    console.error('Usage: cp scaffold-milestone <name> [--planned] [--no-commit] [--dry-run]');
+    printUsage(process.stderr);
     process.exit(2);
   }
 
