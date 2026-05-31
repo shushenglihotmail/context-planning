@@ -641,14 +641,14 @@ Plans:
 - [x] 98-01: fix bleed-through scaffolding (lib/runtime.js#flatTopoSort) + wave-display bug (lib/workflow.js#computeWaves + topoSortIds), with child→parent dep remapping. +8 unit tests. (2eae1e4)
 - [ ] 98-02 (deferred): end-to-end smoke `cp run milestone "smoke"`, ROADMAP write-back protocol, commands/cp/cp-workflow-run.md contract docs.
 
-### Phase 99: project-registry-and-list
+### Phase 99: project-registry-and-list ☑ 7746d36
 
 Add `~/.config/cp/projects.json` registry + `lib/registry.js`. Auto-insert on `cp init`; auto-update `last_seen_at` on any `cp` invocation inside a project root. Add `cp project list` and `cp project rm <name>` commands. Add `cp milestone list` (disk-scan; no registry). Project name = first H1 of `.planning/PROJECT.md`; milestone name = first H1 of milestone DESIGN.md.
 
 Depends on: (none) — parallelizable with 96-98
 
 Plans:
-- [ ] 99-01: TBD
+- [x] 99-01: lib/registry.js (zero-deps, atomic write) + best-effort touch in bin/cp.js + cp project list/rm + cp milestone list. +36 unit-registry tests. (7746d36)
 
 ### Phase 100: cp-quick-attach-by-name
 

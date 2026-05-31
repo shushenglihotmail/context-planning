@@ -19,8 +19,8 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 Phase: 97 (milestone-template-children)
 Plan: -
 Status: ready to plan
-Current focus: Phase 99 — project-registry-and-list (~/.config/cp/projects.json)
-Last activity: Phase 98 done (2eae1e4) — child phases hidden from wave plan + scaffolding
+Current focus: Phase 100 — cp quick --project/--milestone attach-by-name (depends on P99)
+Last activity: Phase 99 done (7746d36) — project registry + cp project list/rm + cp milestone list
 
 Progress: [░░░░░░░░░░] 0%
 
