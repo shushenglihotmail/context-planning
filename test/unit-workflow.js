@@ -226,6 +226,52 @@ ok('missing-id template loads', missingId.phases.length === 2);
 ok('missing-id template validation fails', workflow.validate(missingId).ok === false);
 ok('dangling-dep template validation fails', workflow.validate(dangling).ok === false);
 
+section('13. computeWaves filters out child phases (parent:)');
+const parentChildTpl = validTemplate({
+  phases: [
+    { id: 'setup', depends_on: [] },
+    { id: 'plan', depends_on: ['setup'], materialize: 'roadmap-phases', max_children: 5 },
+    { id: 'child-plan', parent: 'plan' },
+    { id: 'child-execute', parent: 'plan', after: ['child-plan'] },
+    { id: 'review', depends_on: ['plan'] },
+    { id: 'finalize', depends_on: ['review'] },
+  ],
+});
+const pcWaves = workflow.computeWaves(parentChildTpl);
+const pcWaveIds = pcWaves.map((w) => w.map((p) => p.id).join(','));
+ok('parent-child template waves omit child-plan', !pcWaveIds.some((w) => w.includes('child-plan')));
+ok('parent-child template waves omit child-execute', !pcWaveIds.some((w) => w.includes('child-execute')));
+ok('parent-child Wave 1 contains only setup', pcWaveIds[0] === 'setup');
+ok('parent-child has 4 waves (setup, plan, review, finalize)', pcWaves.length === 4);
+
+section('14. validate topological warning ignores child phases');
+const topoTpl = validTemplate({
+  phases: [
+    { id: 'setup', depends_on: [] },
+    { id: 'plan', depends_on: ['setup'], materialize: 'roadmap-phases', max_children: 5 },
+    { id: 'child-plan', parent: 'plan' },
+    { id: 'child-execute', parent: 'plan', after: ['child-plan'] },
+    { id: 'review', depends_on: ['plan'] },
+  ],
+});
+const topoRes = workflow.validate(topoTpl);
+ok('topological-order warning absent when only children are interleaved', !warningIncludes(topoRes, 'topological order'));
+
+section('15. computeWaves remaps top-level deps that reference child to parent');
+const remapTpl = validTemplate({
+  phases: [
+    { id: 'prepare', depends_on: [], materialize: 'roadmap-phases', max_children: 5 },
+    { id: 'write-child', parent: 'prepare' },
+    // review depends on a child id — must be treated as depending on the child's parent
+    { id: 'review', depends_on: ['write-child'] },
+  ],
+});
+const remapWaves = workflow.computeWaves(remapTpl);
+const remapIds = remapWaves.map((w) => w.map((p) => p.id).join(','));
+ok('remap template has 2 waves (prepare, review)', remapWaves.length === 2);
+ok('remap Wave 1 is prepare', remapIds[0] === 'prepare');
+ok('remap Wave 2 is review (treats dep on write-child as dep on parent prepare)', remapIds[1] === 'review');
+
 for (const dir of cleanupDirs) {
   fs.rmSync(dir, { recursive: true, force: true });
 }
