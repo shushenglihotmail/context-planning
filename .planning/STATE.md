@@ -19,8 +19,8 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 Phase: 97 (milestone-template-children)
 Plan: -
 Status: ready to plan
-Current focus: Phase 100 — cp quick --project/--milestone attach-by-name (depends on P99)
-Last activity: Phase 99 done (7746d36) — project registry + cp project list/rm + cp milestone list
+Current focus: Phase 101 — v1.8 docs + release notes + version bump (next)
+Last activity: Phase 100 done (5102800) — cp quick-setup --project/--milestone attach-by-name
 
 Progress: [░░░░░░░░░░] 0%
 

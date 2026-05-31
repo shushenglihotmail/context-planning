@@ -650,14 +650,14 @@ Depends on: (none) — parallelizable with 96-98
 Plans:
 - [x] 99-01: lib/registry.js (zero-deps, atomic write) + best-effort touch in bin/cp.js + cp project list/rm + cp milestone list. +36 unit-registry tests. (7746d36)
 
-### Phase 100: cp-quick-attach-by-name
+### Phase 100: cp-quick-attach-by-name ☑ 5102800
 
-Add `--project <name>` and `--milestone <name>` to `cp quick`. Resolution order for `--milestone`: exact slug → exact H1 → unique prefix → error with candidates. Default milestone = current focus from `STATE.md`. Deprecate `--project-path` with runtime warning (keep functional this release). Error clearly when name doesn't match.
+Add `--project <name>` and `--milestone <name>` to `cp quick-setup`. Resolution: exact (case-insens) → unique substring → exit 1 with friendly multi-line error listing candidates. Both optional; never auto-default. `--milestone` writes `milestone: <slug>` into DESIGN.md YAML frontmatter (metadata only — no nesting). Omit both → byte-identical legacy output. Out of scope: supervised `cp run quick` path (deferred — needs `cp run --param` plumbing that doesn't exist yet).
 
 Depends on: 99
 
 Plans:
-- [ ] 100-01: TBD
+- [x] 100-01: lib/name-resolve.js + lib/milestone-scan.js + quick-setup.js flag handling + quick-helpers.js frontmatter prepend + _usage.js doc + 30 unit-name-resolve + 25 unit-quick-attach tests. (5102800)
 
 ### Phase 101: docs-and-v1.8-release
 
