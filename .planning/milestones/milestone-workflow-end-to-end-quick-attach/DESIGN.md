@@ -114,9 +114,37 @@ exactly where each project lives.
 - Reuse existing `plan_skill` / `plan_role` for `child-plan` — do not
   introduce a parallel `write-plan-skill` param. Symmetric with `quick.yaml`.
 
+- Add a **milestone-level `review` phase** between `propose-phases` and
+  `finalize`. It runs once after all children have completed and asks
+  the review agent to inspect and code-review the milestone's changes.
+  New params (mirror `plan_*` / `execute_*`):
+
+  ```yaml
+  - name: review_skill
+    default: "code-review"
+  - name: review_role
+    default: "reviewer"
+  ```
+
+  ```yaml
+  - phase:
+      id: review
+      after: [ propose-phases ]
+      role: "{{review_role}}"
+      skill: "{{review_skill}}"
+      prompt: |
+        Review all changes made during this milestone. Run the code-review
+        skill against the diff vs the milestone base commit. Summarize
+        findings and flag any blockers before finalize.
+  ```
+
+  Note: per-child review (a `child-review` sibling of `child-execute`) is
+  **deferred** to a later milestone. v1.8 covers milestone-level review only.
+
 **Resolution on this machine** (superpowers provider):
 - `plan` → `superpowers/writing-plans`
 - `execute` → `superpowers/subagent-driven-development`
+- `code-review` → `superpowers/requesting-code-review`
 
 ### Workstream B — Runtime + validator hardening
 

@@ -624,7 +624,7 @@ Plans:
 
 ### Phase 97: milestone-template-children
 
-Add `child-plan` + `child-execute` phases under `propose-phases` in `templates/workflows/milestone.yaml` (mirrors `quick.yaml`). Add `execute_skill` (default `execute`) and `execute_role` (default `developer`) params; reuse existing `plan_skill`/`plan_role` for `child-plan`.
+Add `child-plan` + `child-execute` phases under `propose-phases` in `templates/workflows/milestone.yaml` (mirrors `quick.yaml`). Add `execute_skill` (default `execute`) and `execute_role` (default `developer`) params; reuse existing `plan_skill`/`plan_role` for `child-plan`. Also add a milestone-level `review` phase between `propose-phases` and `finalize` with new params `review_skill` (default `code-review`) and `review_role` (default `reviewer`). Per-child review is deferred.
 
 Depends on: 96 (validator catches regressions during template edit)
 
