@@ -179,6 +179,18 @@ Usage:
                                   disambiguate or --all to remove all.
   cp milestone list [--json]      List milestones in this project's
                                   .planning/milestones/ (active/inactive/archived).
+  cp quick-setup --task <text> [--slug <slug>] [--project <name>] [--milestone <name>] [--json]
+                                  Scaffold a free-form quick task under
+                                  .planning/quick/<YYYY-MM-DD>-<slug>/.
+                                  --project <name> resolves a project from the
+                                  global registry by exact (case-insens) then
+                                  unique-substring match and scaffolds there
+                                  instead of cwd. --milestone <name> resolves a
+                                  milestone in the chosen project and writes
+                                  \`milestone: <slug>\` into DESIGN.md frontmatter
+                                  (metadata only; no nesting). Both flags
+                                  optional; unambiguous-match errors list
+                                  candidates.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config
