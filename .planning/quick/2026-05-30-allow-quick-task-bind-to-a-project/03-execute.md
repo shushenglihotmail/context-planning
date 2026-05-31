@@ -1,0 +1,1 @@
+Edited commands/cp/quick.md (the gitignored .github/skills/ copy mirrored the same change). Added --project/--projectDir extraction to step 1, conditional --projectDir forwarding to step 2, and a Notes bullet explaining the flag. npm test green (122 passed). Single commit bc180b8.

@@ -1,0 +1,19 @@
+workflow: quick
+slug: 2026-05-30-allow-quick-task-bind-to-a-project
+status: done
+binding: quick
+started: 2026-05-31T04:48:49.896Z
+last_activity: 2026-05-31T05:08:55.921Z
+current_phase: null
+completed:
+  - setup
+  - design
+  - execute
+  - finalize
+artifacts:
+  setup: 01-setup.md
+  design: 02-design.md
+  execute: 03-execute.md
+  finalize: 04-finalize.md
+template_path: C:\src\github\context-planning\templates\workflows\quick.yaml
+current_wave: 4
