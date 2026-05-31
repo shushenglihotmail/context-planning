@@ -19,8 +19,8 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 Phase: 97 (milestone-template-children)
 Plan: -
 Status: ready to plan
-Current focus: Phase 97 — milestone.yaml child-plan + child-execute + review
-Last activity: re-sequenced 96/97 (template before validator)
+Current focus: Phase 98 — supervisor-dispatch-contract (verify children dispatch)
+Last activity: Phase 96 done (f4b79c8) — validator hard-fails bad roadmap-phases
 
 Progress: [░░░░░░░░░░] 0%
 

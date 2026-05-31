@@ -620,7 +620,7 @@ Workflow validator hard-fails any `materialize: roadmap-phases` parent missing `
 Depends on: 97 (template must already comply before validator goes strict, else npm test breaks)
 
 Plans:
-- [ ] 96-01: TBD
+- [x] 96-01: validator hard-fail for bad materialize roadmap-phases — f4b79c8
 
 ### Phase 97: milestone-template-children
 
