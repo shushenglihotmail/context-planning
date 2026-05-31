@@ -617,7 +617,7 @@ Plans:
 
 Workflow validator hard-fails any `materialize: roadmap-phases` parent missing `supervised: true` or a `parent: <id>` child template. Add unit tests for both failure cases and for the corrected `milestone.yaml` passing.
 
-Depends on: (none)
+Depends on: 97 (template must already comply before validator goes strict, else npm test breaks)
 
 Plans:
 - [ ] 96-01: TBD
@@ -626,7 +626,7 @@ Plans:
 
 Add `child-plan` + `child-execute` phases under `propose-phases` in `templates/workflows/milestone.yaml` (mirrors `quick.yaml`). Add `execute_skill` (default `execute`) and `execute_role` (default `developer`) params; reuse existing `plan_skill`/`plan_role` for `child-plan`. Also add a milestone-level `review` phase between `propose-phases` and `finalize` with new params `review_skill` (default `code-review`) and `review_role` (default `reviewer`). Per-child review is deferred.
 
-Depends on: 96 (validator catches regressions during template edit)
+Depends on: (none) — first phase of workstream A
 
 Plans:
 - [ ] 97-01: TBD

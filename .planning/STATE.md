@@ -16,11 +16,11 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 96 (validator-roadmap-phases-rules)
+Phase: 97 (milestone-template-children)
 Plan: -
 Status: ready to plan
-Current focus: Phase 96 — workflow validator hard-fails bad materialize: roadmap-phases
-Last activity: milestone brainstorm complete
+Current focus: Phase 97 — milestone.yaml child-plan + child-execute + review
+Last activity: re-sequenced 96/97 (template before validator)
 
 Progress: [░░░░░░░░░░] 0%
 
