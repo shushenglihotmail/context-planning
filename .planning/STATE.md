@@ -19,8 +19,8 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 Phase: 97 (milestone-template-children)
 Plan: -
 Status: ready to plan
-Current focus: Phase 101 — v1.8 docs + release notes + version bump (next)
-Last activity: Phase 100 done (5102800) — cp quick-setup --project/--milestone attach-by-name
+Current focus: (none) — v1.8.0 released (tag a734ed8); awaiting next milestone
+Last activity: Phase 101 done (a734ed8) — v1.8.0 docs + tag
 
 Progress: [░░░░░░░░░░] 0%
 

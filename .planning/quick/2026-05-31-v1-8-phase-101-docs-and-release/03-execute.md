@@ -1,0 +1,1 @@
+v1.8.0 shipped: commit a734ed8 + annotated tag v1.8.0 (local, not pushed). 6 files / 367 insertions: CHANGELOG, README v-string, MIGRATION-v1.8.md, recipes Recipe 9, architecture global-registry subsection, package.json 1.8.0. npm test green.
