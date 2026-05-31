@@ -19,8 +19,8 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 Phase: 97 (milestone-template-children)
 Plan: -
 Status: ready to plan
-Current focus: Phase 98 — supervisor-dispatch-contract (verify children dispatch)
-Last activity: Phase 96 done (f4b79c8) — validator hard-fails bad roadmap-phases
+Current focus: Phase 99 — project-registry-and-list (~/.config/cp/projects.json)
+Last activity: Phase 98 done (2eae1e4) — child phases hidden from wave plan + scaffolding
 
 Progress: [░░░░░░░░░░] 0%
 

@@ -631,14 +631,15 @@ Depends on: (none) — first phase of workstream A
 Plans:
 - [x] 97-01: milestone.yaml child phases + review — 842070b
 
-### Phase 98: supervisor-dispatch-contract
+### Phase 98: supervisor-dispatch-contract ☑ 2eae1e4
 
 Verify the supervisor actually dispatches `parent:` children when a `materialize: roadmap-phases` parent completes; fix wave-prompt template if there's a gap. Verify ROADMAP status write-back on child completion (parallel children must each log independently). Document the contract in `commands/cp/cp-workflow-run.md`. Run `cp run milestone "smoke"` end-to-end to prove it works.
 
 Depends on: 97
 
 Plans:
-- [ ] 98-01: TBD
+- [x] 98-01: fix bleed-through scaffolding (lib/runtime.js#flatTopoSort) + wave-display bug (lib/workflow.js#computeWaves + topoSortIds), with child→parent dep remapping. +8 unit tests. (2eae1e4)
+- [ ] 98-02 (deferred): end-to-end smoke `cp run milestone "smoke"`, ROADMAP write-back protocol, commands/cp/cp-workflow-run.md contract docs.
 
 ### Phase 99: project-registry-and-list
 
