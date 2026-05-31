@@ -447,5 +447,78 @@ Runtime runs `schema`, then `migrate` + `seed` in parallel, then
   debug than slow sequential execution.
 - This flag is in the planner's JSON output, not in the template.
 
-**See:** built-in `dev` and `docs` (planner prompts mention this
-mechanism explicitly).
+**See:** built-in `dev` (`cp workflow show dev`) and `docs`.
+
+For the **milestone variant** that pairs a planner with an
+implementer per proposed roadmap phase (the v1.8 default), see
+Recipe 9.
+
+---
+
+## Recipe 9 — Milestone fan-out: planner + executor per phase (`materialize: roadmap-phases`)
+
+**When:** A `propose-phases` planner emits a list of roadmap
+phases, and you want each one driven through plan + execute
+automatically by the supervisor.
+
+This is what the built-in `milestone` workflow ships in v1.8.
+
+**YAML (excerpted from `templates/workflows/milestone.yaml`):**
+
+```yaml
+- phase:
+    id: propose-phases
+    description: Propose 1-N roadmap phases for this milestone.
+    role: planner
+    skill: plan
+    max_children: 12
+    min_children: 1
+    materialize: roadmap-phases   # write children to ROADMAP.md
+    prompt: |
+      Return JSON:
+        { "items": [ { "id": "phase-slug", "title": "..." } ] }
+
+- phase:
+    id: child-plan
+    description: Plan one roadmap phase in detail.
+    parent: propose-phases
+    role: planner
+    skill: plan
+    prompt: |
+      Produce a detailed PLAN.md for the assigned phase.
+
+- phase:
+    id: child-execute
+    description: Execute one roadmap phase.
+    parent: propose-phases
+    after: [child-plan]
+    role: implementer
+    skill: execute
+    prompt: |
+      Execute the planned phase. Commit atomically per task.
+```
+
+**What `materialize: roadmap-phases` does (vs. `inline`):**
+
+- Writes each item into `.planning/ROADMAP.md` under the active
+  milestone as a real planned phase entry, so the milestone's
+  on-disk roadmap reflects what the supervisor will execute.
+- Hard-fails on malformed or empty input — no silent zero-child
+  drift (v1.8 behavior; previously, bad input produced zero
+  children quietly).
+
+**Watch out:**
+
+- Children are **hidden from the supervisor-facing wave block until
+  the parent is `mark-complete`d** (v1.8 behavior). This is by
+  design — the planner decides how many children exist, so they
+  don't appear in scaffolding output ahead of time.
+- The planner-emitted item count must be within `[min_children,
+  max_children]`, same as inline fan-out.
+- An optional **review** phase between `propose-phases` and child
+  materialization is supported in v1.8's built-in milestone
+  workflow; useful when the planner's first roadmap pass deserves
+  a sanity check before execution.
+
+**See:** built-in `milestone` (`cp workflow show milestone`), and
+the v1.8 entry in `CHANGELOG.md` for the design rationale.

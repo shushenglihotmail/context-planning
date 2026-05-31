@@ -168,6 +168,22 @@ The supervisor's per-run state lives in
 history) plus per-phase output files. `lib/supervisor.js` +
 `lib/run-lifecycle.js` own the lifecycle.
 
+### Global project registry (v1.8+)
+
+In addition to per-project `.planning/`, cp maintains one **global**
+config file at `~/.config/cp/projects.json` — a small JSON list of
+project roots cp has seen. It's auto-touched on every `cp <cmd>`
+invocation inside a directory whose ancestor contains
+`.planning/PROJECT.md`, so it self-populates as you work.
+
+The registry is a convenience cache (used by `cp project list`,
+`cp milestone list`, and `cp quick-setup --project <name>` for
+name-based lookup), not a source of truth. `cp` always works in any
+project root even when the registry is missing, stale, or removed.
+
+`lib/registry.js` owns atomic reads/writes; the touch hook lives in
+`bin/cp.js` and is a no-op outside cp projects.
+
 ### Fan-out
 
 A parent phase declares `max_children:` (and optionally `min_children:`).

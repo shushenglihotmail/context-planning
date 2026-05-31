@@ -6,6 +6,129 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-05-31 — Milestone workflow children + project registry + quick attach-by-name
+
+Closes the long-standing gap where the built-in `milestone` workflow
+would propose phases but never actually drive each one to plan +
+execute, and adds first-class **project-name** affordances so you can
+attach a quick task or list milestones across all your cp projects
+without remembering paths.
+
+### Added
+
+- **`lib/registry.js`** + **`~/.config/cp/projects.json`** — zero-deps
+  global project registry with atomic writes. Auto-touched on every
+  `cp <cmd>` invocation inside a directory whose root contains
+  `.planning/PROJECT.md`, so it self-populates as you work. Project
+  name = first `#` heading of `PROJECT.md`.
+- **`cp project list [--json]`** — list registered projects sorted by
+  last-seen desc.
+- **`cp project rm <name-or-path> [--path <p>] [--all]`** — remove a
+  registry entry. `--path` and `--all` disambiguate when the same
+  name maps to multiple worktrees.
+- **`cp milestone list [--json]`** — disk-scan view of this project's
+  `.planning/milestones/` (active/inactive/archived). No registry
+  involved; safe to run anywhere with `.planning/`.
+- **`cp quick-setup --project <name>`** — name-based project attach
+  for a quick task. Resolves the registry by exact (case-insens) →
+  unique substring match, then scaffolds under the resolved project
+  instead of the current working directory. Errors with a friendly
+  multi-line message listing candidates on no-match or ambiguity.
+- **`cp quick-setup --milestone <name>`** — name-based milestone
+  attach. Same resolution rules. Writes `milestone: <slug>` into the
+  new task's `DESIGN.md` YAML frontmatter as metadata only — no
+  directory nesting under the milestone tree. Both flags are
+  optional and never auto-default.
+- **`lib/name-resolve.js`** — shared exact/substring resolver +
+  friendly error formatter, used by both `--project` and
+  `--milestone`.
+- **`lib/milestone-scan.js`** — pure `scan` / `_parseName` /
+  `_activeSlug` helpers extracted from `bin/commands/milestone.js`
+  so quick-setup can reuse them without dragging in the CLI shim.
+- **Built-in `milestone` workflow children (P97)** — `templates/
+  workflows/milestone.yaml` now ships a `propose-phases` parent
+  whose fan-out children are a planner/implementer pair
+  (`child-plan` → `child-execute`) materialized via
+  `materialize: roadmap-phases`. The supervisor agent now drives
+  each proposed phase to plan + execute instead of leaving them
+  pending after roadmap proposal.
+- **Milestone-level review pass (P97)** — a dedicated review phase
+  fires after `propose-phases` and before the children are
+  materialized, so the planner-supplied phase list gets a sanity
+  check before execution.
+- **`cp install --global`** — per-user (vs. per-repo) harness
+  wiring; useful when you want a single skill install across all
+  projects on your machine.
+- **`cp install --repo <path>`** — install/wire from any working
+  directory by pointing at the target repo, instead of having to
+  `cd` first.
+- **`cp install --help` and `--help` on six other commands** —
+  uniform `-h`/`--help` handlers across the public surface.
+- **Two-paths bootstrap framing in the README** — `/cp-new-project`
+  for greenfield vs. `/cp-map-codebase` followed by `/cp-new-project`
+  for brownfield, with explicit per-project-root scoping. `cp init`
+  is soft-deprecated as a public command (still works internally,
+  no longer in `--help` headlines).
+- **`docs/workflow/` documentation set** — landing `README.md`,
+  `quickstart.md` for authoring custom workflow templates,
+  `reference.md` as a true field-semantics reference, and
+  `recipes.md` with eight worked recipes (clarify-then-execute,
+  fan-out, supervisor-supplied params, provider portability,
+  scaffold+prompt mixing, custom roles, supervised vs
+  unsupervised, optimizable DAG).
+- **Reusable `docs` workflow with per-item read+write fan-out
+  subtrees** — each item gets its own read → write pair instead of
+  one monolithic write phase.
+- **30 unit assertions for `name-resolve`** and **25 integration
+  assertions for `cp quick-setup`** end-to-end (spawned CLI against
+  fixture project trees).
+
+### Changed
+
+- **`materialize: roadmap-phases` hard-fails (P96)** — bad or empty
+  roadmap input now errors loudly at materialization time instead
+  of silently producing zero children and letting the run drift.
+- **Workflow runtime hides `parent:`-children from wave planning
+  and scaffolding output (P98)** — fan-out children are no longer
+  printed in the supervisor-facing wave block until materialization
+  has actually run. Eliminates the "what are these phantom phases?"
+  confusion when the parent hasn't been completed yet.
+- **`bin/commands/milestone.js` is now a thin CLI shim** —
+  re-exports pure scan/parse helpers from `lib/milestone-scan.js`
+  for cross-module reuse. CLI behavior unchanged.
+
+### Fixed
+
+- **`cp install`** is now usable from any cwd and against any
+  target repo via the new `--repo` flag.
+- **`cp install --global`** stops collapsing per-user wiring into
+  whichever project happened to be your cwd.
+
+### Migration notes
+
+- **No required action.** The registry self-populates on first
+  `cp <anything>` inside each project. If you want all your
+  projects registered immediately, run `cp project list` from each
+  project root once (or any other `cp` command — the touch hook
+  fires regardless).
+- **The `milestone` workflow now does more.** If you were
+  hand-driving phase execution after `propose-phases`, you can stop;
+  the workflow will route each proposed phase through a planner +
+  executor automatically. Reads on the same milestone are
+  backwards-compatible.
+- **`cp init` is no longer in `--help` headlines.** It still works
+  for legacy scripts. Prefer `/cp-new-project` (greenfield) or
+  `/cp-map-codebase` + `/cp-new-project` (brownfield). See the
+  README's "Two paths" section.
+- **`cp run --param key=val` is still not wired.** The cp-quick
+  skill's reference to `--param design_skill=…` remains
+  aspirational for now. The v1.8 quick attach-by-name flags ride
+  on `cp quick-setup` directly, not on the supervised `cp run
+  quick` path. Wiring `--param` through `cp run` is a tracked
+  follow-up.
+
+See `docs/MIGRATION-v1.8.md` for the full migration story.
+
 ## [1.7.0] - 2026-05-29 — Template parameterization whitelist
 
 Closes the "any field can be templated, any token may slip through" gap

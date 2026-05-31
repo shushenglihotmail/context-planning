@@ -626,7 +626,7 @@ walkthroughs of each built-in workflow.
 
 ## Status
 
-cp is on **v1.7**. Stable enough to dogfood; the workflow engine,
+cp is on **v1.8**. Stable enough to dogfood; the workflow engine,
 state layer, and drift-defence verbs are all considered API surfaces.
 Breaking changes will be called out in [`CHANGELOG.md`](./CHANGELOG.md)
 and each major release ships migration notes under `docs/MIGRATION-*.md`.
