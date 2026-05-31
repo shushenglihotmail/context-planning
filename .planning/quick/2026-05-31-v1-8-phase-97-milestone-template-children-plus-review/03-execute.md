@@ -1,0 +1,1 @@
+Edited templates/workflows/milestone.yaml: added 4 params (execute_skill/role, review_skill/role), child-plan + child-execute under propose-phases, top-level review phase, finalize.depends_on -> [review]. Validated clean. npm test 122 passed. Committed 842070b. Inspect wave-bug captured to inbox #3 (Phase 98).

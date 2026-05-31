@@ -629,7 +629,7 @@ Add `child-plan` + `child-execute` phases under `propose-phases` in `templates/w
 Depends on: (none) — first phase of workstream A
 
 Plans:
-- [ ] 97-01: TBD
+- [x] 97-01: milestone.yaml child phases + review — 842070b
 
 ### Phase 98: supervisor-dispatch-contract
 
