@@ -17,6 +17,14 @@ params:
     default: "plan"
   - name: plan_role
     default: "developer"
+  - name: execute_skill
+    default: "execute"
+  - name: execute_role
+    default: "developer"
+  - name: review_skill
+    default: "code-review"
+  - name: review_role
+    default: "reviewer"
   # Supervisor-supplied (no default): injected at run-time by the
   # /cp-new-milestone skill.
   - name: milestone_slug
@@ -84,11 +92,44 @@ phases:
         optional summary, and a depends_on list (may be empty). Aim for
         phases that are independently shippable.
   - phase:
+      id: child-plan
+      description: |
+        Per-child planning: produce PLAN.md for one ROADMAP phase.
+      parent: propose-phases
+      role: "{{plan_role}}"
+      skill: "{{plan_skill}}"
+      prompt: |
+        Produce a detailed implementation plan for this ROADMAP phase.
+        Write it to .planning/phases/<phase-id>/PLAN.md.
+  - phase:
+      id: child-execute
+      description: |
+        Per-child execution: implement PLAN.md and write SUMMARY.md.
+      parent: propose-phases
+      after: [ child-plan ]
+      role: "{{execute_role}}"
+      skill: "{{execute_skill}}"
+      prompt: |
+        Execute the plan for this ROADMAP phase. Implement, verify,
+        commit atomically. Write SUMMARY.md and mark the row complete
+        in ROADMAP.md.
+  - phase:
+      id: review
+      description: |
+        Code-review the milestone's accumulated changes before finalize.
+      depends_on: [ propose-phases ]
+      role: "{{review_role}}"
+      skill: "{{review_skill}}"
+      prompt: |
+        Review all changes made during this milestone. Run the code-review
+        skill against the diff vs the milestone base commit. Summarize
+        findings and flag any blockers before finalize.
+  - phase:
       id: finalize
       description: |
         Update project STATE.md (current focus, phase counter), print
         next-step banner.
-      depends_on: [ propose-phases ]
+      depends_on: [ review ]
       kind: scaffold
       command: "cp milestone-finalize {{milestone_slug}}"
 
