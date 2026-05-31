@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 97 (milestone-template-children)
-Plan: -
-Status: ready to plan
-Current focus: (none) — v1.8.0 released (tag a734ed8); awaiting next milestone
-Last activity: Phase 101 done (a734ed8) — v1.8.0 docs + tag
+Phase: 101 (Milestone workflow end-to-end + quick attach)
+Plan: 6 of 6
+Status: Phase complete
+Current focus: docs-and-v1.8-release
+Last activity: capture inbox item #3
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
