@@ -101,6 +101,27 @@ check('non-parent with materialize emits warning', () => {
   );
 });
 
+// v1.8 P96: roadmap-phases parent must have children OR workflow must be supervised
+check('v1.8 P96: roadmap-phases parent with children is accepted (not supervised)', () => {
+  assertNoErrors(run([
+    phase('parent', { materialize: 'roadmap-phases', max_children: 3 }),
+    phase('child', { parent: 'parent' }),
+  ]));
+});
+
+check('v1.8 P96: roadmap-phases parent with no children but supervised is accepted', () => {
+  assertNoErrors(run([
+    phase('parent', { materialize: 'roadmap-phases' }),
+  ], { supervised: true }));
+});
+
+check('v1.8 P96: roadmap-phases parent with no children and not supervised errors', () => {
+  const result = run([
+    phase('parent', { materialize: 'roadmap-phases' }),
+  ]);
+  assertErrorIncludes(result, 'materialize: roadmap-phases but no child phases');
+});
+
 // outputs:
 check('phase with outputs array of strings is accepted', () => {
   assertNoErrors(run([phase('one', { outputs: ['lib/foo.js', 'test/foo.test.js'] })]));
