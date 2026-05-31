@@ -610,6 +610,62 @@ Plans:
 - [x] 95-02: TBD
 
 </details>
+
+### 🚧 Milestone workflow end-to-end + quick attach (In Progress)
+
+### Phase 96: validator-roadmap-phases-rules
+
+Workflow validator hard-fails any `materialize: roadmap-phases` parent missing `supervised: true` or a `parent: <id>` child template. Add unit tests for both failure cases and for the corrected `milestone.yaml` passing.
+
+Depends on: (none)
+
+Plans:
+- [ ] 96-01: TBD
+
+### Phase 97: milestone-template-children
+
+Add `child-plan` + `child-execute` phases under `propose-phases` in `templates/workflows/milestone.yaml` (mirrors `quick.yaml`). Add `execute_skill` (default `execute`) and `execute_role` (default `developer`) params; reuse existing `plan_skill`/`plan_role` for `child-plan`.
+
+Depends on: 96 (validator catches regressions during template edit)
+
+Plans:
+- [ ] 97-01: TBD
+
+### Phase 98: supervisor-dispatch-contract
+
+Verify the supervisor actually dispatches `parent:` children when a `materialize: roadmap-phases` parent completes; fix wave-prompt template if there's a gap. Verify ROADMAP status write-back on child completion (parallel children must each log independently). Document the contract in `commands/cp/cp-workflow-run.md`. Run `cp run milestone "smoke"` end-to-end to prove it works.
+
+Depends on: 97
+
+Plans:
+- [ ] 98-01: TBD
+
+### Phase 99: project-registry-and-list
+
+Add `~/.config/cp/projects.json` registry + `lib/registry.js`. Auto-insert on `cp init`; auto-update `last_seen_at` on any `cp` invocation inside a project root. Add `cp project list` and `cp project rm <name>` commands. Add `cp milestone list` (disk-scan; no registry). Project name = first H1 of `.planning/PROJECT.md`; milestone name = first H1 of milestone DESIGN.md.
+
+Depends on: (none) — parallelizable with 96-98
+
+Plans:
+- [ ] 99-01: TBD
+
+### Phase 100: cp-quick-attach-by-name
+
+Add `--project <name>` and `--milestone <name>` to `cp quick`. Resolution order for `--milestone`: exact slug → exact H1 → unique prefix → error with candidates. Default milestone = current focus from `STATE.md`. Deprecate `--project-path` with runtime warning (keep functional this release). Error clearly when name doesn't match.
+
+Depends on: 99
+
+Plans:
+- [ ] 100-01: TBD
+
+### Phase 101: docs-and-v1.8-release
+
+Update `commands/cp/quick.md` to lead with `--project`/`--milestone` and add a "Name resolution" section. Update CHANGELOG, bump version to 1.8.0, run full test suite, publish `context-planning@1.8.0`.
+
+Depends on: 98, 100
+
+Plans:
+- [ ] 101-01: TBD
 ## Progress
 
 **Execution Order:**

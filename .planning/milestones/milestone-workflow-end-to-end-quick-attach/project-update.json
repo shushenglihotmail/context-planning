@@ -1,0 +1,45 @@
+{
+  "milestone_slug": "milestone-workflow-end-to-end-quick-attach",
+  "target_version": "1.8.0",
+  "patch_kind": "project-md-update",
+  "generated_at": "2026-05-31",
+  "summary": "Add v1.8 milestone to Active requirements. Promote v1.7 to Validated (per STATE 'shipped Template parameterization whitelist' marker). No deferrals.",
+  "changes": [
+    {
+      "section": "Requirements > Validated",
+      "op": "append",
+      "value": "✓ Template parameterization whitelist: restrict workflow + phase template parameterization to whitelisted content-bearing fields (skill, prompt, description, max_children, min_children); hard-ban {{item.X}} tokens and unresolved {{...}} after expansion. Closes the silent-substitution bug from v1.6 docs workflow. — v1.7"
+    },
+    {
+      "section": "Requirements > Active",
+      "op": "remove",
+      "match": "Template parameterization whitelist",
+      "reason": "Moved to Validated; per STATE.md 'shipped Template parameterization whitelist' on 2026-05-29."
+    },
+    {
+      "section": "Requirements > Active",
+      "op": "append",
+      "value": "**Milestone workflow end-to-end + cp quick attach-by-name**: (A) Fix milestone.yaml's roadmap-phases fan-out gap by adding child-plan + child-execute phases under propose-phases (mirrors quick.yaml shape), plus execute_skill / execute_role params. (B) Harden the workflow validator: hard-fail any materialize: roadmap-phases parent missing supervised: true or a parent: <id> child template; verify supervisor dispatch + ROADMAP status write-back end-to-end. (C) Add cp quick --project <name> / --milestone <name> name-based attach backed by a ~/.config/cp/projects.json registry; new cp project list/rm and cp milestone list commands; deprecate --project-path with runtime warning. Spec: .planning/milestones/milestone-workflow-end-to-end-quick-attach/DESIGN.md. — v1.8"
+    }
+  ],
+  "deferrals": [],
+  "out_of_scope_captures": [
+    {
+      "category": "inbox",
+      "item": "Audit dev.yaml for issues (user flagged during v1.8 brainstorm; details TBD)"
+    },
+    {
+      "category": "follow-up-quick-task",
+      "item": "Clean up stale ROADMAP bleed-through rows (Phase 96-101, 86-91, etc.) — likely auto-resolved by v1.8 workstream A; verify post-merge"
+    },
+    {
+      "category": "future-milestone",
+      "item": "Workflow chaining primitive (chains_to: <workflow> on materialize parents) — defer to v1.9+"
+    }
+  ],
+  "notes_for_applier": [
+    "The 'append to Validated' bullet should follow the existing checkmark style (✓ prefix).",
+    "The 'append to Active' bullet should follow existing **bold-name**: description — vX.Y style. Avoid the double-** nesting bug seen in current v1.5 and v1.6 entries.",
+    "No changes to Out of Scope, Context, Constraints, Key Decisions sections."
+  ]
+}

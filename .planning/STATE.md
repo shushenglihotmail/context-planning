@@ -1,8 +1,8 @@
 <!-- cp:current-focus -->
-- **Current milestone:** v1-6-workflow-contract-hardening
-- **Slug:** v1-6-workflow-contract-hardening
+- **Current milestone:** milestone-workflow-end-to-end-quick-attach
+- **Slug:** milestone-workflow-end-to-end-quick-attach
 - **Status:** in-progress
-- **Updated:** 2026-05-29
+- **Updated:** 2026-05-31
 <!-- cp:current-focus -->
 
 # Project State
@@ -16,11 +16,11 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 167 of 167
-Status: Idle
-Current focus: -
-Last activity: /cp-complete-milestone Template parameterization whitelist
+Phase: 96 (validator-roadmap-phases-rules)
+Plan: -
+Status: ready to plan
+Current focus: Phase 96 — workflow validator hard-fails bad materialize: roadmap-phases
+Last activity: milestone brainstorm complete
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -81,6 +81,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-29
-Stopped at: shipped Template parameterization whitelist
+Last session: 2026-05-31
+Stopped at: milestone brainstorm + planning complete; ready to start Phase 96
 Resume file: None
