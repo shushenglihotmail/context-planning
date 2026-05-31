@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const { repoRoot } = require('../../lib/paths');
 const pu = require('../../lib/project-update');
+const registry = require('../../lib/registry');
 
 function _arg(args, name) {
   const i = args.indexOf(name);
@@ -59,12 +60,68 @@ function _update(args) {
   }
 }
 
+function _list(args) {
+  const json = args.includes('--json');
+  const items = registry.list();
+  if (json) {
+    console.log(JSON.stringify({ projects: items }, null, 2));
+    return;
+  }
+  if (items.length === 0) {
+    console.log('(no projects registered)');
+    return;
+  }
+  const nameW = Math.max(4, ...items.map((p) => p.name.length));
+  const pathW = Math.max(4, ...items.map((p) => p.path.length));
+  console.log(
+    'NAME'.padEnd(nameW) + '  ' +
+    'PATH'.padEnd(pathW) + '  ' +
+    'LAST SEEN'
+  );
+  for (const p of items) {
+    const seen = (p.last_seen_at || '').slice(0, 16).replace('T', ' ');
+    console.log(
+      p.name.padEnd(nameW) + '  ' +
+      p.path.padEnd(pathW) + '  ' +
+      seen
+    );
+  }
+}
+
+function _rm(args) {
+  const target = args.find((a) => !a.startsWith('--'));
+  if (!target) {
+    console.error('cp project rm: <name-or-path> is required');
+    console.error('       optional: --path <path>  --all');
+    process.exit(2);
+  }
+  const opts = {
+    path: _arg(args, '--path') || undefined,
+    all: args.includes('--all'),
+  };
+  const res = registry.remove(target, opts);
+  if (res.ambiguous) {
+    console.error(
+      `cp project rm: "${target}" matches ${res.matched} entries. ` +
+      `Re-run with --path <path> to disambiguate, or --all to remove all.`
+    );
+    process.exit(2);
+  }
+  if (res.removed === 0) {
+    console.log(`No entry matched "${target}".`);
+    return;
+  }
+  console.log(`Removed ${res.removed} entr${res.removed === 1 ? 'y' : 'ies'}.`);
+}
+
 function run(args) {
   args = args || [];
   const sub = args[0];
   const rest = args.slice(1);
   if (sub === 'update') return _update(rest);
-  console.error('cp project: unknown subcommand. Try: update');
+  if (sub === 'list') return _list(rest);
+  if (sub === 'rm' || sub === 'remove') return _rm(rest);
+  console.error('cp project: unknown subcommand. Try: update | list | rm');
   process.exit(2);
 }
 

@@ -169,6 +169,16 @@ Usage:
                                   Print a workflow template's YAML to stdout.
   cp workflow-template new <name> [--from <built-in>] [--force]
                                   Scaffold a new workflow template file.
+  cp project list [--json]        List projects in the global registry
+                                  (~/.config/cp/projects.json), sorted by
+                                  last-seen desc. Auto-populated when cp runs
+                                  inside any project with .planning/PROJECT.md.
+  cp project rm <name-or-path> [--path <path>] [--all]
+                                  Remove a registry entry. If <name-or-path>
+                                  matches multiple worktrees, use --path to
+                                  disambiguate or --all to remove all.
+  cp milestone list [--json]      List milestones in this project's
+                                  .planning/milestones/ (active/inactive/archived).
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

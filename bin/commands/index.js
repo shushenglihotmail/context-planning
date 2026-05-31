@@ -44,6 +44,7 @@ module.exports = {
   classify: require('./classify'),
   checkpoint: require('./checkpoint'),
   project: require('./project'),
+  milestone: require('./milestone'),
   'milestone-setup-check': require('./milestone-setup-check'),
   'milestone-finalize': require('./milestone-finalize'),
   'quick-setup': require('./quick-setup'),

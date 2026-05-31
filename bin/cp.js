@@ -18,11 +18,24 @@
 
 const usage = require('./commands/_usage');
 const registry = require('./commands');
+const projectRegistry = require('../lib/registry');
 const { normalizeArgv } = require('./commands/_helpers');
+
+const _SKIP_TOUCH = new Set(['statusline', 'version', '--version', '-v']);
 
 function main(argv) {
   const normalized = normalizeArgv(argv.slice(2));
   const [cmd, ...rest] = normalized;
+
+  // Best-effort: record this project in the global registry so
+  // `cp project list` / `cp quick --project <name>` can find it later.
+  // Suppressed for hot-path commands (statusline) that must stay quiet
+  // and fast, and for `project rm` itself (avoid resurrecting an entry
+  // the user is trying to delete from this very repo).
+  if (cmd && !_SKIP_TOUCH.has(cmd)) {
+    try { projectRegistry.touchIfProject(process.cwd()); }
+    catch (_e) { /* best-effort only */ }
+  }
 
   // Registry-first dispatch.
   if (cmd && Object.prototype.hasOwnProperty.call(registry, cmd)) {
