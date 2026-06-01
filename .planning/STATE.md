@@ -1,7 +1,7 @@
 <!-- cp:current-focus -->
-- **Current milestone:** milestone-workflow-end-to-end-quick-attach
-- **Slug:** milestone-workflow-end-to-end-quick-attach
-- **Status:** in-progress
+- **Current milestone:** (none)
+- **Slug:** -
+- **Status:** idle
 - **Updated:** 2026-05-31
 <!-- cp:current-focus -->
 
