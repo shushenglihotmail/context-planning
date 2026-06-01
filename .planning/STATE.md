@@ -20,7 +20,7 @@ Phase: -
 Plan: 173 of 173
 Status: Idle
 Current focus: -
-Last activity: capture inbox item #3
+Last activity: /cp-complete-milestone Milestone workflow end-to-end + quick attach
 
 Progress: [░░░░░░░░░░] 0%
 
