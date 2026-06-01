@@ -179,18 +179,24 @@ Usage:
                                   disambiguate or --all to remove all.
   cp milestone list [--json]      List milestones in this project's
                                   .planning/milestones/ (active/inactive/archived).
-  cp quick-setup --task <text> [--slug <slug>] [--project <name>] [--milestone <name>] [--json]
+  cp quick-setup --task <text> [--slug <slug>] [--project [<name>]] [--milestone [<name>|<version>]] [--json]
                                   Scaffold a free-form quick task under
                                   .planning/quick/<YYYY-MM-DD>-<slug>/.
                                   --project <name> resolves a project from the
                                   global registry by exact (case-insens) then
                                   unique-substring match and scaffolds there
-                                  instead of cwd. --milestone <name> resolves a
-                                  milestone in the chosen project and writes
-                                  \`milestone: <slug>\` into DESIGN.md frontmatter
-                                  (metadata only; no nesting). Both flags
-                                  optional; unambiguous-match errors list
-                                  candidates.
+                                  instead of cwd. --project (no value) uses
+                                  the project that cwd lives inside (walks up
+                                  to find .planning/PROJECT.md).
+                                  --milestone <name> resolves a milestone in
+                                  the chosen project (substring match also
+                                  catches version forms like "1.8" when the
+                                  display name is "v1.8 ...") and writes
+                                  \`milestone: <slug>\` into DESIGN.md
+                                  frontmatter. --milestone (no value) picks
+                                  the "latest" milestone: most recently
+                                  created within the active set, else most
+                                  recently created overall.
   cp config get [<key>]           Print a cp.<key> value (or whole cp block)
   cp config set <key> <value>     Update a cp.<key> value
   cp config refresh [--dry-run]   Merge upstream defaults into your project config

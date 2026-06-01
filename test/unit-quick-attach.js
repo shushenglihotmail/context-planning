@@ -176,5 +176,140 @@ section('regression: omit both flags → byte-identical DESIGN.md as before');
   ok('starts with # Quick task:', txt.startsWith('# Quick task: plain task'));
 }
 
+section('bare --project resolves to cwd project (walk-up)');
+{
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-bp-'));
+  // cwd is a subdir; walk-up should still find .planning/PROJECT.md at proj root.
+  fs.mkdirSync(path.join(proj, '.planning'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.planning', 'PROJECT.md'), '# bare-project\n');
+  const subdir = path.join(proj, 'src', 'nested');
+  fs.mkdirSync(subdir, { recursive: true });
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'fix from subdir', '--slug', 'bp1', '--project', '--json'],
+    { env, encoding: 'utf8', cwd: subdir });
+  ok('exit 0', r.status === 0, `stderr=${r.stderr} stdout=${r.stdout}`);
+  const parsed = JSON.parse(r.stdout);
+  ok('scaffold ok', parsed.ok === true);
+  ok('dir is under cwd-resolved project root',
+    parsed.dir && parsed.dir.startsWith(proj),
+    `dir=${parsed.dir} expected under ${proj}`);
+}
+
+section('bare --project outside any project errors');
+{
+  const orphan = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-orphan-'));
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'orphan', '--slug', 'bp2', '--project'],
+    { env, encoding: 'utf8', cwd: orphan });
+  ok('exit non-zero', r.status !== 0);
+  ok('error mentions cwd is not inside any project',
+    r.stderr.includes('not inside any project'), `stderr=${r.stderr}`);
+}
+
+section('bare --milestone picks active milestone');
+{
+  // Build a project with two milestones; mark one active via STATE.md.
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-bm-active-'));
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'm-old'), { recursive: true });
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'm-new-active'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.planning', 'PROJECT.md'), '# bm-active\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'm-old', 'DESIGN.md'),
+    '---\ncreated: 2025-01-01\n---\n# Old one\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'm-new-active', 'DESIGN.md'),
+    '---\ncreated: 2024-06-01\n---\n# New active (older date, but active wins)\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'STATE.md'),
+    '<!-- cp:current-focus -->\n**Slug:** m-new-active\n');
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'attach to active', '--slug', 'bm1',
+      '--milestone', '--json'],
+    { env, encoding: 'utf8', cwd: proj });
+  ok('exit 0', r.status === 0, `stderr=${r.stderr}`);
+  const parsed = JSON.parse(r.stdout);
+  const txt = fs.readFileSync(path.join(parsed.dir, 'DESIGN.md'), 'utf8');
+  ok('frontmatter picks the active milestone (m-new-active), not the newer-created m-old',
+    /milestone:\s*m-new-active/.test(txt), `txt head=${txt.slice(0, 200)}`);
+}
+
+section('bare --milestone with no active picks most recent created:');
+{
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-bm-recent-'));
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'm-a'), { recursive: true });
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'm-b'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.planning', 'PROJECT.md'), '# bm-recent\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'm-a', 'DESIGN.md'),
+    '---\ncreated: 2025-03-01\n---\n# Aaa\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'm-b', 'DESIGN.md'),
+    '---\ncreated: 2026-05-01\n---\n# Bbb\n');
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'attach to latest', '--slug', 'bm2',
+      '--milestone', '--json'],
+    { env, encoding: 'utf8', cwd: proj });
+  ok('exit 0', r.status === 0, `stderr=${r.stderr}`);
+  const parsed = JSON.parse(r.stdout);
+  const txt = fs.readFileSync(path.join(parsed.dir, 'DESIGN.md'), 'utf8');
+  ok('frontmatter picks most-recent-created milestone (m-b)',
+    /milestone:\s*m-b/.test(txt), `txt head=${txt.slice(0, 200)}`);
+}
+
+section('bare --milestone in project with zero milestones errors');
+{
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-bm-empty-'));
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.planning', 'PROJECT.md'), '# empty\n');
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'x', '--slug', 'bm3', '--milestone'],
+    { env, encoding: 'utf8', cwd: proj });
+  ok('exit non-zero', r.status !== 0);
+  ok('error mentions no milestones',
+    r.stderr.includes('no milestones'), `stderr=${r.stderr}`);
+}
+
+section('bare --project --milestone together resolve from cwd');
+{
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-bpm-'));
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'only-one'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.planning', 'PROJECT.md'), '# combo\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'only-one', 'DESIGN.md'),
+    '---\ncreated: 2026-01-01\n---\n# Only\n');
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'both bare', '--slug', 'bpm1',
+      '--project', '--milestone', '--json'],
+    { env, encoding: 'utf8', cwd: proj });
+  ok('exit 0', r.status === 0, `stderr=${r.stderr}`);
+  const parsed = JSON.parse(r.stdout);
+  ok('dir under cwd project', parsed.dir && parsed.dir.startsWith(proj));
+  const txt = fs.readFileSync(path.join(parsed.dir, 'DESIGN.md'), 'utf8');
+  ok('frontmatter has the only milestone slug',
+    /milestone:\s*only-one/.test(txt), `txt=${txt.slice(0, 200)}`);
+}
+
+section('--milestone with version substring (e.g. "1.8") matches "v1.8 ..."');
+{
+  const proj = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-q-vmatch-'));
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'v1-8-thing'), { recursive: true });
+  fs.mkdirSync(path.join(proj, '.planning', 'milestones', 'v1-7-other'), { recursive: true });
+  fs.writeFileSync(path.join(proj, '.planning', 'PROJECT.md'), '# vmatch\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'v1-8-thing', 'DESIGN.md'),
+    '---\nmilestone: v1.8 The Thing\n---\n# v1.8 The Thing\n');
+  fs.writeFileSync(path.join(proj, '.planning', 'milestones', 'v1-7-other', 'DESIGN.md'),
+    '---\nmilestone: v1.7 The Other\n---\n# v1.7 The Other\n');
+  const env = Object.assign({}, process.env, { USERPROFILE: tmpHome, HOME: tmpHome });
+  const r = spawnSync(process.execPath,
+    [CP_JS, 'quick-setup', '--task', 'version short', '--slug', 'v1',
+      '--milestone', '1.8', '--json'],
+    { env, encoding: 'utf8', cwd: proj });
+  ok('exit 0', r.status === 0, `stderr=${r.stderr}`);
+  const parsed = JSON.parse(r.stdout);
+  const txt = fs.readFileSync(path.join(parsed.dir, 'DESIGN.md'), 'utf8');
+  ok('"1.8" substring-matched only v1.8 milestone',
+    /milestone:\s*v1-8-thing/.test(txt), `txt=${txt.slice(0, 200)}`);
+}
+
 console.log(`\nResults: passed=${passed} failed=${failed}`);
 process.exit(failed === 0 ? 0 : 1);
