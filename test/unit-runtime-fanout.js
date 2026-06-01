@@ -623,6 +623,82 @@ check('computeWavesWithFanout: review waits for all expanded child waves (subtre
   assert.strictEqual(c1.item.id, 'feat-1');
 });
 
+// ============================================================
+// materializeRoadmapPhases helper — direct unit test
+// ============================================================
+console.log('\nmaterializeRoadmapPhases (direct unit test)');
+
+check('materializeRoadmapPhases scaffolds per-item phases and returns merge patches', () => {
+  const dir = freshProject();
+  // Use the same template shape exercised by the end-to-end tests so child
+  // template ids (parent === 'propose') get mapped through FANOUT_CHILD_ID_SEP.
+  const tplPath = writeFanoutTemplate(dir);
+  // startRun establishes the milestone scaffold (ROADMAP entry, milestone dir)
+  // that lifecycle.scaffoldPhase requires before it can create per-item phases.
+  const { slug } = runtime.startRun(tplPath, { projectDir: dir, name: 'MRP Unit' });
+  const tpl = workflow.loadTemplate(tplPath, { projectDir: dir });
+
+  const currentPhase = {
+    id: 'propose',
+    materialize: 'roadmap-phases',
+    parent: null,
+    min_children: 1,
+    max_children: 5,
+  };
+  const summary = '```json\n' + JSON.stringify({
+    optimizable: false,
+    items: [
+      { id: 'alpha', title: 'Alpha', summary: 'Build alpha.' },
+      { id: 'beta', title: 'Beta' },
+    ],
+  }, null, 2) + '\n```\n';
+
+  const state = { slug, milestoneName: 'MRP Unit' };
+  const patch = runtime.materializeRoadmapPhases(currentPhase, summary, state, dir, { tpl });
+
+  assert.deepStrictEqual(Object.keys(patch), ['parent_outputs_patch', 'phaseNumByPhaseId_patch']);
+  assert.ok(patch.parent_outputs_patch.propose, 'parent_outputs_patch keyed by parent phase id');
+  assert.strictEqual(patch.parent_outputs_patch.propose.items.length, 2);
+
+  // Both bare item ids and expanded child ids (child-plan::<id>) must be present.
+  const map = patch.phaseNumByPhaseId_patch;
+  assert.ok(map.alpha != null, 'item id mapped to phase num');
+  assert.ok(map.beta != null, 'item id mapped to phase num');
+  assert.strictEqual(map['child-plan::alpha'], map.alpha);
+  assert.strictEqual(map['child-plan::beta'], map.beta);
+
+  // Per-item phase dirs exist on disk with PLAN.md content from the items.
+  const planAlpha = fpath.join(paths.findPhaseDir(String(map.alpha), dir), 'PLAN.md');
+  const alphaBody = fs.readFileSync(planAlpha, 'utf8');
+  assert.ok(alphaBody.includes('# Alpha'));
+  assert.ok(alphaBody.includes('Build alpha.'));
+
+  const planBeta = fpath.join(paths.findPhaseDir(String(map.beta), dir), 'PLAN.md');
+  assert.ok(fs.readFileSync(planBeta, 'utf8').includes('(no summary provided)'),
+    'missing summary falls back to placeholder');
+});
+
+check('materializeRoadmapPhases propagates enforceChildCount violations', () => {
+  const dir = freshProject();
+  const tplPath = writeFanoutTemplate(dir);
+  runtime.startRun(tplPath, { projectDir: dir, name: 'MRP Unit OverMax' });
+  const tpl = workflow.loadTemplate(tplPath, { projectDir: dir });
+
+  const currentPhase = {
+    id: 'propose',
+    materialize: 'roadmap-phases',
+    parent: null,
+    max_children: 5,
+  };
+  const tooMany = Array.from({ length: 6 }, (_, i) => ({ id: `item-${i}`, title: `T${i}` }));
+  const summary = '```json\n' + JSON.stringify({ items: tooMany }) + '\n```';
+
+  assert.throws(
+    () => runtime.materializeRoadmapPhases(currentPhase, summary, { slug: 'x' }, dir, { tpl }),
+    /above max_children \(5\)/,
+  );
+});
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   console.log('FAILURES:');
