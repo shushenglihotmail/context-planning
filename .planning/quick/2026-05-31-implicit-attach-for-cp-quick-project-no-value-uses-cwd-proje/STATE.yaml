@@ -1,15 +1,19 @@
 workflow: quick
 slug: 2026-05-31-implicit-attach-for-cp-quick-project-no-value-uses-cwd-proje
-status: in-progress
+status: done
 binding: quick
 started: 2026-06-01T01:00:03.443Z
-last_activity: 2026-06-01T01:06:28.869Z
+last_activity: 2026-06-01T01:18:51.711Z
 current_phase: null
 completed:
   - setup
   - design
+  - execute
+  - finalize
 artifacts:
   setup: 01-setup.md
   design: 02-design.md
+  execute: 03-execute.md
+  finalize: 04-finalize.md
 template_path: C:\src\github\context-planning\templates\workflows\quick.yaml
-current_wave: 2
+current_wave: 4
