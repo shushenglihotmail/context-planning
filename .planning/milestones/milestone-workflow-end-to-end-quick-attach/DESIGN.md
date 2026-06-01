@@ -1,6 +1,6 @@
 ---
 milestone_slug: "milestone-workflow-end-to-end-quick-attach"
-milestone: Milestone workflow end-to-end + quick attach
+milestone: v1.8 Milestone workflow end-to-end + quick attach
 status: accepted
 created: 2026-05-31
 updated: 2026-05-31

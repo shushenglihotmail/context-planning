@@ -3,7 +3,7 @@
 #   phase: ""     (for phase-tier DESIGN.md)
 #   milestone_slug: "template-parameterization-whitelist"  (for milestone-tier DESIGN.md)
 milestone_slug: "template-parameterization-whitelist"
-milestone: Template parameterization whitelist
+milestone: v1.7 Template parameterization whitelist
 status: accepted
 created: 2026-05-29
 updated: 2026-05-29 (revised: 8-field whitelist; supervisor-supplied params rule)

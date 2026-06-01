@@ -902,7 +902,7 @@
 - Phase 84: auto-inject-finalize — see `.planning/phases/84-auto-inject-finalize/`
 - Phase 85: docs-changelog-release — see `.planning/phases/85-docs-changelog-release/`
 
-## Template parameterization whitelist  — shipped 2026-05-29
+## v1.7 Template parameterization whitelist  — shipped 2026-05-29
 
 **Phases:** 86-95    **Plans:** 9    **Duration:** —
 
@@ -933,7 +933,7 @@
 - Phase 94: audit-and-migrate-builtins — see `.planning/phases/94-audit-and-migrate-builtins/`
 - Phase 95: docs-and-release — see `.planning/phases/95-docs-and-release/`
 
-## Milestone workflow end-to-end + quick attach  — shipped 2026-06-01
+## v1.8 Milestone workflow end-to-end + quick attach  — shipped 2026-06-01
 
 **Phases:** 96-101    **Plans:** 6    **Duration:** —
 

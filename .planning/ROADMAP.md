@@ -570,7 +570,7 @@ Plans:
 </details>
 
 <details>
-<summary>✅ Template parameterization whitelist (Phases 86-95) — SHIPPED 2026-05-29</summary>
+<summary>✅ v1.7 Template parameterization whitelist (Phases 86-95) — SHIPPED 2026-05-29</summary>
 
 ### Phase 86: setup
 
@@ -612,7 +612,7 @@ Plans:
 </details>
 
 <details>
-<summary>✅ Milestone workflow end-to-end + quick attach (Phases 96-101) — SHIPPED 2026-06-01</summary>
+<summary>✅ v1.8 Milestone workflow end-to-end + quick attach (Phases 96-101) — SHIPPED 2026-06-01</summary>
 
 ### Phase 96: validator-roadmap-phases-rules
 
