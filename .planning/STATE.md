@@ -16,13 +16,13 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: 101 (Milestone workflow end-to-end + quick attach)
-Plan: 6 of 6
-Status: Phase complete
-Current focus: docs-and-v1.8-release
+Phase: -
+Plan: 173 of 173
+Status: Idle
+Current focus: -
 Last activity: capture inbox item #3
 
-Progress: [██████████] 100%
+Progress: [░░░░░░░░░░] 0%
 
 ## Performance Metrics
 
@@ -81,6 +81,6 @@ Items acknowledged and carried forward from previous milestone close:
 
 ## Session Continuity
 
-Last session: 2026-05-31
-Stopped at: milestone brainstorm + planning complete; ready to start Phase 96
+Last session: 2026-06-01
+Stopped at: shipped Milestone workflow end-to-end + quick attach
 Resume file: None

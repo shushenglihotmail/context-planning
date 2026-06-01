@@ -932,3 +932,15 @@
 - Phase 93: wire-validator-into-loader — see `.planning/phases/93-wire-validator-into-loader/`
 - Phase 94: audit-and-migrate-builtins — see `.planning/phases/94-audit-and-migrate-builtins/`
 - Phase 95: docs-and-release — see `.planning/phases/95-docs-and-release/`
+
+## Milestone workflow end-to-end + quick attach  — shipped 2026-06-01
+
+**Phases:** 96-101    **Plans:** 6    **Duration:** —
+
+**Phase summaries:**
+- Phase 96: validator-roadmap-phases-rules — see `.planning/phases/96-validator-roadmap-phases-rules/`
+- Phase 97: milestone-template-children — see `.planning/phases/97-milestone-template-children/`
+- Phase 98: supervisor-dispatch-contract ☑ 2eae1e4 — see `.planning/phases/98-supervisor-dispatch-contract-2eae1e4/`
+- Phase 99: project-registry-and-list ☑ 7746d36 — see `.planning/phases/99-project-registry-and-list-7746d36/`
+- Phase 100: cp-quick-attach-by-name ☑ 5102800 — see `.planning/phases/100-cp-quick-attach-by-name-5102800/`
+- Phase 101: docs-and-v1.8-release — see `.planning/phases/101-docs-and-v1-8-release/`
