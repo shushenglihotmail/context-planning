@@ -6,6 +6,27 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.1] - 2026-05-31 — Implicit attach for `cp quick-setup`
+
+### Added
+
+- **`cp quick-setup --project`** (no value) — walks up from cwd to find
+  `.planning/PROJECT.md` and scaffolds the quick task in that project,
+  instead of requiring `--project <name>`.
+- **`cp quick-setup --milestone`** (no value) — auto-selects the
+  project's "latest" milestone: if any milestone is active, picks the
+  most-recently-created among the active set; otherwise the most-recent
+  overall. Lex-largest slug as deterministic tie-break.
+- Both bare forms compose: `cp quick-setup --task "x" --project --milestone`
+  binds to the current project + its latest milestone.
+- `--milestone <version>` shortforms like `1.8` continue to work via the
+  existing substring resolver against `v1.8 ...` display names.
+
+### Fixed
+
+- Friendly errors for the two new failure modes: cwd outside any project
+  (bare `--project`), and project with zero milestones (bare `--milestone`).
+
 ## [1.8.0] - 2026-05-31 — Milestone workflow children + project registry + quick attach-by-name
 
 Closes the long-standing gap where the built-in `milestone` workflow
