@@ -7,6 +7,7 @@
 const assert = require('node:assert/strict');
 
 const { buildParentPrompt, parseParentOutput, enforceChildCount, resolveItemOrder } = require('../lib/runtime-fanout');
+const { formatInstruction } = require('../lib/runtime');
 
 let passed = 0;
 let failed = 0;
@@ -394,5 +395,36 @@ console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   console.log('FAILURES:');
   for (const failure of failures) console.log('  - ' + failure);
+  process.exitCode = 1;
+}
+
+// formatInstruction materialize:roadmap-phases augmentation (2)
+console.log('\nformatInstruction fan-out contract augmentation');
+
+function minimalTemplate() {
+  return { meta: { workflow: 'test', version: 1, binds_to: 'custom' }, principles: [], defaults: {}, phases: [] };
+}
+
+check('formatInstruction augments materialize:roadmap-phases parent with fan-out contract', () => {
+  const tpl = minimalTemplate();
+  const parentPhase = { id: 'decompose', prompt: 'Decompose into items.', materialize: 'roadmap-phases', parent: null };
+  const wave = [parentPhase];
+  const result = formatInstruction(tpl, wave, 0, { slug: 'test-run', totalWaves: 1, silenceWarnings: true });
+  assert.ok(result.includes('Decompose into items.'), 'base prompt should be present');
+  assert.ok(result.includes('## Output format (structured list)'), 'contract header should be present');
+  assert.ok(result.includes('"optimizable": false'), 'contract JSON shape should be present');
+});
+
+check('formatInstruction does NOT augment a phase with no materialize field', () => {
+  const tpl = minimalTemplate();
+  const plainPhase = { id: 'plain', prompt: 'Just do the work.', parent: null };
+  const wave = [plainPhase];
+  const result = formatInstruction(tpl, wave, 0, { slug: 'test-run', totalWaves: 1, silenceWarnings: true });
+  assert.ok(result.includes('Just do the work.'), 'base prompt should be present');
+  assert.ok(!result.includes('## Output format (structured list)'), 'contract should NOT be present');
+});
+
+console.log(`\nPassed: ${passed}   Failed: ${failed}`);
+if (failed > 0) {
   process.exitCode = 1;
 }
