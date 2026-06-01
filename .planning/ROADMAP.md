@@ -670,6 +670,7 @@ Plans:
 - [x] 101-01: CHANGELOG [1.8.0] entry + docs/MIGRATION-v1.8.md + recipes Recipe 9 + architecture global-registry subsection + README v-string fix + package.json 1.8.0 + annotated tag v1.8.0 (local). (a734ed8)
 
 </details>
+
 ## Progress
 
 **Execution Order:**

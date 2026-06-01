@@ -1,0 +1,39 @@
+{
+  "milestone_slug": "v1-9-framework-bug-fixes-from-v1-8-1-retro",
+  "milestone_name": "v1.9 Framework Bug Fixes from v1.8.1 Retro",
+  "generated_at": "2026-06-01",
+  "description": "Reflects the close of v1.8 + v1.8.1 (now validated) and the opening of v1.9 (active).",
+  "patches": [
+    {
+      "section": "Requirements / Validated",
+      "op": "append",
+      "value": "- ✓ Milestone workflow end-to-end + cp quick attach-by-name: `milestone.yaml` fan-out fix (child-plan + child-execute under `propose-phases` mirroring quick.yaml), workflow validator hard-fail on `materialize: roadmap-phases` parents missing `supervised: true` or `parent:` child template, `cp quick --project <name>` / `--milestone <name>` name-based attach backed by `~/.config/cp/projects.json`, `cp project list|rm` + `cp milestone list` commands, `--project-path` deprecated. — v1.8 (published as `context-planning@1.8.0`)"
+    },
+    {
+      "section": "Requirements / Validated",
+      "op": "append",
+      "value": "- ✓ Implicit-attach for `cp quick` when `--project` omitted: cwd-based project resolution, sticky default when single registered project, friendly error when ambiguous. — v1.8.1 (published as `context-planning@1.8.1`)"
+    },
+    {
+      "section": "Requirements / Active",
+      "op": "remove_lines_matching",
+      "match_pattern": "(?s)^\\- \\*\\*Milestone workflow end-to-end \\+ cp quick attach-by-name\\*\\*:.*?— v1\\.8$",
+      "rationale": "Moved to Validated."
+    },
+    {
+      "section": "Requirements / Active",
+      "op": "append",
+      "value": "- **Framework Bug Fixes from v1.8.1 Retro**: six process-discipline gaps surfaced when a sibling repo ran v1.8.1 end-to-end. (A) `lib/roadmap.js` regexes accept `#{2,6}` Phase headings so GSD-imported / hand-edited roadmaps stop triggering false `phase-no-roadmap` audit findings. (B) `cp write-summary` validates only paths listed in PLAN frontmatter `expected_files:` rather than body-scraping path-shaped tokens; `--no-file-check` warns as deprecated. (C) `cp complete-milestone` calls `state.regenerate(root)` post-close so the STATE banner clears automatically. (D) New `cp doctor --fix-dual-plan` flag auto-removes long-form `NN-MM-...-PLAN.md` when canonical short-form `PLAN.md` exists. (E) New always-on MEDIUM audit rule `sham-review-log` detects empty / inline-only REVIEW-LOG.md on phases whose execute skill is on a reviewer-bearing allowlist. (F) Skill-load attestation: workflow runner appends an `invoked_skill:` contract to per-phase prompts; `cp run mark-complete` persists the value to `.run-state/<slug>/<phase>.json`; new always-on MEDIUM audit rule `skill-resolved-but-not-loaded` flags resolved-but-bypassed skills. Back-compat: missing field treated as `<unrecorded>` (warns, does not error). Spec: `.planning/milestones/v1-9-framework-bug-fixes-from-v1-8-1-retro/DESIGN.md`. — v1.9"
+    },
+    {
+      "section": "Footer / Last updated",
+      "op": "replace_line",
+      "match_pattern": "^\\*Last updated: .*started v1\\.7 .*$",
+      "value": "*Last updated: 2026-06-01 — closed v1.8 + v1.8.1, started v1.9 Framework Bug Fixes from v1.8.1 Retro milestone*"
+    }
+  ],
+  "notes": [
+    "All ops preserve existing GSD-shape compatibility — no schema changes to PROJECT.md, only content additions/moves.",
+    "Active list shrinks from 3 to 3 (removes v1.8, adds v1.9); v1.2, v1.5, v1.6 entries remain in Active because they were not explicitly closed in this session (out of scope for this milestone)."
+  ]
+}

@@ -1,0 +1,22 @@
+workflow: milestone
+slug: v1-9-framework-bug-fixes-from-v1-8-1-retro
+status: abandoned
+binding: milestone
+started: 2026-06-01T20:39:19.606Z
+last_activity: 2026-06-01T21:08:04.510Z
+current_wave: 5
+completed:
+  - setup
+  - brainstorm
+  - propose-project-updates
+  - apply-project-updates
+  - propose-phases
+phaseNumByPhaseId:
+  setup: 102
+  brainstorm: 103
+  propose-project-updates: 104
+  apply-project-updates: 105
+  propose-phases: 106
+  review: 107
+  finalize: 108
+template_path: C:\src\github\context-planning\templates\workflows\milestone.yaml
