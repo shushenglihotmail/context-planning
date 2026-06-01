@@ -428,3 +428,204 @@ console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   process.exitCode = 1;
 }
+
+// ============================================================
+// markPhaseComplete end-to-end fan-out (P2 — Bug G)
+// ============================================================
+console.log('\nmarkPhaseComplete materialize:roadmap-phases consumption');
+
+const fs = require('node:fs');
+const os = require('node:os');
+const fpath = require('node:path');
+const { spawnSync } = require('node:child_process');
+const yaml = require('yaml');
+
+const runtime = require('../lib/runtime');
+const workflow = require('../lib/workflow');
+const paths = require('../lib/paths');
+
+function freshProject() {
+  const dir = fs.mkdtempSync(fpath.join(os.tmpdir(), 'cp-fanout-p2-'));
+  spawnSync('git', ['init', '-q'], { cwd: dir });
+  spawnSync('git', ['config', 'user.email', 'test@local'], { cwd: dir });
+  spawnSync('git', ['config', 'user.name', 'Test'], { cwd: dir });
+  spawnSync('git', ['config', 'commit.gpgsign', 'false'], { cwd: dir });
+  fs.mkdirSync(fpath.join(dir, '.planning'), { recursive: true });
+  fs.writeFileSync(fpath.join(dir, '.planning', 'PROJECT.md'),
+    '# Test\n\n## Constraints\n\n- C1\n');
+  fs.writeFileSync(fpath.join(dir, '.planning', 'ROADMAP.md'),
+    '# Roadmap\n\n## Validated Requirements\n\n## Active Requirements\n\n## Phases\n');
+  fs.writeFileSync(fpath.join(dir, '.planning', 'STATE.md'),
+    '# State\n\n## Current Position\n\nPhase: -\nPlan: -\nStatus: Idle\n'
+    + 'Current focus: -\nLast activity: -\n\nProgress: [░░░░░░░░░░] 0%\n');
+  spawnSync('git', ['add', '.'], { cwd: dir });
+  spawnSync('git', ['commit', '-q', '-m', 'init'], { cwd: dir });
+  return dir;
+}
+
+function writeFanoutTemplate(dir) {
+  const wfDir = fpath.join(dir, '.planning', 'workflows');
+  fs.mkdirSync(wfDir, { recursive: true });
+  const tplPath = fpath.join(wfDir, 'fanout-test.yaml');
+  fs.writeFileSync(tplPath,
+`workflow: fanout-test
+version: 1
+binds_to: milestone
+principles:
+  - Test fan-out end-to-end.
+defaults:
+  model: default
+phases:
+  - phase:
+      id: propose
+      description: |
+        Decompose the milestone into items.
+      role: developer
+      materialize: roadmap-phases
+      max_children: 5
+      prompt: |
+        Decompose into items.
+  - phase:
+      id: child-plan
+      description: |
+        Per-item planning.
+      parent: propose
+      role: developer
+      prompt: |
+        Plan one ROADMAP phase.
+  - phase:
+      id: review
+      description: |
+        Review the materialised phases.
+      depends_on: [ propose ]
+      role: reviewer
+      prompt: |
+        Review.
+`);
+  return tplPath;
+}
+
+check('markPhaseComplete: parent with materialize:roadmap-phases scaffolds per-item phases', () => {
+  const dir = freshProject();
+  const tplPath = writeFanoutTemplate(dir);
+  const startResult = runtime.startRun(tplPath, { projectDir: dir, name: 'P2 Fanout Test' });
+  const slug = startResult.slug;
+
+  // Advance to the 'propose' wave by completing 'propose' directly. In the
+  // fanout-test workflow, 'propose' has no upstream phases (it's wave 0).
+  const summary = 'Decomposition plan:\n\n```json\n'
+    + JSON.stringify({ optimizable: false, items: [
+      { id: 'feature-a', title: 'Feature A', summary: 'Build A.' },
+      { id: 'feature-b', title: 'Feature B' },
+    ] }, null, 2)
+    + '\n```\n';
+
+  const result = runtime.markPhaseComplete(slug, 'propose', summary, { projectDir: dir });
+  assert.ok(result.nextInstruction, 'next instruction emitted after parent completed');
+
+  // RUN.yaml should have parent_outputs persisted and phaseNumByPhaseId entries.
+  const runState = yaml.parse(fs.readFileSync(
+    fpath.join(dir, '.planning', 'milestones', slug, 'RUN.yaml'), 'utf8'));
+  assert.ok(runState.parent_outputs && runState.parent_outputs.propose, 'parent_outputs persisted');
+  assert.strictEqual(runState.parent_outputs.propose.items.length, 2);
+  assert.ok(runState.phaseNumByPhaseId['feature-a'] != null, 'item-id mapped to phase num');
+  assert.ok(runState.phaseNumByPhaseId['feature-b'] != null, 'item-id mapped to phase num');
+  assert.ok(runState.phaseNumByPhaseId['child-plan::feature-a'] != null,
+    'expanded child id mapped to same phase num');
+  assert.strictEqual(runState.phaseNumByPhaseId['child-plan::feature-a'],
+    runState.phaseNumByPhaseId['feature-a']);
+
+  // Per-item phase dirs should exist with PLAN.md content from the items.
+  const planA = fpath.join(
+    paths.findPhaseDir(String(runState.phaseNumByPhaseId['feature-a']), dir), 'PLAN.md');
+  const planABody = fs.readFileSync(planA, 'utf8');
+  assert.ok(planABody.includes('# Feature A'), 'item.title used as heading');
+  assert.ok(planABody.includes('Build A.'), 'item.summary written to PLAN.md');
+
+  const planB = fpath.join(
+    paths.findPhaseDir(String(runState.phaseNumByPhaseId['feature-b']), dir), 'PLAN.md');
+  assert.ok(fs.readFileSync(planB, 'utf8').includes('(no summary provided)'),
+    'missing summary falls back to placeholder');
+
+  // The next-wave instruction should dispatch the first expanded child
+  // (array-mode chains item N+1 after item N, so they fall into separate
+  // waves). The expanded id and the child template prompt must be present.
+  assert.ok(result.nextInstruction.includes('Phase: child-plan::feature-a'),
+    'next instruction dispatches expanded child for feature-a');
+  assert.ok(result.nextInstruction.includes('Plan one ROADMAP phase.'),
+    'expanded child carries the child template prompt');
+  assert.ok(!result.nextInstruction.includes('Phase: child-plan\n'),
+    'bare child template id must not appear');
+});
+
+check('markPhaseComplete: invalid parent output throws (no fenced JSON)', () => {
+  const dir = freshProject();
+  const tplPath = writeFanoutTemplate(dir);
+  const { slug } = runtime.startRun(tplPath, { projectDir: dir, name: 'P2 Invalid' });
+  assert.throws(
+    () => runtime.markPhaseComplete(slug, 'propose', 'I forgot the JSON block.', { projectDir: dir }),
+    /no fenced JSON block/,
+  );
+});
+
+check('markPhaseComplete: over-max items rejected by enforceChildCount before scaffolding', () => {
+  const dir = freshProject();
+  const tplPath = writeFanoutTemplate(dir);
+  const { slug } = runtime.startRun(tplPath, { projectDir: dir, name: 'P2 OverMax' });
+  const tooMany = Array.from({ length: 6 }, (_, i) => ({ id: `item-${i}`, title: `T${i}` }));
+  const summary = '```json\n' + JSON.stringify({ items: tooMany }) + '\n```';
+  assert.throws(
+    () => runtime.markPhaseComplete(slug, 'propose', summary, { projectDir: dir }),
+    /above max_children \(5\)/,
+  );
+});
+
+check('computeWavesWithFanout: empty parentOutputs == computeWaves', () => {
+  const dir = freshProject();
+  const tplPath = writeFanoutTemplate(dir);
+  const tpl = workflow.loadTemplate(tplPath, { projectDir: dir });
+  workflow.applyAutoInjectFinalize(tpl);
+  const a = workflow.computeWaves(tpl);
+  const b = workflow.computeWavesWithFanout(tpl, {});
+  assert.deepStrictEqual(
+    a.map((w) => w.map((p) => p.id)),
+    b.map((w) => w.map((p) => p.id)),
+  );
+});
+
+check('computeWavesWithFanout: review waits for all expanded child waves (subtree-wait)', () => {
+  const dir = freshProject();
+  const tplPath = writeFanoutTemplate(dir);
+  const tpl = workflow.loadTemplate(tplPath, { projectDir: dir });
+  workflow.applyAutoInjectFinalize(tpl);
+  const parentOutputs = {
+    propose: { optimizable: false, items: [
+      { id: 'feat-1', title: 'F1' },
+      { id: 'feat-2', title: 'F2' },
+    ] },
+  };
+  const waves = workflow.computeWavesWithFanout(tpl, parentOutputs);
+  const flatOrder = [];
+  waves.forEach((w, i) => w.forEach((p) => flatOrder.push({ wave: i, id: p.id })));
+  const idxOf = (id) => flatOrder.find((r) => r.id === id).wave;
+  // review depends on propose; with fan-out it must wait for every child.
+  assert.ok(idxOf('review') > idxOf('child-plan::feat-1'),
+    'review waits for feat-1 child');
+  assert.ok(idxOf('review') > idxOf('child-plan::feat-2'),
+    'review waits for feat-2 child');
+  // child-plan::feat-2 waits for child-plan::feat-1 (array-mode chaining).
+  assert.ok(idxOf('child-plan::feat-2') > idxOf('child-plan::feat-1'),
+    'array-mode chains item 2 after item 1');
+  // Each expanded child carries item context.
+  const c1 = waves[idxOf('child-plan::feat-1')].find((p) => p.id === 'child-plan::feat-1');
+  assert.strictEqual(c1.templateId, 'child-plan');
+  assert.strictEqual(c1.parent, 'propose');
+  assert.strictEqual(c1.item.id, 'feat-1');
+});
+
+console.log(`\nPassed: ${passed}   Failed: ${failed}`);
+if (failed > 0) {
+  console.log('FAILURES:');
+  for (const failure of failures) console.log('  - ' + failure);
+  process.exitCode = 1;
+}
