@@ -95,6 +95,40 @@ cp install copilot --global
 >   slash-skill files it loads. Per-repo by default; per-user with
 >   `--global`. Run it once per harness you actually use.
 
+### Updating from a previous version
+
+cp updates are also two-layer — bump the package, then refresh
+per-repo state so the slash-skill files and config defaults in
+each repo match the new version:
+
+```bash
+# 1. Bump the package itself (once per machine)
+npm install -g context-planning@latest
+
+# 2. Refresh per-repo state (run inside each repo that has .planning/)
+cd path/to/your/repo
+cp update                  # apply changes
+cp update --check          # CI-friendly: exit 1 if anything is stale
+cp update --dry-run        # preview without writing
+```
+
+`cp update` rewrites the installed harness skill files
+(`.github/skills/cp-*`, `~/.claude/skills/cp-*`, etc.), merges any
+new keys into `.planning/config.yaml`, and runs the same audit-fix
+pass as `cp reconcile` to repair drift. It does **not** touch your
+own milestone, phase, or quick-task artifacts.
+
+If you don't have `cp` installed globally (or you're updating from
+a wrapper / CI step), the same refresh runs via npx in one shot:
+
+```bash
+npx -y --package=context-planning@latest -- cp update
+```
+
+Check the [CHANGELOG](./CHANGELOG.md) for what changed between
+versions; a `/cp-update` slash command is also available in your
+harness and is equivalent to running `cp update` from cwd.
+
 cp gives you **two ways to work**, depending on the shape of the work.
 Pick the one that fits and skip the other — you don't need both.
 
