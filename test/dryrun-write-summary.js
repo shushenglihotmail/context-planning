@@ -178,5 +178,72 @@ section('cp write-summary --no-expected-check opts out');
   ok('summary has no drift sentence', !/expected-vs-actual drift/.test(summary));
 }
 
+// ---------- Bug B follow-up: expected_files frontmatter (Phase 106) ----------
+
+function addExpectedFilesToPlan(dir, files) {
+  const planPath = path.join(dir, '.planning', 'phases', '01-greet', 'PLAN.md');
+  const orig = fs.readFileSync(planPath, 'utf8');
+  const yamlList = files.map((f) => `  - ${f}`).join('\n');
+  const next = orig.replace(/^---\n/, `---\nexpected_files:\n${yamlList}\n`);
+  fs.writeFileSync(planPath, next);
+  execSync('git add -A && git commit -q -m "add expected_files"', { cwd: dir });
+}
+
+section('cp write-summary positive: expected_files match, file exists → exit 0 (Bug B)');
+{
+  const dir = mkFixture('bugb-pos');
+  // src.js is already created in the fixture commit
+  addExpectedFilesToPlan(dir, ['src.js']);
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({
+    subsystem: 'g',
+    'key-decisions': ['x'],
+    'key-files': { created: ['src.js'], modified: [] },
+  }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--no-auto-key-files'], dir);
+  ok('exit code 0', r.status === 0, `stderr=${r.stderr}`);
+  ok('SUMMARY written', fs.existsSync(path.join(dir, '.planning', 'phases', '01-greet', '01-01-SUMMARY.md')));
+}
+
+section('cp write-summary negative: expected_files file absent → non-zero (Bug B)');
+{
+  const dir = mkFixture('bugb-neg');
+  addExpectedFilesToPlan(dir, ['missing.js']);
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({
+    subsystem: 'g',
+    'key-decisions': ['x'],
+    'key-files': { created: ['missing.js'], modified: [] },
+  }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--no-auto-key-files'], dir);
+  ok('exit code non-zero', r.status !== 0, `stderr=${r.stderr}`);
+  ok('stderr mentions missing', /missing/.test(r.stderr), `stderr=${r.stderr}`);
+}
+
+section('cp write-summary no-frontmatter: validation skipped + debug log emitted (Bug B)');
+{
+  const dir = mkFixture('bugb-nofm');
+  // PLAN.md has no expected_files / expected-key-files — fixture default
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({ subsystem: 'g', 'key-decisions': ['x'] }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath], dir);
+  ok('exit code 0 (validation skipped)', r.status === 0, `stderr=${r.stderr}`);
+  ok('debug log emitted to stderr', /expected-key-files not found/.test(r.stderr),
+    `stderr=${JSON.stringify(r.stderr)}`);
+}
+
+section('cp write-summary --no-file-check emits deprecation warning to stderr (Bug B)');
+{
+  const dir = mkFixture('bugb-depr');
+  const fromPath = path.join(dir, 'from.json');
+  fs.writeFileSync(fromPath, JSON.stringify({
+    subsystem: 'g',
+    'key-decisions': ['x'],
+    'key-files': { created: ['lib/phantom.js'], modified: [] },
+  }));
+  const r = runCp(['write-summary', '01-01', '--from', fromPath, '--no-auto-key-files', '--no-file-check'], dir);
+  ok('stderr contains "deprecated"', /deprecated/.test(r.stderr), `stderr=${r.stderr}`);
+}
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) process.exit(1);

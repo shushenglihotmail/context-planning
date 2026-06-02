@@ -61,7 +61,10 @@ function run(args = []) {
     else if (a === '--overwrite') overwrite = true;
     else if (a === '--dry-run') dryRun = true;
     else if (a === '--no-auto-key-files') autoKeyFiles = false;
-    else if (a === '--no-file-check') checkFileExistence = false;
+    else if (a === '--no-file-check') {
+      checkFileExistence = false;
+      try { process.stderr.write('cp: --no-file-check is deprecated; update PLAN.md to omit expected-key-files if validation is not needed.\n'); } catch (_) {}
+    }
     else if (a === '--no-expected-check') expectedCheck = false;
     else if (a === '--strict-expected') strictExpected = true;
     else if (a.startsWith('-')) { console.error(`unknown option: ${a}`); process.exit(2); }
