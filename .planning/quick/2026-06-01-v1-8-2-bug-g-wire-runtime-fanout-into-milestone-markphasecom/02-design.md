@@ -1,0 +1,1 @@
+DESIGN.md ready: P1 augment parent prompt, P2 consume parent output + scaffold ROADMAP entries + dispatch child waves, P3 suppress workflow-meta phases from scaffold, P4 integration test, P5 1.8.2 release. PLAN.md target locked; new-runs-only resolved. attestation: invoked_skill=writing-plans, invocation_method=skill-tool

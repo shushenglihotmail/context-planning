@@ -1,0 +1,19 @@
+workflow: quick
+slug: 2026-06-01-v1-8-2-bug-g-wire-runtime-fanout-into-milestone-markphasecom
+status: done
+binding: quick
+started: 2026-06-01T21:09:18.256Z
+last_activity: 2026-06-02T01:13:58.481Z
+current_phase: null
+completed:
+  - setup
+  - design
+  - execute
+  - finalize
+artifacts:
+  setup: 01-setup.md
+  design: 02-design.md
+  execute: 03-execute.md
+  finalize: 04-finalize.md
+template_path: C:\src\github\context-planning\templates\workflows\quick.yaml
+current_wave: 4
