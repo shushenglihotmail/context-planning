@@ -228,7 +228,7 @@ section('cp write-summary no-frontmatter: validation skipped + debug log emitted
   fs.writeFileSync(fromPath, JSON.stringify({ subsystem: 'g', 'key-decisions': ['x'] }));
   const r = runCp(['write-summary', '01-01', '--from', fromPath], dir);
   ok('exit code 0 (validation skipped)', r.status === 0, `stderr=${r.stderr}`);
-  ok('debug log emitted to stderr', /expected-key-files not found/.test(r.stderr),
+  ok('debug log emitted to stderr', /no `expected_files` declared/.test(r.stderr),
     `stderr=${JSON.stringify(r.stderr)}`);
 }
 

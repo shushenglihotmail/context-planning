@@ -195,6 +195,25 @@ section('No config (no provider) → no findings');
   ok('no findings when no provider configured', findings.length === 0);
 }
 
+section('Fixture 7: resolved_skill=(absent) in run-state → no finding (scaffold/setup phases)');
+{
+  const root = mkProject({
+    executeSkill: 'superpowers/subagent-driven-development',
+    slugName: 'run-007',
+    phaseName: 'setup',
+    invokedSkill: '<unrecorded>',
+  });
+  // Overwrite the file with resolved_skill: '(absent)' to simulate scaffold phase
+  const stateDir = path.join(root, '.planning', '.run-state', 'run-007');
+  fs.writeFileSync(
+    path.join(stateDir, 'setup.json'),
+    JSON.stringify({ invoked_skill: '<unrecorded>', resolved_skill: '(absent)' })
+  );
+  const findings = audit.checkSkillResolvedButNotLoaded(root, { phases: audit._listPhaseDirs(root) });
+  ok('no finding for absent resolved_skill (scaffold phase)', findings.length === 0,
+    `got ${findings.length}: ${JSON.stringify(findings)}`);
+}
+
 // ---- summary ----
 console.log(`\n  ${passed} passing, ${failed} failing`);
 if (failed > 0) process.exit(1);

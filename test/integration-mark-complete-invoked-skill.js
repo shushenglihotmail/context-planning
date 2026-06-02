@@ -74,9 +74,45 @@ function mkFixture() {
   return { dir, slug, phaseId: 'execute' };
 }
 
+/**
+ * Build a minimal project with a skill-less (scaffold) phase workflow.
+ * Returns { dir, slug, phaseId }.
+ */
+function mkFixtureNoSkill() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-mci-ns-'));
+  execSync('git init -q -b main', { cwd: dir });
+  execSync('git config user.email t@l', { cwd: dir });
+  execSync('git config user.name t', { cwd: dir });
+  execSync('git config commit.gpgsign false', { cwd: dir });
+
+  fs.mkdirSync(path.join(dir, '.planning', 'phases', '01-target'), { recursive: true });
+  fs.writeFileSync(path.join(dir, '.planning', 'STATE.md'),
+    '# State\n\n## Current Position\n\nPhase: 1\nStatus: Ready\nLast activity: 2024-01-01 — seed\n');
+  fs.writeFileSync(path.join(dir, '.planning', 'ROADMAP.md'),
+    '# Roadmap\n\n## Phases\n\n### Phase 1: Target\n');
+  fs.writeFileSync(path.join(dir, '.planning', 'phases', '01-target', 'PLAN.md'),
+    '---\nphase: "1"\n---\n# Phase 1\n');
+  fs.writeFileSync(path.join(dir, '.planning', 'config.json'), JSON.stringify({}));
+  execSync('git add -A && git commit -q -m "seed"', { cwd: dir });
+
+  // Workflow phase with no skill field
+  const wfYaml = yaml.stringify({
+    workflow: 'noskill',
+    version: 1,
+    binds_to: 'phase',
+    phases: [
+      { phase: { id: 'setup', description: 'setup step', prompt: 'do setup' } },
+    ],
+  });
+  const wfPath = path.join(dir, 'noskill.yaml');
+  fs.writeFileSync(wfPath, wfYaml);
+
+  const { slug } = runtime.startRun(wfPath, { projectDir: dir, now: new Date('2024-01-01T10:00:00Z') });
+  return { dir, slug, phaseId: 'setup' };
+}
+
 // --------------------------------------------------------------------------
 
-section('parseInvokedSkill helper');
 
 const parseInvokedSkill = runtime._parseInvokedSkill;
 ok('helper is exported', typeof parseInvokedSkill === 'function');
@@ -157,6 +193,20 @@ section('Test 8: existing run-state file is updated (no data loss)');
   const data = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
   ok('existing_field preserved', data.existing_field === 'keep-me', `got: ${JSON.stringify(data)}`);
   ok('invoked_skill updated', data.invoked_skill === 'new-skill', `got: ${JSON.stringify(data)}`);
+}
+
+section('Test 9: phase with no skill → resolved_skill=(absent) persisted in run-state');
+{
+  const { dir, slug, phaseId } = mkFixtureNoSkill();
+  runtime.markPhaseComplete(slug, phaseId,
+    '# Summary\n\nSetup done.\n',
+    { projectDir: dir, now: new Date('2024-01-01T11:00:00Z') }
+  );
+  const stateFile = path.join(dir, '.planning', '.run-state', slug, `${phaseId}.json`);
+  ok('run-state file created for skill-less phase', fs.existsSync(stateFile), `path: ${stateFile}`);
+  const data = JSON.parse(fs.readFileSync(stateFile, 'utf8'));
+  ok('resolved_skill is (absent) for skill-less phase', data.resolved_skill === '(absent)',
+    `got: ${JSON.stringify(data)}`);
 }
 
 // ---- summary ----
