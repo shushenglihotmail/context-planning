@@ -1,0 +1,62 @@
+{
+  "milestone_slug": "v1-10-skill-routing-verify-gate",
+  "milestone_title": "v1.10 Skill Routing & Verify Gate",
+  "version_bump": "1.10.0",
+  "operations": [
+    {
+      "op": "add-to-section",
+      "section": "Validated",
+      "note": "Will be added on milestone completion by Phase 5 (release wave). Skip for now."
+    },
+    {
+      "op": "replace-section",
+      "section": "Active",
+      "old_value": "*(none — v1.9 just shipped; next milestone TBD)*",
+      "new_value": "**v1.10 Skill Routing & Verify Gate**: fix two real framework bugs from a downstream consumer's v4.7 retro. (1) `lib/provider.js#resolveSkill` checks provider install but not per-skill `SKILL.md` existence — add per-skill stat + parens-sigil opt-in fuzzy matching (`(skill-name)`) with role-filtered token-overlap algorithm + 5-step resolution chain (sigil-fuzzy → exact → manual prompt inline → subagent-dispatch directive → bare prompt) + ONE consolidated workflow-start diagnostic. (2) `templates/workflows/milestone.yaml` review phase is prose-only — add new `cp run-verify` scaffold subcommand reading `behavior.test_command` (auto-detect chain: `npm test` → `pytest` → `cargo test` → `go test ./...`) with new `verify` phase inserted before `review` via `depends_on`, opt-out via `behavior.verify: false` / `--skip-verify`. Plus README PowerShell-on-Windows blurb (`cp` aliases to `Copy-Item`; use `cp.cmd`). 5 phases. Spec: `docs/superpowers/specs/2026-06-02-v1.10-skill-routing-verify-gate-design.md`. — v1.10"
+    },
+    {
+      "op": "add-to-section",
+      "section": "Key Decisions",
+      "new_row": {
+        "Decision": "Parens-sigil opt-in fuzzy matching `(skill-name)`",
+        "Rationale": "Parens 100% YAML-safe at any position; sigil is a flag (\"fuzzy allowed\") not a glob pattern; in-place sigil scales naturally where whole-property `X_skill_fuzzy: true` doesn't",
+        "Outcome": "v1.10 P1 — `lib/provider.js` parser + role-filtered token-overlap matcher"
+      }
+    },
+    {
+      "op": "add-to-section",
+      "section": "Key Decisions",
+      "new_row": {
+        "Decision": "Verify gate is `kind: scaffold` (real CLI exec)",
+        "Rationale": "LLM-in-the-loop review can be fake-attested past; only objective CLI execution provides a real verification boundary",
+        "Outcome": "v1.10 P3/P4 — new `cp run-verify` + `verify` phase before `review`"
+      }
+    },
+    {
+      "op": "add-to-section",
+      "section": "Key Decisions",
+      "new_row": {
+        "Decision": "Sigil opt-in policy: strict-by-default, fuzzy-only-when-no-SP-match",
+        "Rationale": "When SP ships an exact-match skill, deterministic canonical invocation > fuzzy; reserve fuzzy for genuine catalog gaps (e.g., no `code-review` skill exists in SP)",
+        "Outcome": "v1.10 P5 docs + concrete `milestone.yaml`: `brainstorm_skill: brainstorming` strict, `review_skill: (code-review)` fuzzy"
+      }
+    }
+  ],
+  "deferred_items": [],
+  "validated_on_completion": [
+    "Per-skill SKILL.md availability check in lib/provider.js",
+    "Parens-sigil opt-in fuzzy matching with role-filtered token-overlap algorithm",
+    "5-step skill resolution chain (sigil-fuzzy → exact → manual → dispatch → bare)",
+    "Workflow-start consolidated diagnostic aggregator (✓/ℹ/⚠)",
+    "cp run-verify scaffold subcommand + behavior.test_command config + auto-detect chain",
+    "Verify scaffold phase before review in milestone.yaml + depends_on wiring",
+    "README PowerShell-on-Windows blurb (cp.cmd)",
+    "Published as context-planning@1.10.0"
+  ],
+  "non_bugs_no_work": [
+    "STATE.md auto-rollover — already fixed v1.9.0 Bug C (commit 92d14a9, phase 107)",
+    "Empty finalize prompt — by-design (kind: scaffold runs cp milestone-finalize)",
+    "Auto-staging .planning/ — per-project policy, not framework responsibility"
+  ],
+  "origin": "Downstream consumer's v4.7 milestone retrospective forwarded 2026-06-02; design converged through iterative Q&A 2026-06-02; inbox seeds #4 → #5 → #6 → #7 → #8 superseded by spec + DESIGN.md"
+}
