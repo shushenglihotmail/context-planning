@@ -6,16 +6,36 @@ const pkg = require('../../package.json');
 const { repoRoot, planningDir } = require('../../lib/paths');
 const provider = require('../../lib/provider');
 const compat = require('../../lib/gsd-compat');
+const lifecycle = require('../../lib/lifecycle');
 
 function run(args = []) {
   const jsonMode = args.includes('--json');
   const quiet = args.includes('--quiet');
+  const fixDualPlanMode = args.includes('--fix-dual-plan');
   const root = repoRoot();
   const cfg = provider.loadConfig(root);
   const cpBlock = cfg.cp || {};
   const configured = cpBlock.workflow_provider || 'superpowers';
   const detect = require('../../lib/detect');
   const report = detect.detectAllInstalled(cfg);
+
+  // --fix-dual-plan: archive loser when a phase has both short-form and long-form PLAN.md
+  if (fixDualPlanMode) {
+    const auditFix = require('../../lib/audit-fix');
+    const result = auditFix.fixDualPlan(root);
+    if (result.archived.length === 0) {
+      console.log('No dual-plan issues found.');
+    } else {
+      for (const entry of result.archived) {
+        console.log(`Archived: ${entry.from} → ${entry.to}`);
+      }
+      console.log(`Fixed dual-plan files: archived ${result.archived.length} file(s).`);
+      lifecycle.gitCommit(root, 'cp(doctor): fix dual-plan files -- archive loser when both forms coexist', {
+        paths: ['.planning'],
+      });
+    }
+    return;
+  }
 
   // --json: machine-parsable full report
   if (jsonMode) {

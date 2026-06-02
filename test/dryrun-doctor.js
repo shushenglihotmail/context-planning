@@ -158,11 +158,104 @@ section('cp doctor: exit 0 with fallback enabled (default)');
   eq('exit code 0 even without superpowers', exitCode, 0);
 }
 
+// ============================================================
+section('cp doctor --fix-dual-plan: no dual-plan → no-op');
+{
+  const root = track(mktmp('fdp-noop'));
+  buildFixture(root);
+  // Phase with only short-form PLAN.md (no long-form)
+  const phaseDir = path.join(root, '.planning', 'phases', '01-only-short');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  writeFile(path.join(phaseDir, 'PLAN.md'), '# Only short\n');
+  const { stdout, exitCode } = runDoctor(root, ['--fix-dual-plan']);
+  eq('exit code 0', exitCode, 0);
+  ok('output mentions no issues', stdout.includes('No dual-plan issues'));
+  ok('short-form still exists', fs.existsSync(path.join(phaseDir, 'PLAN.md')));
+  ok('no .archive dir created', !fs.existsSync(path.join(root, '.planning', '.archive')));
+}
+
+// ============================================================
+section('cp doctor --fix-dual-plan: dual-plan, short-form larger → archives long-form');
+{
+  const root = track(mktmp('fdp-short-wins'));
+  buildFixture(root);
+  const phaseDir = path.join(root, '.planning', 'phases', '02-dual');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  // Short-form is larger
+  writeFile(path.join(phaseDir, 'PLAN.md'), '# Short-form plan\nLots of content here.\n'.repeat(5));
+  writeFile(path.join(phaseDir, '02-01-foo-PLAN.md'), '# Long-form\nSmall.\n');
+  const { stdout, exitCode } = runDoctor(root, ['--fix-dual-plan']);
+  eq('exit code 0', exitCode, 0);
+  ok('short-form still exists', fs.existsSync(path.join(phaseDir, 'PLAN.md')));
+  ok('long-form archived (not on disk)', !fs.existsSync(path.join(phaseDir, '02-01-foo-PLAN.md')));
+  ok('output mentions archived or fixed', stdout.includes('Archived') || stdout.includes('Fixed'));
+  const archiveDir = path.join(root, '.planning', '.archive', '02-dual');
+  ok('.archive dir created', fs.existsSync(archiveDir));
+  const archiveContents = fs.readdirSync(archiveDir);
+  ok('one file in archive', archiveContents.length === 1);
+  ok('archived file is the long-form', archiveContents[0].endsWith('02-01-foo-PLAN.md'));
+}
+
+// ============================================================
+section('cp doctor --fix-dual-plan: dual-plan, long-form larger → archives short-form');
+{
+  const root = track(mktmp('fdp-long-wins'));
+  buildFixture(root);
+  const phaseDir = path.join(root, '.planning', 'phases', '03-dual');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  // Long-form is larger
+  writeFile(path.join(phaseDir, 'PLAN.md'), '# Short\nSmall.\n');
+  writeFile(path.join(phaseDir, '03-01-bar-PLAN.md'), '# Long-form plan\nLots of content here.\n'.repeat(5));
+  const { stdout, exitCode } = runDoctor(root, ['--fix-dual-plan']);
+  eq('exit code 0', exitCode, 0);
+  ok('long-form still exists', fs.existsSync(path.join(phaseDir, '03-01-bar-PLAN.md')));
+  ok('short-form archived (not on disk)', !fs.existsSync(path.join(phaseDir, 'PLAN.md')));
+  ok('output mentions archived or fixed', stdout.includes('Archived') || stdout.includes('Fixed'));
+  const archiveDir = path.join(root, '.planning', '.archive', '03-dual');
+  const archiveContents = fs.readdirSync(archiveDir);
+  ok('archived file is the short-form', archiveContents[0].endsWith('PLAN.md'));
+}
+
+// ============================================================
+section('cp doctor (no flag): dual-plan present → warns, does NOT archive');
+{
+  const root = track(mktmp('fdp-no-flag'));
+  buildFixture(root);
+  const phaseDir = path.join(root, '.planning', 'phases', '04-dual');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  writeFile(path.join(phaseDir, 'PLAN.md'), '# Short\n');
+  writeFile(path.join(phaseDir, '04-01-baz-PLAN.md'), '# Long\n');
+  const { stdout, exitCode } = runDoctor(root);
+  eq('exit code 0', exitCode, 0);
+  ok('warns about dual-plan', stdout.includes('BOTH short-form PLAN.md') || stdout.includes('Pick one'));
+  ok('short-form still exists', fs.existsSync(path.join(phaseDir, 'PLAN.md')));
+  ok('long-form still exists', fs.existsSync(path.join(phaseDir, '04-01-baz-PLAN.md')));
+  ok('no .archive created', !fs.existsSync(path.join(root, '.planning', '.archive')));
+}
+
+// ============================================================
+section('cp doctor --fix-dual-plan: idempotent (second run is no-op)');
+{
+  const root = track(mktmp('fdp-idempotent'));
+  buildFixture(root);
+  const phaseDir = path.join(root, '.planning', 'phases', '05-dual');
+  fs.mkdirSync(phaseDir, { recursive: true });
+  writeFile(path.join(phaseDir, 'PLAN.md'), '# Short-form plan\nContent.\n'.repeat(3));
+  writeFile(path.join(phaseDir, '05-01-foo-PLAN.md'), '# Long\nSmall.\n');
+  // First run
+  const r1 = runDoctor(root, ['--fix-dual-plan']);
+  eq('first run exit 0', r1.exitCode, 0);
+  ok('first run archives long-form', !fs.existsSync(path.join(phaseDir, '05-01-foo-PLAN.md')));
+  // Second run
+  const r2 = runDoctor(root, ['--fix-dual-plan']);
+  eq('second run exit 0', r2.exitCode, 0);
+  ok('second run reports no issues', r2.stdout.includes('No dual-plan issues'));
+  ok('short-form still intact after second run', fs.existsSync(path.join(phaseDir, 'PLAN.md')));
+}
+
 } finally {
   for (const d of created) rmrf(d);
 }
-
-// ---------- summary ----------
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   console.log('FAILURES:');
