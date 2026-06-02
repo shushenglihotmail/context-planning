@@ -1,0 +1,1 @@
+Brainstorm: skipped (design already accepted 2026-06-01 in pre-Bug-G attempt). DESIGN.md restored from backup — 6 bugs A-F locked. Scope: A scanner-only, E+F always-on MEDIUM with reviewer-bearing allowlist, version 1.9.0 minor bump.

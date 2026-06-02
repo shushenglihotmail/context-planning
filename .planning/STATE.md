@@ -16,10 +16,10 @@ See: .planning/PROJECT.md (updated 2026-05-25)
 
 ## Current Position
 
-Phase: -
-Plan: 173 of 173
-Status: Idle
-Current focus: -
+Phase: 110 (v1.9 Framework Bug Fixes from v1.8.1 Retro)
+Plan: -
+Status: Phase complete
+Current focus: bug-f-skill-attestation
 Last activity: /cp-complete-milestone Milestone workflow end-to-end + quick attach
 
 Progress: [░░░░░░░░░░] 0%

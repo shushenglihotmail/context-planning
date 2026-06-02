@@ -671,6 +671,27 @@ Plans:
 
 </details>
 
+### 🚧 v1.9 Framework Bug Fixes from v1.8.1 Retro (In Progress)
+
+
+
+### Phase 102: brainstorm
+
+### Phase 103: propose-project-updates
+
+### Phase 104: review
+
+### Phase 105: bug-a-roadmap-scanner
+
+### Phase 106: bug-b-write-summary-frontmatter
+
+### Phase 107: bug-c-complete-milestone-banner
+
+### Phase 108: bug-d-doctor-fix-dual-plan
+
+### Phase 109: bug-e-audit-sham-review-log
+
+### Phase 110: bug-f-skill-attestation
 ## Progress
 
 **Execution Order:**

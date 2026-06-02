@@ -1,22 +1,110 @@
 workflow: milestone
 slug: v1-9-framework-bug-fixes-from-v1-8-1-retro
-status: abandoned
+status: done
 binding: milestone
-started: 2026-06-01T20:39:19.606Z
-last_activity: 2026-06-01T21:08:04.510Z
-current_wave: 5
+started: 2026-06-02T01:19:19.244Z
+last_activity: 2026-06-02T05:00:26.213Z
+current_wave: 19
 completed:
   - setup
   - brainstorm
   - propose-project-updates
   - apply-project-updates
   - propose-phases
+  - child-plan::bug-a-roadmap-scanner
+  - child-execute::bug-a-roadmap-scanner
+  - child-plan::bug-b-write-summary-frontmatter
+  - child-execute::bug-b-write-summary-frontmatter
+  - child-plan::bug-c-complete-milestone-banner
+  - child-execute::bug-c-complete-milestone-banner
+  - child-plan::bug-d-doctor-fix-dual-plan
+  - child-execute::bug-d-doctor-fix-dual-plan
+  - child-plan::bug-e-audit-sham-review-log
+  - child-execute::bug-e-audit-sham-review-log
+  - child-plan::bug-f-skill-attestation
+  - child-execute::bug-f-skill-attestation
+  - review
+  - finalize
 phaseNumByPhaseId:
-  setup: 102
-  brainstorm: 103
-  propose-project-updates: 104
-  apply-project-updates: 105
-  propose-phases: 106
-  review: 107
-  finalize: 108
+  brainstorm: 102
+  propose-project-updates: 103
+  review: 104
+  bug-a-roadmap-scanner: 105
+  child-plan::bug-a-roadmap-scanner: 105
+  child-execute::bug-a-roadmap-scanner: 105
+  bug-b-write-summary-frontmatter: 106
+  child-plan::bug-b-write-summary-frontmatter: 106
+  child-execute::bug-b-write-summary-frontmatter: 106
+  bug-c-complete-milestone-banner: 107
+  child-plan::bug-c-complete-milestone-banner: 107
+  child-execute::bug-c-complete-milestone-banner: 107
+  bug-d-doctor-fix-dual-plan: 108
+  child-plan::bug-d-doctor-fix-dual-plan: 108
+  child-execute::bug-d-doctor-fix-dual-plan: 108
+  bug-e-audit-sham-review-log: 109
+  child-plan::bug-e-audit-sham-review-log: 109
+  child-execute::bug-e-audit-sham-review-log: 109
+  bug-f-skill-attestation: 110
+  child-plan::bug-f-skill-attestation: 110
+  child-execute::bug-f-skill-attestation: 110
+milestoneName: v1.9 Framework Bug Fixes from v1.8.1 Retro
 template_path: C:\src\github\context-planning\templates\workflows\milestone.yaml
+parent_outputs:
+  propose-phases:
+    optimizable: false
+    items:
+      - id: bug-a-roadmap-scanner
+        title: "Bug A — ROADMAP scanner accepts both ### and #### Phase headings"
+        summary: "Modify lib/roadmap.js listPhases/listCollapsedPhaseNums regexes to
+          match either heading depth so #### Phase 8: headings (GSD-imported or
+          hand-edited) are discoverable. Scanner-only fix; no
+          auto-normalization. Add test/dryrun-roadmap-h4.js fixture proving
+          listPhases finds the phase and audit yields zero phase-no-roadmap
+          findings."
+      - id: bug-b-write-summary-frontmatter
+        title: Bug B — cp write-summary validates against expected_files frontmatter
+          only
+        summary: "Replace path-token scraping in lib/milestone.writeSummary with
+          frontmatter expected_files: array lookup. Missing frontmatter = no-op
+          (DEBUG log). --no-file-check still works but emits deprecation warning
+          to stderr. Fixture: PLAN.md body mentions src/foo.ps1 (does not
+          exist), frontmatter lists [README.md] (exists); writeSummary succeeds
+          without --no-file-check."
+      - id: bug-c-complete-milestone-banner
+        title: Bug C — cp complete-milestone clears STATE.md cp:current-focus banner
+        summary: "Wire lib/state.regenerate into bin/commands/complete-milestone.js
+          after the milestone close. Wrap in try/catch; failure logs WARN but
+          does not roll back. Fixture: milestone with stale banner, run
+          complete-milestone, assert banner cleared."
+      - id: bug-d-doctor-fix-dual-plan
+        title: Bug D — cp doctor --fix-dual-plan auto-removes long-form when short-form
+          exists
+        summary: "Add fixDualPlan(root) to lib/audit-fix.js (or wherever doctor fixers
+          live). Delete long-form NN-MM-...-PLAN.md only after confirming
+          short-form PLAN.md exists and is non-empty. Each deletion logged. Wire
+          --fix-dual-plan flag to bin/commands/doctor.js. Fixture: phase with
+          both forms, --fix-dual-plan, assert long-form deleted, short-form
+          intact."
+      - id: bug-e-audit-sham-review-log
+        title: Bug E — cp audit MEDIUM rule sham-review-log
+        summary: "Add sham-review-log rule to lib/audit.js. Fires on completed phases
+          whose resolved execute skill is in reviewer-bearing allowlist
+          (initial: superpowers/subagent-driven-development,
+          superpowers/requesting-code-review) and whose REVIEW-LOG.md has zero
+          entries OR every entry reviewer is empty/null/orchestrator
+          (inline)/self. Always-on MEDIUM. Parse errors degrade to INFO not-run.
+          Fixture: phase with stub REVIEW-LOG and SDD-routed execute, assert
+          finding."
+      - id: bug-f-skill-attestation
+        title: Bug F — skill-load attestation channel + skill-resolved-but-not-loaded
+          audit
+        summary: "(1) Workflow-runner appends attestation contract to per-phase prompt:
+          harness must emit invoked_skill: <name> block in mark-complete stdin.
+          (2) bin/commands/run.js mark-complete parses block, writes
+          invoked_skill to .run-state/<slug>/<phase>.json. Back-compat: missing
+          field = <unrecorded>. (3) New audit rule skill-resolved-but-not-loaded
+          MEDIUM — cross-references run-state vs resolved execute skill, emits
+          when mismatch. Same allowlist as Bug E. Fixture: synthetic run-state
+          with <unrecorded>, assert finding."
+        depends_on:
+          - bug-e-audit-sham-review-log

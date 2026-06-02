@@ -1,0 +1,1 @@
+propose-project-updates: re-using project-update.json from pre-Bug-G attempt. Already validated by user; v1.8/v1.8.1/v1.8.2 in Validated, v1.9 in Active (no longer deferred — applied this session via prior commit 7c89c10 + this run's edit before milestone start).

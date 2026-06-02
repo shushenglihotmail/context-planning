@@ -6,6 +6,79 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-06-01 — Framework bug fixes from v1.8.1 retro
+
+The WCCT-Copilot retro of v1.8.1 surfaced six bugs across roadmap scanning,
+milestone summary validation, complete-milestone, doctor, and review-loop
+integrity. All six are fixed in this release; the milestone was itself
+driven through the v1.8.2 fan-out workflow as a production dogfood.
+
+### Fixed
+
+- **Bug A — `cp status` blind to `#### Phase` headings.** `lib/roadmap.js`
+  `listPhases()` and `listCollapsedPhaseNums()` regexes widened from `^### `
+  to `^#{3,4}` so h4 headings are recognised alongside h3. Required for any
+  ROADMAP that nests phases under collapsible milestone sections.
+- **Bug B — `writeSummary()` scraped phantom paths from PLAN body.**
+  `lib/milestone.js` now reads structured `expected_files:` from PLAN.md
+  frontmatter. Legacy `expected-key-files:` still honoured (back-compat);
+  `expected_files: []` is an explicit no-validation signal (no warning).
+  `--no-file-check` is now a deprecated alias (warns to stderr). A DEBUG log
+  fires when neither frontmatter key is present.
+- **Bug C — `cp complete-milestone` left a stale STATE.md banner.**
+  `lib/lifecycle.js` now wraps `state.regenerate(root)` in try/catch and
+  emits a stderr warning on failure; the milestone close itself never
+  blocks.
+- **Bug D — `cp doctor` warned dual-plan files with no autofix.** New
+  `--fix-dual-plan` flag in `bin/commands/doctor.js` calls
+  `fixDualPlan(root)` in `lib/audit-fix.js`, which **archives** (never
+  deletes) the loser of each dual-plan pair to
+  `.planning/.archive/<phase-id>/<ISO-ts>-<basename>`. Selection rule:
+  keep the larger file (size); mtime-newer wins on size ties. Idempotent;
+  the warn-only behavior is preserved without the flag.
+- **Bug E — sham REVIEW-LOG.md entries.** New MEDIUM audit rule
+  `sham-review-log` in `lib/audit.js` flags REVIEW-LOG.md files containing
+  `approved on first pass` when no real reviewer record can be parsed from
+  headings after the `<!-- REVIEW-LOG-ENTRIES-BELOW -->` marker.
+  Allowlist-gated: only fires when the project's resolved execute skill is
+  in `REVIEWER_BEARING_SKILLS` (`subagent-driven-development`,
+  `executing-plans`, `requesting-code-review`, including `superpowers/`
+  prefixed forms). Never blocks.
+- **Bug F — orchestrators silently bypassed routed skills.** New
+  `[attestation]` block appended to every per-phase prompt that routes a
+  skill: the orchestrator must report
+  `invoked_skill: <skill-name>` (or `invoked_skill: (inline-fallback)`)
+  in the mark-complete summary. `markPhaseComplete` parses this and
+  persists it to `.planning/.run-state/<slug>/<phaseId>.json` alongside the
+  phase's resolved skill. New MEDIUM audit rule
+  `skill-resolved-but-not-loaded` flags missing/mismatched attestation for
+  reviewer-bearing skills (LOW for explicit `(inline-fallback)`).
+  Scaffold/skill-less phases are excluded by checking the persisted
+  `resolved_skill` field, so audit findings never spam common workflows.
+
+### Added
+
+- `cp doctor --fix-dual-plan` flag (Bug D).
+- `lib/audit-fix.js fixDualPlan(root)` helper (Bug D).
+- `lib/audit.js` rules: `sham-review-log` (Bug E), `skill-resolved-but-not-loaded` (Bug F).
+- Skill attestation contract in routed-skill prompts (Bug F).
+- `.planning/.run-state/<slug>/<phaseId>.json` audit-state directory (Bug F).
+- Frontmatter keys recognised by `writeSummary`: `expected_files:` (preferred), `expected-key-files:` (legacy) (Bug B).
+
+### Internal
+
+- 6 milestone phases (105–110), 9 commits, ~190 new test assertions across
+  9 test files (`unit-libs`, `unit-lifecycle`, `unit-audit`,
+  `dryrun-write-summary`, `dryrun-doctor`, plus three new integration
+  files for Bug F).
+- Milestone was driven entirely through `cp run milestone` to dogfood
+  v1.8.2's Bug G fix in production. All 6 PLAN.md files were written in
+  parallel by Haiku planner subagents before the execute loop.
+- Per-bug review used `subagent-driven-development` (implementer +
+  combined spec+quality reviewer); a final cross-cutting review by the
+  built-in `code-review` agent caught one MEDIUM blocker and one LOW nit
+  missed by per-bug reviewers, both fixed in commit `f2ca64a`.
+
 ## [1.8.2] - 2026-06-01 — Bug G: milestone fan-out wired
 
 ### Fixed
