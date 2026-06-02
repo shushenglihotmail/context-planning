@@ -1235,5 +1235,41 @@ section('completeMilestone audit-error: runAudit throw → reason audit-error');
 }
 
 
+// ---------- Bug C: STATE.md banner regeneration after complete-milestone ----------
+
+section('completeMilestone: regenerates STATE.md derived banner after close (Bug C)');
+{
+  const root = setupCompletableProject('bugc-banner');
+  const r = lifecycle.completeMilestone(root, { noCommit: true, noAudit: true });
+  ok('complete-milestone ok', r.ok === true);
+  const stateAfter = fs.readFileSync(path.join(root, '.planning', 'STATE.md'), 'utf8');
+  // After close: no active milestone → deriveState returns idle with Phase: -
+  ok('STATE banner shows Idle status', /Status:\s+Idle/.test(stateAfter));
+  ok('STATE banner shows Phase: - (regenerated, not stale "0 (ready for next milestone)")',
+    /^Phase:\s+-$/m.test(stateAfter));
+  // totalPlans may be 2 from collapsed phases; Plan: 0 (the stale manual update) should not appear
+  ok('STATE banner does NOT show stale Plan: 0', !/^Plan:\s+0$/m.test(stateAfter));
+  ok('STATE banner shows Current focus: -', /^Current focus:\s+-$/m.test(stateAfter));
+  ok('STATE banner shows Progress 0%', /Progress:.*0%/.test(stateAfter));
+}
+
+section('completeMilestone: warns stderr on regen failure, still exits ok (Bug C)');
+{
+  const root = setupCompletableProject('bugc-regen-throw');
+  const state = require('../lib/state');
+  const origRegen = state.regenerate;
+  state.regenerate = () => { throw new Error('injected regen failure'); };
+  let r;
+  const stderr = captureStderr(() => {
+    r = lifecycle.completeMilestone(root, { noCommit: true, noAudit: true });
+  });
+  state.regenerate = origRegen;
+  ok('still ok=true when regen throws', r.ok === true);
+  ok('stderr contains warning', /state regen failed/i.test(stderr),
+    `stderr=${JSON.stringify(stderr)}`);
+  ok('stderr names close-milestone context', /close-milestone/.test(stderr));
+  ok('stderr includes error message', /injected regen failure/.test(stderr));
+}
+
 if (failed > 0) process.exit(1);
 console.log('All lifecycle checks passed.');
