@@ -1,11 +1,12 @@
 ---
 plan_id: "107"
 phase_num: "107"
-phase_name: "Bug C — STATE.md banner stale after complete-milestone"
+phase_name: Bug C — STATE.md banner stale after complete-milestone
 tier: phase
 status: pending
 created: 2026-06-01
 updated: 2026-06-01
+base-commit: e140fb80b92eae866d429de8b220b2643057f8e8
 ---
 
 # Plan 107: Bug C — Regenerate STATE.md banner in `cp complete-milestone`
