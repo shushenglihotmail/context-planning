@@ -2,6 +2,7 @@
 phase: "110"
 goal: "Implement skill-load attestation: append invoked_skill contract to prompts, parse mark-complete stdin, audit for skill-resolved-but-not-loaded"
 gsd_phase: false
+base-commit: e140fb80b92eae866d429de8b220b2643057f8e8
 ---
 
 # Phase 110 — Bug F: Skill-Load Attestation
