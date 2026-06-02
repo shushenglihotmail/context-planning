@@ -219,5 +219,153 @@ section('runAudit: check-error path');
   ok('message includes original', /boom!/.test(r.findings[0].message));
 }
 
+// ---------- sham-review-log helpers ----------
+
+section('_isReviewerBearingSkill');
+{
+  ok('subagent-driven-development is reviewer-bearing',
+    audit._isReviewerBearingSkill('subagent-driven-development'));
+  ok('superpowers/subagent-driven-development is reviewer-bearing',
+    audit._isReviewerBearingSkill('superpowers/subagent-driven-development'));
+  ok('executing-plans is reviewer-bearing',
+    audit._isReviewerBearingSkill('executing-plans'));
+  ok('requesting-code-review is reviewer-bearing',
+    audit._isReviewerBearingSkill('requesting-code-review'));
+  ok('cp:manual/execute is NOT reviewer-bearing',
+    !audit._isReviewerBearingSkill('cp:manual/execute'));
+  ok('null is NOT reviewer-bearing',
+    !audit._isReviewerBearingSkill(null));
+}
+
+section('_parseShamReviewLogEntries: parses reviewer roles from headings');
+{
+  const root = freshProject('parse-rl');
+  const rlPath = path.join(root, '.planning', 'phases', '01-greet', 'REVIEW-LOG.md');
+  fs.writeFileSync(rlPath,
+    `---\nphase: "1"\n---\n\n## Entries\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n` +
+    `## 2026-01-01 12:00 \u2014 Plan 01-01 Task 1 \u2014 orchestrator (inline)\n\n` +
+    `**Verdict:** approved\n\n---\n` +
+    `## 2026-01-02 09:00 \u2014 Plan 01-01 Task 2 \u2014 alice@example.com\n\n` +
+    `**Verdict:** approved\n\n---\n`);
+  const { entries, error } = audit._parseShamReviewLogEntries(rlPath);
+  ok('no parse error', error === null);
+  ok('two entries found', entries.length === 2, `got ${entries.length}`);
+  ok('first reviewer is orchestrator (inline)', entries[0].reviewer === 'orchestrator (inline)');
+  ok('second reviewer is alice@example.com', entries[1].reviewer === 'alice@example.com');
+}
+
+section('_parseShamReviewLogEntries: missing file returns error');
+{
+  const { entries, error } = audit._parseShamReviewLogEntries('/nonexistent/path/REVIEW-LOG.md');
+  ok('entries empty', entries.length === 0);
+  ok('error is file not found', error === 'file not found');
+}
+
+// ---------- checkShamReviewLog ----------
+
+// Helper: create a test project with a config.json that makes the execute skill reviewer-bearing
+function mkShamProject(suffix, opts) {
+  const root = freshProject(suffix);
+  const phaseDir = path.join(root, '.planning', 'phases', '01-greet');
+  if (opts.reviewLog !== undefined) {
+    fs.writeFileSync(path.join(phaseDir, 'REVIEW-LOG.md'), opts.reviewLog);
+  }
+  // Configure execute skill via config.json (manual provider always installed)
+  const executeSkill = opts.executeSkill !== undefined ? opts.executeSkill : 'subagent-driven-development';
+  const cfg = {
+    cp: {
+      workflow_provider: 'manual',
+      providers: {
+        manual: {
+          description: 'test manual',
+          detect: { always: true },
+          skills: { execute: executeSkill },
+          prompts: {},
+        },
+      },
+    },
+  };
+  fs.writeFileSync(
+    path.join(root, '.planning', 'config.json'),
+    JSON.stringify(cfg, null, 2) + '\n',
+  );
+  return root;
+}
+
+const SHAM_LOG_WITH_SHAM_REVIEWER =
+  `---\nphase: "1"\n---\n\n## Entries\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n` +
+  `## 2026-01-01 12:00 \u2014 Plan 01-01 Task 1 \u2014 orchestrator (inline)\n\n` +
+  `**Verdict:** approved on first pass\n\n---\n`;
+
+const SHAM_LOG_WITH_REAL_REVIEWER =
+  `---\nphase: "1"\n---\n\n## Entries\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n` +
+  `## 2026-01-01 12:00 \u2014 Plan 01-01 Task 1 \u2014 alice@example.com\n\n` +
+  `**Verdict:** approved on first pass\n\n---\n`;
+
+section('checkShamReviewLog: sham phrase + reviewer-bearing skill + no real reviewer -> MEDIUM finding');
+{
+  const root = mkShamProject('sham-fires', { reviewLog: SHAM_LOG_WITH_SHAM_REVIEWER });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('one finding', f.length === 1, `got ${f.length}: ${JSON.stringify(f)}`);
+  ok('id is sham-review-log', f[0].id === 'sham-review-log');
+  ok('severity MEDIUM', f[0].severity === 'MEDIUM');
+  ok('phaseNum is 1', f[0].phaseNum === '1');
+  ok('message names phase', /Phase 1/.test(f[0].message));
+}
+
+section('checkShamReviewLog: sham phrase but run-state has real reviewer -> no finding');
+{
+  const root = mkShamProject('sham-real', { reviewLog: SHAM_LOG_WITH_REAL_REVIEWER });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('no findings (real reviewer present)', f.length === 0, `got ${f.length}: ${JSON.stringify(f)}`);
+}
+
+section('checkShamReviewLog: REVIEW-LOG absent -> no finding');
+{
+  const root = mkShamProject('sham-absent', { /* no reviewLog */ });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('no findings (no REVIEW-LOG)', f.length === 0, `got ${f.length}`);
+}
+
+section('checkShamReviewLog: non-reviewer-bearing skill -> no finding (allowlist guard)');
+{
+  const root = mkShamProject('sham-nonbearing',
+    { reviewLog: SHAM_LOG_WITH_SHAM_REVIEWER, executeSkill: 'cp:manual/execute' });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('no findings (non-reviewer-bearing skill)', f.length === 0, `got ${f.length}`);
+}
+
+section('checkShamReviewLog: REVIEW-LOG present but no sham phrase -> no finding');
+{
+  const root = mkShamProject('sham-nophrase', {
+    reviewLog: `---\nphase: "1"\n---\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n` +
+      `## 2026-01-01 \u2014 Plan 01-01 \u2014 orchestrator (inline)\n\n**Verdict:** approved\n\n---\n`,
+  });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('no findings (no sham phrase)', f.length === 0, `got ${f.length}`);
+}
+
+section('checkShamReviewLog: self reviewer is sham -> MEDIUM finding');
+{
+  const root = mkShamProject('sham-self', {
+    reviewLog:
+      `---\nphase: "1"\n---\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n` +
+      `## 2026-01-01 \u2014 Plan 01-01 \u2014 self\n\n**Verdict:** approved on first pass\n\n---\n`,
+  });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('one finding for self reviewer', f.length === 1, `got ${f.length}`);
+  ok('id sham-review-log', f[0].id === 'sham-review-log');
+}
+
+section('checkShamReviewLog: zero entries (empty REVIEW-LOG) + sham phrase -> MEDIUM finding');
+{
+  const root = mkShamProject('sham-empty', {
+    reviewLog: `---\nphase: "1"\n---\n\n<!-- REVIEW-LOG-ENTRIES-BELOW -->\n\napproved on first pass\n`,
+  });
+  const f = audit.checkShamReviewLog(root, { phases: audit._listPhaseDirs(root) });
+  ok('one finding for empty log', f.length === 1, `got ${f.length}`);
+  ok('id sham-review-log', f[0].id === 'sham-review-log');
+}
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) process.exit(1);
