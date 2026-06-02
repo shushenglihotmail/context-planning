@@ -1,11 +1,12 @@
 ---
 phase: "108"
-plan_id: "108-bug-d-doctor-fix-dual-plan"
-title: "Add `--fix-dual-plan` flag to cp doctor"
-goal: "Auto-remove long-form NN-MM-...-PLAN.md when short-form PLAN.md exists and is non-empty"
+plan_id: 108-bug-d-doctor-fix-dual-plan
+title: Add `--fix-dual-plan` flag to cp doctor
+goal: Auto-remove long-form NN-MM-...-PLAN.md when short-form PLAN.md exists and is non-empty
 status: accepted
 created: 2026-06-02
 updated: 2026-06-02
+base-commit: 5d9b19c73400eb8c958b0d578421f2bd2f9ea0bf
 ---
 
 # Plan: Phase 108 — Bug D: `cp doctor --fix-dual-plan`
