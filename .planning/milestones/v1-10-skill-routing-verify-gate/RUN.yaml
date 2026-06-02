@@ -3,14 +3,96 @@ slug: v1-10-skill-routing-verify-gate
 status: in-progress
 binding: milestone
 started: 2026-06-02T22:02:05.511Z
-last_activity: 2026-06-02T22:02:11.316Z
-current_wave: 1
+last_activity: 2026-06-02T22:07:40.451Z
+current_wave: 5
 completed:
   - setup
+  - brainstorm
+  - propose-project-updates
+  - apply-project-updates
+  - propose-phases
 phaseNumByPhaseId:
   brainstorm: 111
   propose-project-updates: 112
   review: 113
+  provider-skill-availability-and-sigil: 114
+  child-plan::provider-skill-availability-and-sigil: 114
+  child-execute::provider-skill-availability-and-sigil: 114
+  runtime-resolution-chain-and-diagnostic: 115
+  child-plan::runtime-resolution-chain-and-diagnostic: 115
+  child-execute::runtime-resolution-chain-and-diagnostic: 115
+  cp-run-verify-subcommand: 116
+  child-plan::cp-run-verify-subcommand: 116
+  child-execute::cp-run-verify-subcommand: 116
+  milestone-yaml-verify-phase-and-integration-tests: 117
+  child-plan::milestone-yaml-verify-phase-and-integration-tests: 117
+  child-execute::milestone-yaml-verify-phase-and-integration-tests: 117
+  docs-changelog-release: 118
+  child-plan::docs-changelog-release: 118
+  child-execute::docs-changelog-release: 118
 milestoneName: v1.10 Skill Routing & Verify Gate
 template_path: C:\src\github\context-planning\templates\workflows\milestone.yaml
-parent_outputs: {}
+parent_outputs:
+  propose-phases:
+    optimizable: false
+    items:
+      - id: provider-skill-availability-and-sigil
+        title: "lib/provider.js: parens-sigil parser + role-filtered token-overlap fuzzy
+          matcher + per-skill SKILL.md stat"
+        summary: Add per-skill availability check (stat
+          <provider-skill-dir>/<name>/SKILL.md). Add parens-sigil parser
+          (recognize (skill-name) as opt-in fuzzy marker, error on
+          malformed/nested). Add role-filtered token-overlap fuzzy matcher
+          (tokenize on - and _, score by token-overlap with substring matching,
+          threshold >= 0.5, tiebreak score > shortest > alphabetical). Expose
+          manual-provider prompts[role] loader so the runtime can bake the role
+          prompt inline as fallback step 3. Unit tests cover sigil boundary
+          cases, fuzzy determinism, role filter correctness.
+      - id: runtime-resolution-chain-and-diagnostic
+        title: "lib/runtime.js: workflow-start diagnostic aggregator + 5-step resolution
+          chain + subagent-dispatch directive emission"
+        summary: "Walk expanded phase DAG once at workflow start to collect distinct
+          (role, skill_name) pairs. For each, run 5-step resolution chain: (1)
+          sigil-fuzzy if name wrapped in parens, (2) exact match in
+          role-filtered catalog, (3) manual-provider prompts[role] inlined into
+          wave instruction, (4) generic subagent-dispatch directive
+          (harness-agnostic 'dispatch a subagent with role: <role>, prompt:
+          <phase.prompt>'), (5) bare phase prompt. Emit ONE consolidated
+          diagnostic block before wave 1 grouped by status (resolved /
+          fuzzy-matched-to-X with candidate list / fell-back-to-manual with cp
+          config set hint). Cache resolved skills for the duration of the run.
+          Integration tests cover each fallback layer + snapshot the diagnostic
+          format."
+      - id: cp-run-verify-subcommand
+        title: new cp run-verify subcommand + lib/verify.js + behavior.test_command
+          config + auto-detect chain
+        summary: "New bin/commands/run-verify.js CLI entrypoint and supporting
+          lib/verify.js. Reads behavior.test_command from .planning/config.json.
+          Default auto-detect chain: npm test -> pytest -> cargo test -> go test
+          ./... -> noop with WARN if none. Exits non-zero on test failure.
+          Opt-out via behavior.verify: false in config OR --skip-verify CLI
+          flag. Per-project test_command override always wins over
+          auto-detection. Unit tests cover auto-detect priority, exec exit-code
+          propagation, opt-out paths."
+      - id: milestone-yaml-verify-phase-and-integration-tests
+        title: "templates/workflows/milestone.yaml: insert verify scaffold phase before
+          review + depends_on wiring + integration tests"
+        summary: "Insert new verify phase in milestone.yaml immediately before review,
+          kind: scaffold, command: 'cp run-verify {{milestone_slug}}'. Add
+          depends_on: [verify] to review phase. Confirm authoring policy in the
+          file: brainstorm_skill: brainstorming (strict), plan_skill:
+          writing-plans (strict), review_skill: (code-review) (fuzzy).
+          Integration test: full milestone run on synthetic fixture; verify-fail
+          blocks review wave; --skip-verify works."
+      - id: docs-changelog-release
+        title: Docs (sigil authoring policy + PowerShell blurb) + CHANGELOG + v1.10.0
+          npm publish
+        summary: "Docs: README PowerShell-on-Windows blurb (cp aliases to Copy-Item
+          built-in; users must invoke cp.cmd explicitly). Sigil authoring policy
+          section with checklist: check default provider catalog for exact match
+          -> strict; if absent -> wrap in parens for fuzzy + verify
+          role-filtered candidate set has reasonable hit; if nothing reasonable
+          -> leave strict so runtime falls through to subagent-dispatch.
+          CHANGELOG v1.10.0 entry covering both real bug fixes + 3 verified
+          non-bugs + sigil syntax addition. Bump package.json to 1.10.0. npm
+          publish context-planning@1.10.0."

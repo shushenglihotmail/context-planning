@@ -700,6 +700,16 @@ Plans:
 ### Phase 112: propose-project-updates
 
 ### Phase 113: review
+
+### Phase 114: provider-skill-availability-and-sigil
+
+### Phase 115: runtime-resolution-chain-and-diagnostic
+
+### Phase 116: cp-run-verify-subcommand
+
+### Phase 117: milestone-yaml-verify-phase-and-integration-tests
+
+### Phase 118: docs-changelog-release
 ## Progress
 
 **Execution Order:**

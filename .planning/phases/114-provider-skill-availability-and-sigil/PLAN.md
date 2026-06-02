@@ -1,0 +1,3 @@
+# lib/provider.js: parens-sigil parser + role-filtered token-overlap fuzzy matcher + per-skill SKILL.md stat
+
+Add per-skill availability check (stat <provider-skill-dir>/<name>/SKILL.md). Add parens-sigil parser (recognize (skill-name) as opt-in fuzzy marker, error on malformed/nested). Add role-filtered token-overlap fuzzy matcher (tokenize on - and _, score by token-overlap with substring matching, threshold >= 0.5, tiebreak score > shortest > alphabetical). Expose manual-provider prompts[role] loader so the runtime can bake the role prompt inline as fallback step 3. Unit tests cover sigil boundary cases, fuzzy determinism, role filter correctness.

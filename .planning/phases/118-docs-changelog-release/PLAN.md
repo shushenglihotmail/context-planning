@@ -1,0 +1,3 @@
+# Docs (sigil authoring policy + PowerShell blurb) + CHANGELOG + v1.10.0 npm publish
+
+Docs: README PowerShell-on-Windows blurb (cp aliases to Copy-Item built-in; users must invoke cp.cmd explicitly). Sigil authoring policy section with checklist: check default provider catalog for exact match -> strict; if absent -> wrap in parens for fuzzy + verify role-filtered candidate set has reasonable hit; if nothing reasonable -> leave strict so runtime falls through to subagent-dispatch. CHANGELOG v1.10.0 entry covering both real bug fixes + 3 verified non-bugs + sigil syntax addition. Bump package.json to 1.10.0. npm publish context-planning@1.10.0.
