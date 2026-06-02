@@ -20,7 +20,7 @@ Phase: 110 (v1.9 Framework Bug Fixes from v1.8.1 Retro)
 Plan: -
 Status: Phase complete
 Current focus: bug-f-skill-attestation
-Last activity: /cp-complete-milestone Milestone workflow end-to-end + quick attach
+Last activity: capture inbox item #7
 
 Progress: [░░░░░░░░░░] 0%
 

@@ -692,6 +692,14 @@ Plans:
 ### Phase 109: bug-e-audit-sham-review-log
 
 ### Phase 110: bug-f-skill-attestation
+
+### 🚧 v1.10 Skill Routing & Verify Gate (In Progress)
+
+### Phase 111: brainstorm
+
+### Phase 112: propose-project-updates
+
+### Phase 113: review
 ## Progress
 
 **Execution Order:**
