@@ -132,6 +132,31 @@ Plans:
   eq('strips (INSERTED) from name',   p[1].name, 'Hotfix');
 }
 
+// ============================================================
+section('lib/roadmap: listPhases accepts #### (h4) headings (Bug A)');
+{
+  const h4only = `# Roadmap\n\n#### Phase 7: Quad Hash\n- [ ] 07-01: plan one\n`;
+  const phases = roadmap.listPhases(h4only);
+  eq('h4 phase found (length 1)', phases.length, 1);
+  eq('h4 phase num = "7"',        phases[0].num,  '7');
+  eq('h4 phase name',             phases[0].name, 'Quad Hash');
+  eq('h4 phase plan count',       phases[0].plans.length, 1);
+
+  const mixed = `### Phase 1: Triple Hash\n- [ ] 01-01: a\n\n#### Phase 7: Quad Hash\n- [ ] 07-01: b\n`;
+  const mp = roadmap.listPhases(mixed);
+  eq('mixed h3+h4: both phases found', mp.length, 2);
+  eq('mixed: phase 1 num',             mp[0].num, '1');
+  eq('mixed: phase 7 num',             mp[1].num, '7');
+}
+
+section('lib/roadmap: listCollapsedPhaseNums accepts #### (h4) headings (Bug A)');
+{
+  const collapsed = `<details><summary>✅ Milestone Alpha (Phases 7-8) — SHIPPED</summary>\n#### Phase 7: Quad Hash\n#### Phase 8: Eight\n</details>\n`;
+  const nums = roadmap.listCollapsedPhaseNums(collapsed);
+  ok('collapsed h4: phase 7 recognized', nums.includes('7'));
+  ok('collapsed h4: phase 8 recognized', nums.includes('8'));
+}
+
 section('lib/roadmap: setPlanDone');
 {
   const before = '- [ ] 01-02: thing\n- [x] 01-03: other\n';
