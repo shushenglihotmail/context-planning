@@ -699,6 +699,128 @@ check('materializeRoadmapPhases propagates enforceChildCount violations', () => 
   );
 });
 
+// ============================================================
+// P3 (Bug G) — suppress workflow-meta phases from ROADMAP scaffold
+// ============================================================
+console.log('\nP3: meta-phase suppression in startRun + markPhaseComplete redirect');
+
+function writePlumbingTemplate(dir) {
+  const wfDir = fpath.join(dir, '.planning', 'workflows');
+  fs.mkdirSync(wfDir, { recursive: true });
+  const tplPath = fpath.join(wfDir, 'plumbing-test.yaml');
+  fs.writeFileSync(tplPath,
+`workflow: plumbing-test
+version: 1
+binds_to: milestone
+principles:
+  - Test plumbing-phase suppression.
+defaults:
+  model: default
+phases:
+  - phase:
+      id: setup
+      description: Validate prerequisites.
+      kind: scaffold
+      command: "echo setup"
+  - phase:
+      id: propose-phases
+      description: Decompose into items.
+      depends_on: [ setup ]
+      role: developer
+      materialize: roadmap-phases
+      max_children: 5
+      prompt: |
+        Decompose into items.
+  - phase:
+      id: child-plan
+      description: Per-item planning.
+      parent: propose-phases
+      role: developer
+      prompt: |
+        Plan one item.
+  - phase:
+      id: review
+      description: Review phases.
+      depends_on: [ propose-phases ]
+      role: reviewer
+      prompt: |
+        Review.
+`);
+  return tplPath;
+}
+
+// Test A: only the normal phase (review) appears in ROADMAP after startRun
+check('startRun: kind:scaffold and materialize:roadmap-phases parents are NOT scaffolded into ROADMAP', () => {
+  const dir = freshProject();
+  const tplPath = writePlumbingTemplate(dir);
+  const { slug } = runtime.startRun(tplPath, { projectDir: dir, name: 'P3 Suppress Test' });
+
+  const runState = yaml.parse(fs.readFileSync(
+    fpath.join(dir, '.planning', 'milestones', slug, 'RUN.yaml'), 'utf8'));
+
+  // setup (kind:scaffold) must NOT appear in phaseNumByPhaseId
+  assert.ok(!Object.prototype.hasOwnProperty.call(runState.phaseNumByPhaseId, 'setup'),
+    'setup (kind:scaffold) must not be in phaseNumByPhaseId');
+
+  // propose-phases (materialize:roadmap-phases parent) must NOT appear
+  assert.ok(!Object.prototype.hasOwnProperty.call(runState.phaseNumByPhaseId, 'propose-phases'),
+    'propose-phases (materialize parent) must not be in phaseNumByPhaseId');
+
+  // review (normal deliverable) MUST appear
+  assert.ok(runState.phaseNumByPhaseId['review'] != null,
+    'review (normal phase) must appear in phaseNumByPhaseId');
+
+  // Exactly one phase dir should exist on disk (review only)
+  const reviewPhaseNum = runState.phaseNumByPhaseId['review'];
+  const reviewDir = paths.findPhaseDir(String(reviewPhaseNum), dir);
+  assert.ok(reviewDir, 'review phase dir must exist on disk');
+
+  const phasesRoot = fpath.join(dir, '.planning', 'phases');
+  const phaseDirs = fs.existsSync(phasesRoot)
+    ? fs.readdirSync(phasesRoot).filter((d) => fs.statSync(fpath.join(phasesRoot, d)).isDirectory())
+    : [];
+  assert.strictEqual(phaseDirs.length, 1,
+    `Expected exactly 1 phase dir (review), got ${phaseDirs.length}: ${phaseDirs.join(', ')}`);
+});
+
+// Test B: mark-complete on a plumbing phase does NOT throw and does NOT create a phantom phase dir
+check('markPhaseComplete: completing a kind:scaffold phase does not throw and creates no phantom dir', () => {
+  const dir = freshProject();
+  const tplPath = writePlumbingTemplate(dir);
+  const { slug } = runtime.startRun(tplPath, { projectDir: dir, name: 'P3 NoPhantom Test' });
+
+  // Wave 0 is 'setup' (kind:scaffold); mark it complete with arbitrary summary
+  assert.doesNotThrow(
+    () => runtime.markPhaseComplete(slug, 'setup', 'Setup complete.', { projectDir: dir }),
+    'markPhaseComplete must not throw for a plumbing phase',
+  );
+
+  // Still only one phase dir (review) — no phantom dir for setup
+  const phasesRoot = fpath.join(dir, '.planning', 'phases');
+  const phaseDirs = fs.existsSync(phasesRoot)
+    ? fs.readdirSync(phasesRoot).filter((d) => fs.statSync(fpath.join(phasesRoot, d)).isDirectory())
+    : [];
+  assert.strictEqual(phaseDirs.length, 1,
+    `Expected 1 phase dir after plumbing-phase completion, got ${phaseDirs.length}`);
+});
+
+// Test C: plumbing-phase summary is redirected to milestone dir SUMMARY.md
+check('markPhaseComplete: plumbing-phase summary is appended to milestone dir SUMMARY.md', () => {
+  const dir = freshProject();
+  const tplPath = writePlumbingTemplate(dir);
+  const { slug } = runtime.startRun(tplPath, { projectDir: dir, name: 'P3 Redirect Test' });
+
+  runtime.markPhaseComplete(slug, 'setup', 'Setup output here.', { projectDir: dir });
+
+  const msSummaryPath = fpath.join(dir, '.planning', 'milestones', slug, 'SUMMARY.md');
+  assert.ok(fs.existsSync(msSummaryPath), 'milestone SUMMARY.md must be created');
+  const content = fs.readFileSync(msSummaryPath, 'utf8');
+  assert.ok(content.includes('Setup output here.'),
+    'plumbing-phase summary content must be in milestone SUMMARY.md');
+  assert.ok(content.includes('setup'),
+    'phase id must appear in milestone SUMMARY.md header');
+});
+
 console.log(`\nPassed: ${passed}   Failed: ${failed}`);
 if (failed > 0) {
   console.log('FAILURES:');

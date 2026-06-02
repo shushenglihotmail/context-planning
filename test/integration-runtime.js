@@ -188,10 +188,11 @@ section('startRun — milestone tier');
   ok('ROADMAP updated with milestone heading',
     /Test Milestone/.test(roadmap), roadmap.slice(0, 400));
 
-  // dev-mini has 5 phases — all should be scaffolded
+  // dev-mini has 6 phases total; 1 is kind:scaffold (finalize) which P3 suppresses.
+  // Expect 5 ROADMAP phase dirs (brainstorm, research-a, research-b, plan, execute).
   const phasesDir = path.join(dir, '.planning', 'phases');
   const phaseEntries = fs.existsSync(phasesDir) ? fs.readdirSync(phasesDir) : [];
-  ok('6 phase dirs scaffolded (one per template phase)', phaseEntries.length === 6,
+  ok('5 deliverable phase dirs scaffolded (kind:scaffold finalize suppressed)', phaseEntries.length === 5,
     `found: ${phaseEntries.join(', ')}`);
 
   // RUN.yaml exists at expected path
@@ -202,6 +203,8 @@ section('startRun — milestone tier');
   const runState = yaml.parse(fs.readFileSync(runYamlPath, 'utf8'));
   ok('RUN.yaml has phaseNumByPhaseId with brainstorm',
     runState.phaseNumByPhaseId && typeof runState.phaseNumByPhaseId.brainstorm === 'number');
+  ok('RUN.yaml phaseNumByPhaseId does NOT contain finalize (kind:scaffold)',
+    !Object.prototype.hasOwnProperty.call(runState.phaseNumByPhaseId, 'finalize'));
 }
 
 {
