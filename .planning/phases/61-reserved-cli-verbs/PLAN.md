@@ -5,20 +5,38 @@ milestone: v1.4 Workflow-driven quick and milestone
 status: in-progress
 created: 2026-05-28
 base-commit: e5c03bc5d9c1e33983d87cfd650ef9f9f8d51c4a
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - bin/commands/abandon.js
+  - bin/commands/checkpoint.js
+  - bin/commands/classify.js
+  - bin/commands/index.js
+  - bin/commands/list.js
+  - bin/commands/milestone-finalize.js
+  - bin/commands/milestone-setup-check.js
+  - bin/commands/project.js
+  - bin/commands/quick-finalize.js
+  - bin/commands/quick-setup.js
+  - bin/commands/run.js
+  - bin/commands/status.js
+  - commands/cp/classify.md
+  - commands/cp/run-supervised.md
+  - lib/checkpoint.js
+  - lib/classify.js
+  - lib/milestone-helpers.js
+  - lib/project-update.js
+  - lib/quick-helpers.js
+  - lib/run-lifecycle.js
+  - lib/supervisor.js
+  - lib/workflow.js
+  - package.json
+  - test/integration-supervisor-flow.js
+  - test/unit-checkpoint.js
+  - test/unit-classify.js
+  - test/unit-milestone-helpers.js
+  - test/unit-project-update.js
+  - test/unit-run-lifecycle.js
+  - test/unit-supervisor-state.js
+  - test/unit-workflow-schema-v14.js
 ---
 
 # Phase 61: Reserved CLI verbs

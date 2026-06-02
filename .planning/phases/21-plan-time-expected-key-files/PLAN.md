@@ -5,6 +5,13 @@ milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
 base-commit: 3847655596be401997da1a9470a8188cd4c4448f
+expected_files:
+  - bin/commands/write-summary.js
+  - lib/lifecycle.js
+  - lib/milestone.js
+  - templates/phase-PLAN.md
+  - test/dryrun-write-summary.js
+  - test/unit-lifecycle.js
 ---
 
 # Phase 21 — Plan-time expected-key-files

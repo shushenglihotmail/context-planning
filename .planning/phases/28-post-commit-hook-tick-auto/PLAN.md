@@ -1,5 +1,6 @@
 ---
 base-commit: d9e14444bdcbc9486497635019847ce45a734d9b
+expected_files: []
 ---
 # Phase 28 Plan — Post-commit hook tick auto
 

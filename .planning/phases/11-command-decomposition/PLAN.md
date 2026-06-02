@@ -5,6 +5,22 @@ milestone: v0.6 Quality Wave
 status: in-progress
 created: 2026-05-20
 base-commit: 31f2f3793b54fe176f5906e5492c2a2733abd4f0
+expected_files:
+  - bin/commands/capture.js
+  - bin/commands/codebase-status.js
+  - bin/commands/complete-milestone.js
+  - bin/commands/config.js
+  - bin/commands/gsd-import.js
+  - bin/commands/inbox.js
+  - bin/commands/index.js
+  - bin/commands/install.js
+  - bin/commands/scaffold-codebase.js
+  - bin/commands/scaffold-milestone.js
+  - bin/commands/scaffold-phase.js
+  - bin/commands/statusline.js
+  - bin/commands/worktree.js
+  - bin/commands/write-summary.js
+  - bin/cp.js
 ---
 
 # Phase 11: Command decomposition

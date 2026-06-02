@@ -5,20 +5,7 @@ milestone: v1.6 Workflow Contract Hardening
 status: in-progress
 created: 2026-05-29
 base-commit: b747e240b8a69223c9517ebacc159704070a9536
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files: []
 ---
 
 # Phase 82: prompt-scrub-and-config-fallbacks

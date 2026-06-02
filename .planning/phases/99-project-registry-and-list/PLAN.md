@@ -5,6 +5,15 @@ milestone: Milestone workflow end-to-end + quick attach
 status: complete
 created: 2026-05-31
 base-commit: 3a65260b429d3c624ee8e819974461ddd391d120
+expected_files:
+  - bin/commands/_usage.js
+  - bin/commands/index.js
+  - bin/commands/milestone.js
+  - bin/commands/project.js
+  - bin/cp.js
+  - lib/registry.js
+  - package.json
+  - test/unit-registry.js
 ---
 
 # Phase 99: project-registry-and-list

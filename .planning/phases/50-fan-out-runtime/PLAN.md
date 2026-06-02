@@ -10,6 +10,16 @@ plan-status:
   50-04: in-progress
 created: 2026-05-26
 base-commit: 3cc9262
+expected_files:
+  - lib/fanout.js
+  - lib/runtime-fanout.js
+  - lib/workflow.js
+  - package.json
+  - templates/workflows/dev-v2.yaml
+  - test/integration-fanout-v12.js
+  - test/unit-fanout.js
+  - test/unit-runtime-fanout.js
+  - test/unit-workflow-schema-v12.js
 ---
 
 # Phase 50: Fan-out runtime (parent: field, sibling pairing, max_children, 1-level limit)

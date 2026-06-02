@@ -5,6 +5,8 @@ milestone: v0.6 Quality Wave
 status: in-progress
 created: 2026-05-20
 base-commit: 5902cf3709259c345c8cb79e3af3d90fc36a3387
+expected_files:
+  - .github/workflows/ci.yml
 ---
 
 # Phase 14: Coverage with c8

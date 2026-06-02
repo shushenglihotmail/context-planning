@@ -1,5 +1,12 @@
 ---
 base-commit: e561ff25ddf4e739b2ecbb3cf9e1495f4fff745d
+expected_files:
+  - bin/commands/workflow.js
+  - commands/cp/workflow-customize.md
+  - commands/cp/workflow-new.md
+  - test/dryrun-workflow-cli.js
+  - test/integration-workflow-skills.js
+  - test/unit-v034.js
 ---
 
 # Phase 44: Creator skills: cp-workflow-new, cp-workflow-customize (+ cp workflow export)

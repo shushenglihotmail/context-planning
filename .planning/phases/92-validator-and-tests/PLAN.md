@@ -5,20 +5,9 @@ milestone: Template parameterization whitelist
 status: in-progress
 created: 2026-05-29
 base-commit: e5d525c84293bdb5a6f03734b17527cb0847ac9b
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - lib/workflow-template-validate.js
+  - test/unit-workflow-template-validate.js
 ---
 
 # Phase 92: validator-and-tests

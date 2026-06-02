@@ -5,20 +5,23 @@ milestone: v1.4 Workflow-driven quick and milestone
 status: in-progress
 created: 2026-05-28
 base-commit: da421a9ada8253ceb3454594469fd6b83e36c231
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - bin/commands/checkpoint.js
+  - bin/commands/classify.js
+  - bin/commands/index.js
+  - bin/commands/run.js
+  - commands/cp/classify.md
+  - commands/cp/run-supervised.md
+  - lib/checkpoint.js
+  - lib/classify.js
+  - lib/supervisor.js
+  - lib/workflow.js
+  - package.json
+  - test/integration-supervisor-flow.js
+  - test/unit-checkpoint.js
+  - test/unit-classify.js
+  - test/unit-supervisor-state.js
+  - test/unit-workflow-schema-v14.js
 ---
 
 # Phase 60: Engine + supervisor + broker + checkpoint

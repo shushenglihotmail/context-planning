@@ -11,6 +11,48 @@ plan-status:
   51-05: pending
 created: 2026-05-26
 base-commit: 3cc9262
+expected_files:
+  - bin/commands/autonomous.js
+  - bin/commands/init.js
+  - bin/commands/run.js
+  - bin/commands/status.js
+  - bin/commands/workflow.js
+  - commands/cp/autonomous.md
+  - commands/cp/capture.md
+  - commands/cp/execute-phase.md
+  - commands/cp/map-codebase.md
+  - commands/cp/new-milestone.md
+  - commands/cp/new-project.md
+  - commands/cp/plan-phase.md
+  - commands/cp/progress.md
+  - commands/cp/quick.md
+  - commands/cp/workflow-customize.md
+  - lib/autonomous.js
+  - lib/custom.js
+  - lib/fanout.js
+  - lib/lifecycle.js
+  - lib/milestone.js
+  - lib/runtime-fanout.js
+  - lib/runtime.js
+  - lib/workflow.js
+  - package.json
+  - templates/quick-DESIGN.md
+  - templates/quick-PLAN.md
+  - templates/quick-STATE.md
+  - templates/workflows/debug.yaml
+  - templates/workflows/dev.yaml
+  - templates/workflows/quick.yaml
+  - test/dryrun-progress.js
+  - test/dryrun-workflow-cli.js
+  - test/fixtures/workflows/quick-mini.yaml
+  - test/integration-fanout-v12.js
+  - test/integration-runtime.js
+  - test/unit-autonomous.js
+  - test/unit-custom.js
+  - test/unit-fanout.js
+  - test/unit-runtime-fanout.js
+  - test/unit-workflow-schema-v12.js
+  - test/unit-workflow.js
 ---
 
 # Phase 51: CLI shims + deprecate cp-plan-phase

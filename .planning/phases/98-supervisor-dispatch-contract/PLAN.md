@@ -5,6 +5,10 @@ milestone: Milestone workflow end-to-end + quick attach
 status: complete
 created: 2026-05-31
 base-commit: 9e260ce353e92c74226f394b8e0405350f7599b3
+expected_files:
+  - lib/runtime.js
+  - lib/workflow.js
+  - test/unit-workflow.js
 ---
 
 # Phase 98: supervisor-dispatch-contract

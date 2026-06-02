@@ -5,6 +5,9 @@ milestone: Milestone workflow end-to-end + quick attach
 status: complete
 created: 2026-05-31
 base-commit: 32d3ce994029276a2e98ef035dcdbad749a0f0f9
+expected_files:
+  - lib/workflow.js
+  - test/unit-workflow-schema-v14.js
 ---
 
 # Phase 96: validator-roadmap-phases-rules

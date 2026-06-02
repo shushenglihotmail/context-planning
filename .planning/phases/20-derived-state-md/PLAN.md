@@ -5,6 +5,16 @@ milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
 base-commit: 0706110dd0ba1b4f9f344de36ee862c0a18acd08
+expected_files:
+  - bin/commands/_usage.js
+  - bin/commands/index.js
+  - bin/commands/state.js
+  - lib/lifecycle.js
+  - lib/milestone.js
+  - lib/state.js
+  - package.json
+  - test/dryrun-state.js
+  - test/unit-state.js
 ---
 
 # Phase 20: Derived STATE.md

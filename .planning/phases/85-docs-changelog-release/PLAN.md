@@ -5,20 +5,22 @@ milestone: v1.6 Workflow Contract Hardening
 status: in-progress
 created: 2026-05-29
 base-commit: ff27c0d29d4edef12cc34ccb4ea02729c7820353
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - bin/commands/index.js
+  - bin/commands/run-finalize.js
+  - bin/commands/run.js
+  - bin/commands/workflow.js
+  - lib/runtime.js
+  - lib/workflow-template-expand.js
+  - lib/workflow.js
+  - test/dryrun-workflow-cli.js
+  - test/fixtures/workflows/dev-mini.yaml
+  - test/fixtures/workflows/quick-mini.yaml
+  - test/integration-format-instruction-skills.js
+  - test/integration-runtime.js
+  - test/unit-run-lifecycle.js
+  - test/unit-workflow-auto-inject-finalize.js
+  - test/unit-workflow-template-expand.js
 ---
 
 # Phase 85: docs-changelog-release

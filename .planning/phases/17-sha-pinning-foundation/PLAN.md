@@ -5,6 +5,10 @@ milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
 base-commit: 881c6110f25b1468f2d305f8148bcf3a28f9ed84
+expected_files:
+  - lib/lifecycle.js
+  - lib/milestone.js
+  - test/unit-lifecycle.js
 ---
 
 # Phase 17: SHA pinning foundation

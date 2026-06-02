@@ -5,6 +5,12 @@ milestone: v0.8 Consistency
 status: in-progress
 created: 2026-05-21
 base-commit: d281b7c87ed84be9bd6e22626eb99c204dff27a6
+expected_files:
+  - bin/commands/write-summary.js
+  - lib/lifecycle.js
+  - lib/milestone.js
+  - test/dryrun-write-summary.js
+  - test/unit-lifecycle.js
 ---
 
 # Phase 19: File-existence hard-block

@@ -1,5 +1,12 @@
 ---
 base-commit: ca26f475fe2e99eb71b74d8f248dd05d85593c99
+expected_files:
+  - commands/cp/workflow-list.md
+  - commands/cp/workflow-resume.md
+  - commands/cp/workflow-run.md
+  - package.json
+  - test/integration-workflow-skills.js
+  - test/unit-v034.js
 ---
 
 # Phase 43: Consumer skills: cp-workflow-run, cp-workflow-list, cp-workflow-resume

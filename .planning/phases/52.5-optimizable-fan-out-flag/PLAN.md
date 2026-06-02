@@ -5,20 +5,14 @@ milestone: v1.2 Unified Phase Model
 status: in-progress
 created: 2026-05-26
 base-commit: ea2cd5716398012d3f508194464d0973efc8f381
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - docs/MIGRATION-v1.2.md
+  - lib/fanout.js
+  - lib/runtime-fanout.js
+  - templates/workflows/dev.yaml
+  - test/integration-fanout-v12.js
+  - test/unit-fanout.js
+  - test/unit-runtime-fanout.js
 ---
 
 # Phase 52.5: optimizable fan-out flag

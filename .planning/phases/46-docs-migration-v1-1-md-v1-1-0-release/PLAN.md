@@ -9,20 +9,28 @@ plan-status:
   46-03: complete
 created: 2026-05-25
 base-commit: ce06ed62fb23b1dc8f5d16fa76abfdd9633dfbc7
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - CHANGELOG.md
+  - MIGRATION-v1.1.md
+  - README.md
+  - bin/commands/_usage.js
+  - bin/commands/workflow.js
+  - commands/cp/workflow-brainstorm.md
+  - commands/cp/workflow-customize.md
+  - commands/cp/workflow-diagram.md
+  - commands/cp/workflow-export.md
+  - commands/cp/workflow-import.md
+  - commands/cp/workflow-inspect.md
+  - commands/cp/workflow-list.md
+  - commands/cp/workflow-new.md
+  - commands/cp/workflow-resume.md
+  - commands/cp/workflow-run.md
+  - commands/cp/workflow-show.md
+  - commands/cp/workflow-validate.md
+  - package.json
+  - test/dryrun-workflow-cli.js
+  - test/integration-workflow-skills.js
+  - test/unit-v034.js
 ---
 
 # Phase 46: Docs + MIGRATION-v1.1.md + v1.1.0 release

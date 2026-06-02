@@ -5,6 +5,22 @@ milestone: v0.7 Design Capture
 status: in-progress
 created: 2026-05-20
 base-commit: 3cb8ff54c3bba30f78882e450aa8870667d5cf87
+expected_files:
+  - bin/commands/write-summary.js
+  - commands/cp/execute-phase.md
+  - commands/cp/new-milestone.md
+  - commands/cp/plan-phase.md
+  - commands/cp/write-summary.md
+  - docs/superpowers/plans/2026-05-20-v0-7-plan-16-02-review-log-infrastructure.md
+  - docs/superpowers/plans/2026-05-20-v0-7-plan-16-03-key-decisions-hard-block.md
+  - lib/lifecycle.js
+  - lib/milestone.js
+  - lib/paths.js
+  - package.json
+  - scripts/backfill-v07-design.js
+  - templates/REVIEW-LOG.md
+  - test/unit-design.js
+  - test/unit-lifecycle.js
 ---
 
 # Phase 16: design capture infrastructure

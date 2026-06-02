@@ -5,6 +5,8 @@ milestone: Milestone workflow end-to-end + quick attach
 status: complete
 created: 2026-05-31
 base-commit: e869f3178358ea235be73b1bf781c17b2eee5fb1
+expected_files:
+  - templates/workflows/milestone.yaml
 ---
 
 # Phase 97: milestone-template-children

@@ -10,6 +10,16 @@ plan-status:
   49-04: in-progress
 created: 2026-05-25
 base-commit: 8f40fc160238d0635f06556f8f66c80153ac7813
+expected_files:
+  - lib/milestone.js
+  - lib/persist.js
+  - lib/types.js
+  - lib/workflow.js
+  - package.json
+  - test/unit-milestone-reader.js
+  - test/unit-persist.js
+  - test/unit-types.js
+  - test/unit-workflow-phase-adapter.js
 ---
 
 # Phase 49: Foundations + tier files + persist primitives

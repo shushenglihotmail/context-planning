@@ -5,6 +5,10 @@ milestone: v0.6 Quality Wave
 status: in-progress
 created: 2026-05-20
 base-commit: a709a75710391d7521f752e0e27ef582230a7930
+expected_files:
+  - README.md
+  - bin/commands/_usage.js
+  - bin/commands/doctor.js
 ---
 
 # Phase 12: Dual-binary `cplan` + `cp` alias

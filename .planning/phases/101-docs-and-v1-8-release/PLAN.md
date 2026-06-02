@@ -5,6 +5,13 @@ milestone: Milestone workflow end-to-end + quick attach
 status: complete
 created: 2026-05-31
 base-commit: 10c9b392eb03eec84196b62732f02fe44f6c360f
+expected_files:
+  - CHANGELOG.md
+  - README.md
+  - docs/MIGRATION-v1.8.md
+  - docs/architecture.md
+  - docs/workflow/recipes.md
+  - package.json
 ---
 
 # Phase 101: docs-and-v1.8-release

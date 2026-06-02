@@ -5,6 +5,16 @@ milestone: Milestone workflow end-to-end + quick attach
 status: complete
 created: 2026-05-31
 base-commit: cb96d190c8d6879cb3c656cd429e4cc485998416
+expected_files:
+  - bin/commands/_usage.js
+  - bin/commands/milestone.js
+  - bin/commands/quick-setup.js
+  - lib/milestone-scan.js
+  - lib/name-resolve.js
+  - lib/quick-helpers.js
+  - package.json
+  - test/unit-name-resolve.js
+  - test/unit-quick-attach.js
 ---
 
 # Phase 100: cp-quick-attach-by-name

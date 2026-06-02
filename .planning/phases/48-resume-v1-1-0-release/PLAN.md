@@ -7,6 +7,22 @@ plan-status:
   48-01: complete
 created: 2026-05-25
 base-commit: 05539f908b64ea8cda2c5b34eb97427322a2a954
+expected_files:
+  - CHANGELOG.md
+  - MIGRATION-v1.1.md
+  - README.md
+  - bin/commands/_usage.js
+  - bin/commands/workflow.js
+  - commands/cp/workflow-brainstorm.md
+  - commands/cp/workflow-diagram.md
+  - commands/cp/workflow-export.md
+  - commands/cp/workflow-import.md
+  - commands/cp/workflow-inspect.md
+  - commands/cp/workflow-show.md
+  - commands/cp/workflow-validate.md
+  - test/dryrun-workflow-cli.js
+  - test/integration-workflow-skills.js
+  - test/unit-v034.js
 ---
 
 # Phase 48: Resume v1.1.0 release

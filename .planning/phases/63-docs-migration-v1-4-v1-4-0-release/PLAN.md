@@ -5,20 +5,51 @@ milestone: v1.4 Workflow-driven quick and milestone
 status: in-progress
 created: 2026-05-28
 base-commit: 3ef63f6ed953fa2bb0a8f4bd4a2855e9390ec860
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - CHANGELOG.md
+  - MIGRATION-v1.4.md
+  - README.md
+  - bin/commands/abandon.js
+  - bin/commands/checkpoint.js
+  - bin/commands/classify.js
+  - bin/commands/index.js
+  - bin/commands/list.js
+  - bin/commands/milestone-finalize.js
+  - bin/commands/milestone-setup-check.js
+  - bin/commands/project.js
+  - bin/commands/quick-finalize.js
+  - bin/commands/quick-setup.js
+  - bin/commands/run.js
+  - bin/commands/status.js
+  - commands/cp/classify.md
+  - commands/cp/complete-milestone.md
+  - commands/cp/new-milestone.md
+  - commands/cp/quick.md
+  - commands/cp/run-supervised.md
+  - lib/checkpoint.js
+  - lib/classify.js
+  - lib/milestone-helpers.js
+  - lib/project-update.js
+  - lib/quick-helpers.js
+  - lib/run-lifecycle.js
+  - lib/supervisor.js
+  - lib/workflow.js
+  - package.json
+  - templates/workflows/complete-milestone.yaml
+  - templates/workflows/milestone.yaml
+  - templates/workflows/quick.yaml
+  - test/dryrun-run-cli.js
+  - test/dryrun-workflow-cli.js
+  - test/integration-run-cli.js
+  - test/integration-supervisor-flow.js
+  - test/unit-autonomous.js
+  - test/unit-checkpoint.js
+  - test/unit-classify.js
+  - test/unit-milestone-helpers.js
+  - test/unit-project-update.js
+  - test/unit-run-lifecycle.js
+  - test/unit-supervisor-state.js
+  - test/unit-workflow-schema-v14.js
 ---
 
 # Phase 63: Docs + MIGRATION-v1.4 + v1.4.0 release

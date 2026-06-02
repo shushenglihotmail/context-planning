@@ -5,20 +5,62 @@ milestone: v1.3 Reusable Phase Templates
 status: in-progress
 created: 2026-05-27
 base-commit: 7e62b892a49c309de8439d3e65ea3ba0086f3273
-# expected-key-files (optional, v0.8 P5) — declare what each plan
-# intends to touch. `cp write-summary` will diff against the actual
-# `key-files` and warn on drift (soft) or block (with --strict-expected).
-# Two shapes accepted:
-#   1. Flat array — phase-wide expected list:
-#        expected-key-files:
-#          - lib/foo.js
-#          - test/foo.js
-#   2. Object keyed by plan id — per-plan expectations:
-#        expected-key-files:
-#          {{NN}}-01:
-#            - lib/foo.js
-#          {{NN}}-02:
-#            - bin/cli.js
+expected_files:
+  - CHANGELOG.md
+  - MIGRATION-v1.3.md
+  - README.md
+  - bin/commands/_usage.js
+  - bin/commands/index.js
+  - bin/commands/phase-template.js
+  - bin/commands/workflow-template.js
+  - bin/commands/workflow.js
+  - lib/phase-template-loader.js
+  - lib/phase-template-resolver.js
+  - lib/template-substitute.js
+  - lib/workflow-template-expand.js
+  - lib/workflow-template-loader.js
+  - lib/workflow.js
+  - package.json
+  - templates/phase-templates/_fixtures-v13/chain-a.yaml
+  - templates/phase-templates/_fixtures-v13/chain-b.yaml
+  - templates/phase-templates/_fixtures-v13/chain-deep-1.yaml
+  - templates/phase-templates/_fixtures-v13/chain-deep-2.yaml
+  - templates/phase-templates/_fixtures-v13/chain-deep-3.yaml
+  - templates/phase-templates/_fixtures-v13/chain-deep-4.yaml
+  - templates/phase-templates/feature-execute.yaml
+  - templates/phase-templates/feature-plan.yaml
+  - templates/phase-templates/reviewer.yaml
+  - templates/workflow-templates/_fixtures-v13/chain-1.yaml
+  - templates/workflow-templates/_fixtures-v13/chain-2.yaml
+  - templates/workflow-templates/_fixtures-v13/chain-3.yaml
+  - templates/workflow-templates/_fixtures-v13/chain-4.yaml
+  - templates/workflow-templates/review-and-address.yaml
+  - templates/workflows/_examples/dev-templated.yaml
+  - templates/workflows/_fixtures-v13/bare-v12.yaml
+  - templates/workflows/_fixtures-v13/chain-depth-exceeded.yaml
+  - templates/workflows/_fixtures-v13/chain-depth-ok.yaml
+  - templates/workflows/_fixtures-v13/error-phase-template-override.yaml
+  - templates/workflows/_fixtures-v13/error-template-with-prompt.yaml
+  - templates/workflows/_fixtures-v13/missing-required-arg.yaml
+  - templates/workflows/_fixtures-v13/template-include-stub.yaml
+  - templates/workflows/_fixtures-v13/unused-arg.yaml
+  - templates/workflows/_fixtures-v13/uses-phase-template.yaml
+  - templates/workflows/_fixtures-v13/uses-workflow-template.yaml
+  - templates/workflows/_fixtures-v13/wf-chain-depth-exceeded.yaml
+  - templates/workflows/_fixtures-v13/wf-chain-depth-ok.yaml
+  - templates/workflows/_fixtures-v13/wf-group-id-collision.yaml
+  - templates/workflows/_fixtures-v13/wrapped-phase.yaml
+  - test/dryrun-template-cli-v13.js
+  - test/integration-dev-templated-equivalence.js
+  - test/integration-phase-templates-v13.js
+  - test/integration-workflow-templates-v13.js
+  - test/integration-workflow-v13.js
+  - test/unit-phase-template-loader.js
+  - test/unit-phase-template-resolver.js
+  - test/unit-template-substitute.js
+  - test/unit-workflow-schema-v13.js
+  - test/unit-workflow-template-expand.js
+  - test/unit-workflow-template-loader.js
 ---
 
 # Phase 58: Docs and v1.3.0 release

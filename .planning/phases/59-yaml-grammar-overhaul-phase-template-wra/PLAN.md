@@ -1,5 +1,48 @@
 ---
 base-commit: 9cda838d4772d1c0fa1bf0854069ec066996957c
+expected_files:
+  - lib/phase-template-loader.js
+  - lib/phase-template-resolver.js
+  - lib/runtime-fanout.js
+  - lib/workflow-template-expand.js
+  - lib/workflow-template-loader.js
+  - lib/workflow.js
+  - package.json
+  - templates/workflow-templates/_fixtures-v13/chain-3.yaml
+  - templates/workflow-templates/review-and-address.yaml
+  - templates/workflows/_examples/dev-templated.yaml
+  - templates/workflows/_fixtures-v13/bare-v12.yaml
+  - templates/workflows/_fixtures-v13/chain-depth-exceeded.yaml
+  - templates/workflows/_fixtures-v13/chain-depth-ok.yaml
+  - templates/workflows/_fixtures-v13/error-phase-template-override.yaml
+  - templates/workflows/_fixtures-v13/error-template-with-prompt.yaml
+  - templates/workflows/_fixtures-v13/missing-required-arg.yaml
+  - templates/workflows/_fixtures-v13/template-include-stub.yaml
+  - templates/workflows/_fixtures-v13/unused-arg.yaml
+  - templates/workflows/_fixtures-v13/uses-phase-template.yaml
+  - templates/workflows/_fixtures-v13/uses-workflow-template.yaml
+  - templates/workflows/_fixtures-v13/wf-group-id-collision.yaml
+  - templates/workflows/_fixtures-v13/wrapped-phase.yaml
+  - templates/workflows/debug.yaml
+  - templates/workflows/dev.yaml
+  - templates/workflows/quick.yaml
+  - test/fixtures/workflows/cycle.yaml
+  - test/fixtures/workflows/dangling-dep.yaml
+  - test/fixtures/workflows/debug-mini.yaml
+  - test/fixtures/workflows/dev-mini.yaml
+  - test/fixtures/workflows/linear.yaml
+  - test/fixtures/workflows/missing-id.yaml
+  - test/fixtures/workflows/parallel.yaml
+  - test/fixtures/workflows/quick-mini.yaml
+  - test/integration-runtime.js
+  - test/integration-workflow-v13.js
+  - test/unit-runtime-fanout.js
+  - test/unit-workflow-inline-templates-v14.js
+  - test/unit-workflow-phase-adapter.js
+  - test/unit-workflow-schema-v12.js
+  - test/unit-workflow-schema-v13.js
+  - test/unit-workflow-schema-v14.js
+  - test/unit-workflow-template-expand.js
 ---
 
 # Phase 59: YAML grammar overhaul: phase/template wrappers + description
