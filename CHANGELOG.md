@@ -6,6 +6,36 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-06-01 — Bug G: milestone fan-out wired
+
+### Fixed
+
+- **Bug G — milestone fan-out now functional.** The `materialize: roadmap-phases`
+  directive in the milestone workflow template is now wired end-to-end:
+  - Parent-phase wave instruction is augmented with the structured-list
+    JSON contract (`buildParentPrompt`), so the supervising agent emits a
+    parseable `{ optimizable, items }` block.
+  - `markPhaseComplete` for milestone-bound runs now parses that block,
+    enforces `min_children` / `max_children`, scaffolds one ROADMAP phase
+    per item with `PLAN.md` populated, persists the parent output in
+    run state, and injects expanded child waves via the new
+    `workflow.computeWavesWithFanout` helper. (Previously the parent's
+    output was written to SUMMARY.md and discarded.)
+  - Workflow plumbing phases (`kind: scaffold`, fan-out parents themselves)
+    are no longer scaffolded as ROADMAP entries; their summaries now
+    redirect to the milestone dir's `SUMMARY.md`. (Previously a v1.9
+    milestone attempt scaffolded ROADMAP phases 102-108 corresponding to
+    the workflow's own setup/brainstorm/propose/review/finalize plumbing.)
+
+### Internal
+
+- New exports: `workflow.computeWavesWithFanout(template, parentOutputs)`,
+  internal `runtime.materializeRoadmapPhases` helper.
+- Refactored: Kahn topo-sort extracted to shared `kahnWaves` helper
+  (3 call sites consolidated).
+- Cycle error messages now include the stuck phase ids.
+- New integration test `test/integration-fanout-milestone-v18.js`.
+
 ## [1.8.1] - 2026-05-31 — Implicit attach for `cp quick-setup`
 
 ### Added

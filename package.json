@@ -1,6 +1,6 @@
 {
   "name": "context-planning",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "A fully customizable workflow and context-management system for AI coding agents. Define repeatable phase DAGs in YAML, run them with `cp run`, keep all long-lived state on disk. Harness-agnostic and provider-pluggable, with a built-in `manual` fallback so it works with zero external dependencies.",
   "bin": {
     "cp": "bin/cp.js",
