@@ -473,6 +473,33 @@ Plans:
 }
 
 // ============================================================
+// Bug B: _extractExpectedKeyFiles reads expected_files frontmatter (Phase 106)
+section('lib/milestone: _extractExpectedKeyFiles reads expected_files (Bug B)');
+{
+  const dir = track(mktmp('bugb-ekf'));
+  const phaseDir = path.join(dir, 'phase');
+  fs.mkdirSync(phaseDir, { recursive: true });
+
+  // Test 1: PLAN has expected_files: [a.js, b.js] in frontmatter → returns those
+  writeFile(path.join(phaseDir, 'PLAN.md'),
+    '---\nphase: 1\nexpected_files:\n  - a.js\n  - b.js\n---\n# Plan\n');
+  eq('expected_files: list → returns those files',
+    milestone._extractExpectedKeyFiles(phaseDir, '01-01'), ['a.js', 'b.js']);
+
+  // Test 2: PLAN has no expected_files but has expected-key-files → legacy back-compat
+  writeFile(path.join(phaseDir, 'PLAN.md'),
+    '---\nphase: 1\nexpected-key-files:\n  - x.js\n---\n# Plan\n');
+  eq('no expected_files → falls back to expected-key-files (back-compat)',
+    milestone._extractExpectedKeyFiles(phaseDir, '01-01'), ['x.js']);
+
+  // Test 3: PLAN has expected_files: [] → empty array (not null), no fallback to legacy
+  writeFile(path.join(phaseDir, 'PLAN.md'),
+    '---\nphase: 1\nexpected_files: []\nexpected-key-files:\n  - x.js\n---\n# Plan\n');
+  eq('expected_files: [] → returns [] (no fallback to expected-key-files)',
+    milestone._extractExpectedKeyFiles(phaseDir, '01-01'), []);
+}
+
+// ============================================================
 section('lib/import: exitCode logic');
 {
   ok('clean report -> 0',
