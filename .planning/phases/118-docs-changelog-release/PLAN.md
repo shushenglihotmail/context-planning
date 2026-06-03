@@ -8,6 +8,7 @@ expected_files:
   - CHANGELOG.md
   - package.json
   - .planning/milestones/v1-10-skill-routing-verify-gate/DESIGN.md
+base-commit: cb9d02ed345cedd4d9eace436cfe7dfb122f5877
 ---
 
 # PLAN — Phase 118: docs + CHANGELOG + npm publish v1.10.0
