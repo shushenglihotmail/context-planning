@@ -50,6 +50,7 @@ module.exports = {
   'quick-setup': require('./quick-setup'),
   'quick-finalize': require('./quick-finalize'),
   'run-finalize': require('./run-finalize'),
+  'run-verify': require('./run-verify'),
   abandon: require('./abandon'),
   list: require('./list'),
 };

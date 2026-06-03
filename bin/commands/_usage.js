@@ -138,6 +138,11 @@ Usage:
                                   (--plan-only prints waves without mutating state).
                                   \`cp run status\` lists all active runs.
                                   See \`cp run --help\` for full sub-command details.
+  cp run-verify <slug> [--command "<cmd>"] [--skip] [--cwd <path>] [--json]
+                                  Run the project's test command and propagate
+                                  its exit code. Used by milestone verify gates;
+                                  also standalone. Auto-detects npm/pytest/cargo/go
+                                  if neither --command nor behavior.test_command set.
   cp workflow ls [--json]         List all templates (built-in + project).
   cp workflow show <name>         Print a template's YAML body to stdout.
   cp workflow validate <name-or-path> [--strict]

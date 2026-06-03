@@ -3,8 +3,8 @@ slug: v1-10-skill-routing-verify-gate
 status: in-progress
 binding: milestone
 started: 2026-06-02T22:02:05.511Z
-last_activity: 2026-06-03T00:15:30.525Z
-current_wave: 9
+last_activity: 2026-06-03T00:16:43.859Z
+current_wave: 10
 completed:
   - setup
   - brainstorm
@@ -15,6 +15,7 @@ completed:
   - child-execute::provider-skill-availability-and-sigil
   - child-plan::runtime-resolution-chain-and-diagnostic
   - child-execute::runtime-resolution-chain-and-diagnostic
+  - child-plan::cp-run-verify-subcommand
 phaseNumByPhaseId:
   brainstorm: 111
   propose-project-updates: 112
