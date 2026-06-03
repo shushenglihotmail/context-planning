@@ -12,6 +12,7 @@ expected_files:
   - bin/commands/_usage.js
   - test/unit-verify.js
   - test/dryrun-run-verify.js
+base-commit: cb9d02ed345cedd4d9eace436cfe7dfb122f5877
 ---
 
 # PLAN — Phase 116: cp run-verify subcommand + lib/verify.js
