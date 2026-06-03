@@ -91,7 +91,21 @@ check('pinned: cp:manual/plan recognised as pinned literal', () => {
 });
 
 check('pass-through: unknown skill is emitted with warning', () => {
-  const dir = makeProject();
+  // Use a workflow_provider with no on-disk catalog so listProviderSkills
+  // returns [] and v1.10 chain-fall-back is suppressed (deterministic on
+  // any host regardless of which providers happen to be installed).
+  const dir = makeProject({
+    cp: {
+      workflow_provider: 'no-such-provider',
+      providers: {
+        'no-such-provider': {
+          plugin_shape: { dir_name: 'no-such-provider', required_subdirs: [] },
+          detect: { any_of: ['.planning/providers/no-such-provider'] },
+          skills: {},
+        },
+      },
+    },
+  });
   const warnings = [];
   const r = resolvePhaseSkill('nonsense-no-such-skill', {
     projectDir: dir,
@@ -125,7 +139,18 @@ check('routing-key under custom provider in cp.workflow_provider', () => {
 });
 
 check('no warningsOut array: pass-through still resolves without throwing', () => {
-  const dir = makeProject();
+  const dir = makeProject({
+    cp: {
+      workflow_provider: 'no-such-provider',
+      providers: {
+        'no-such-provider': {
+          plugin_shape: { dir_name: 'no-such-provider', required_subdirs: [] },
+          detect: { any_of: ['.planning/providers/no-such-provider'] },
+          skills: {},
+        },
+      },
+    },
+  });
   const r = resolvePhaseSkill('made-up-thing', { projectDir: dir });
   assert.strictEqual(r.source, 'pass-through');
   assert.strictEqual(r.name, 'made-up-thing');

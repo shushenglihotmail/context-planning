@@ -176,7 +176,9 @@ check('default (non-verbose): emits invoke-skill directive + contract legend', (
   );
 });
 
-check('verbose=true: unknown skill emits pass-through annotation', () => {
+check('verbose=true: unknown skill emits chain-fallback or pass-through annotation', () => {
+  // Use no-such-provider so catalog is empty and v1.10 pass-through is
+  // deterministic regardless of which plugins happen to be installed.
   const tpl = yaml.stringify({
     workflow: 'test-unknown',
     version: 1,
@@ -185,7 +187,26 @@ check('verbose=true: unknown skill emits pass-through annotation', () => {
       { phase: { id: 'a', description: 'x', prompt: 'go', skill: 'totally-made-up-skill' } },
     ],
   });
-  const { dir, tplPath } = makeProject(tpl);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cp-fis-'));
+  fs.mkdirSync(path.join(dir, '.planning'), { recursive: true });
+  fs.writeFileSync(
+    path.join(dir, '.planning', 'config.json'),
+    JSON.stringify({
+      cp: {
+        workflow_provider: 'no-such-provider',
+        providers: {
+          'no-such-provider': {
+            plugin_shape: { dir_name: 'no-such-provider', required_subdirs: [] },
+            detect: { any_of: [] },
+            skills: {},
+          },
+        },
+      },
+    }),
+    'utf8'
+  );
+  const tplPath = path.join(dir, 'wf.yaml');
+  fs.writeFileSync(tplPath, tpl, 'utf8');
   const template = loadTemplate(tplPath, { projectDir: dir });
   const waves = computeWaves(template);
   const out = formatInstruction(template, waves[0], 0, {
