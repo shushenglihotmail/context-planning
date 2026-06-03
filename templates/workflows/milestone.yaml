@@ -22,9 +22,13 @@ params:
   - name: execute_role
     default: "developer"
   - name: review_skill
-    default: "code-review"
+    default: "review"
   - name: review_role
     default: "reviewer"
+  - name: verify_command
+    default: ""
+  - name: verify_skip
+    default: ""
   # Supervisor-supplied (no default): injected at run-time by the
   # /cp-new-milestone skill.
   - name: milestone_slug
@@ -114,10 +118,20 @@ phases:
         commit atomically. Write SUMMARY.md and mark the row complete
         in ROADMAP.md.
   - phase:
+      id: verify
+      description: |
+        Run the project's test command to gate review. Fails the wave on
+        non-zero exit; review cannot run until tests pass. Resolves the
+        command from --command override > cp.behavior.test_command >
+        auto-detect (npm/pytest/cargo/go). Warn-only no-op if none found.
+      depends_on: [ propose-phases ]
+      kind: scaffold
+      command: "cp run-verify {{milestone_slug}} {{verify_skip}}"
+  - phase:
       id: review
       description: |
         Code-review the milestone's accumulated changes before finalize.
-      depends_on: [ propose-phases ]
+      depends_on: [ verify ]
       role: "{{review_role}}"
       skill: "{{review_skill}}"
       prompt: |
