@@ -6,6 +6,91 @@ this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-06-02 — Skill Routing & Verify Gate
+
+The downstream WCCT-Copilot v4.7 milestone retrospective surfaced two real
+framework bugs: (1) silent skill-routing failures when the active provider
+didn't actually ship a named skill, and (2) a prose-only `review` phase
+that let a runtime `TypeError` ship to `main` with full attestation. Both
+are fixed in this release.
+
+### Added
+
+- **Parens-sigil syntax for opt-in fuzzy skill matching.** Wrap a skill
+  name in parens (e.g. `skill: "(code-review)"`) to opt into token-overlap
+  fuzzy matching against the active provider's installed skill catalog.
+  Useful when an author wants a logical role (e.g. "code review") to bind
+  to whichever concrete skill the provider happens to ship
+  (`receiving-code-review`, `requesting-code-review`, …). Strict matching
+  remains the default for bare names. (Phase 114; `lib/provider.js`.)
+- **Per-skill availability probe + chain fallback.** `resolvePhaseSkill`
+  now verifies a literal pass-through skill actually exists in the active
+  provider's catalog. If absent (and the catalog is non-empty), it falls
+  back through the chain: `manual-prompt` (if the manual provider supplies
+  a prompt body for the phase's `role:`) → `subagent-dispatch` (last resort
+  directive instructing the agent to dispatch a subagent with the named
+  role). Each non-clean resolution emits a per-wave `[resolution] …`
+  diagnostic line in the wave instruction so the agent always sees *why*
+  it's executing inline rather than via a hosted skill. (Phase 115;
+  `lib/runtime.js`.)
+- **`cp run-verify <slug>` subcommand.** Non-LLM scaffold that runs the
+  project's test command and propagates its exit code 1:1. Resolves the
+  command from `--command` override > `.planning/config.json:cp.behavior.test_command`
+  > auto-detect (npm/pytest/cargo/go) > warn-only no-op. Flags: `--command
+  "<cmd>"`, `--skip`, `--cwd <path>`, `--json`. (Phase 116; `lib/verify.js`,
+  `bin/commands/run-verify.js`.)
+- **Milestone `verify` phase gating `review`.** `templates/workflows/milestone.yaml`
+  now ships a `verify` scaffold phase between the per-child fanout and
+  `review`. `review.depends_on` rewired to `[verify]` — review cannot run
+  until tests pass. New `verify_command` and `verify_skip` template params
+  for per-run override / opt-out. (Phase 117.)
+
+### Changed
+
+- **`review_skill` default in milestone.yaml**: `"code-review"` →
+  `"review"`. The literal `"code-review"` was the root cause of v4.7's
+  "skill missing" attestation noise — it appeared in no provider routing
+  map nor any SP catalog. The routing key `"review"` resolves cleanly to
+  `requesting-code-review` via the superpowers provider config that was
+  already shipping. No fuzzy match needed. (Phase 117.)
+- **Unknown literal skill behavior**: when the active provider has a
+  non-empty on-disk catalog, an unknown literal now chain-falls-back
+  (manual-prompt or subagent-dispatch) instead of silently passing
+  through to a guaranteed-miss invocation. Providers without a probe-able
+  catalog (manual harnesses, dry-run fixtures) retain legacy pass-through.
+  Tests that asserted pass-through against `superpowers` updated to pin a
+  no-such-provider workflow_provider for determinism. (Phase 115.)
+
+### Implementation deviations from DESIGN
+
+The locked spec (`docs/superpowers/specs/2026-06-02-v1.10-skill-routing-verify-gate-design.md`)
+called for fuzzy matching to be filtered by SKILL.md `role:` frontmatter.
+Implementation dropped the role filter because SP SKILL.md files have
+only `name:` + `description:` frontmatter — no `role:` field. Pure
+token-overlap matching (no role filter) shipped instead. See
+`.planning/milestones/v1-10-skill-routing-verify-gate/DESIGN.md` for
+the post-hoc deviation note.
+
+### Tests
+
+Total new coverage: **76 assertions** across 4 new files:
+- `test/unit-provider-fuzzy.js` (29) — sigil parser + fuzzy matcher +
+  listProviderSkills + skillExists + resolvePromptForRole primitives.
+- `test/unit-runtime-resolution-chain.js` (12) — every resolution
+  source + formatInstruction surfaces, deterministic via monkey-patched
+  provider fixtures.
+- `test/unit-verify.js` (21) — detector priority chain (npm/pytest/
+  cargo/go), config-source precedence, runVerify success/failure/skip/
+  no-command paths.
+- `test/dryrun-run-verify.js` (6) — real-process exit-code propagation,
+  --json shape, missing-slug usage.
+- `test/integration-milestone-verify-gate.js` (8) — milestone.yaml shape
+  + DAG ordering assertions.
+
+All wired into `npm test`. Two pre-existing tests
+(`unit-resolve-phase-skill`, `integration-format-instruction-skills`)
+pinned to a no-such-provider config for host-independent determinism.
+
 ## [1.9.0] - 2026-06-01 — Framework bug fixes from v1.8.1 retro
 
 The WCCT-Copilot retro of v1.8.1 surfaced six bugs across roadmap scanning,

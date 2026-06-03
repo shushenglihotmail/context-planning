@@ -161,3 +161,26 @@ whole point of objective verification.
 - Inbox seeds (superseded): `.planning/INBOX.md` entries #4 → #5 → #6 → #7 → #8
 - Verified non-bug evidence: phase `107-bug-c-complete-milestone-banner/SUMMARY.md` (commit `92d14a9`)
 - Origin: downstream consumer v4.7 milestone retrospective forwarded 2026-06-02
+
+
+---
+
+## Implementation deviation (post-hoc, recorded at v1.10.0 release)
+
+**Deviation:** The role-filter mechanism (DESIGN: 'fuzzy matcher filters
+candidates by `role:` frontmatter in each SKILL.md') was dropped.
+
+**Reason:** Superpowers SKILL.md files have only `name:` and `description:`
+frontmatter — there is no `role:` field to filter on. Verified against
+the v1.10 SP catalog (14 skills, e.g. `brainstorming`, `writing-plans`,
+`receiving-code-review`).
+
+**What shipped instead:** Pure token-overlap fuzzy matching without role
+filter. Tokenize hint + each candidate on `-`/`_`/whitespace; score
+`matched_tokens / max(|hint|, |candidate|)` with bidirectional substring
+match; threshold ≥ 0.5; tiebreak score-desc → length-asc → alpha-asc.
+Deterministic; `(code-review)` against the SP catalog always picks
+`receiving-code-review` (both candidates tie at 2/3, alpha-tiebreak wins).
+
+**Future work:** If SP ever adds a `role:` frontmatter convention, the
+filter can be layered back in without breaking existing fuzzy resolutions.
