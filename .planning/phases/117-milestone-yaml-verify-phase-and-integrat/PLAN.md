@@ -7,6 +7,7 @@ created: 2026-06-02
 expected_files:
   - templates/workflows/milestone.yaml
   - test/integration-milestone-verify-gate.js
+base-commit: cb9d02ed345cedd4d9eace436cfe7dfb122f5877
 ---
 
 # PLAN — Phase 117: milestone.yaml verify phase + integration tests
