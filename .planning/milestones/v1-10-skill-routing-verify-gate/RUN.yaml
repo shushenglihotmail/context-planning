@@ -1,10 +1,10 @@
 workflow: milestone
 slug: v1-10-skill-routing-verify-gate
-status: in-progress
+status: done
 binding: milestone
 started: 2026-06-02T22:02:05.511Z
-last_activity: 2026-06-03T00:23:26.267Z
-current_wave: 14
+last_activity: 2026-06-03T00:27:24.465Z
+current_wave: 18
 completed:
   - setup
   - brainstorm
@@ -20,6 +20,10 @@ completed:
   - child-plan::milestone-yaml-verify-phase-and-integration-tests
   - child-execute::milestone-yaml-verify-phase-and-integration-tests
   - child-plan::docs-changelog-release
+  - child-execute::docs-changelog-release
+  - verify
+  - review
+  - finalize
 phaseNumByPhaseId:
   brainstorm: 111
   propose-project-updates: 112
